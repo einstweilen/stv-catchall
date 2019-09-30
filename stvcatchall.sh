@@ -27,8 +27,8 @@ stv_ch_xxl=200                      # XXL-Paket mit 200 Channeln
 
 tageszeit=('' 'Vormittag' 'Nachmittag' 'Abend' 'Nacht')
 
-ca_ch_pre='_CA '                    # Prefix-Kennung für vom Skript erstelle Channel
-ca_ch_preurl='_CA+'                 # dito URLencoded *ein* Leerzeichen
+ca_ch_pre='_ '                      # Prefix-Kennung für vom Skript erstelle Channel
+ca_ch_preurl='_+'                   # dito URLencoded *ein* Leerzeichen
 ca_in_pre="$ca_ch_pre "             # Prefix-Kennung für vom Skript erstellen Infotext
 ca_in_preurl="$ca_ch_preurl+"       # dito URLencoded *zwei* Leerzeichen (alphabetisch vor den anderen Channels)
 
@@ -342,7 +342,7 @@ channel_cleanup() {
         ch_use_vor=$ch_use
         echo -n "Lösche $ca_ch_anz Channels : "  
         for ch_test in "${ch_in[@]}"; do
-            if [[ $ch_test == *"$ca_ch_pre"* ]]; then
+            if [[ $ch_test == *[0-9]"|$ca_ch_pre"* ]]; then
                 stvchinfo=$(grep -o "^[0-9]*" <<< "$ch_test")
                 if [[ stvchinfo -gt 0 ]]; then
                     echo "CA Channel löschen $ch_test" >> "$stvlog"
@@ -469,7 +469,7 @@ sender_bereinigen() {
 }
 
 
-#### auf Channels beginnend mit '_CA' prüfen und löschen
+#### auf Channels beginnend mit '_ ' prüfen und löschen
 channelrestechecken () {
     echo ''
     echo ''
@@ -478,7 +478,7 @@ channelrestechecken () {
     channel_liste       # Liste vorhandener Channel
     channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
 
-    ca_ch_anz=$(grep -o "$ca_ch_pre[^ ]" <<< "${ch_in[*]}" | wc -l | xargs) # xarg entfernt whitespace
+     ca_ch_anz=$(grep -o "[0-9]*|$ca_ch_pre[^ ]" <<< "${ch_in[*]}" | wc -l | xargs) # xarg entfernt whitespace
     if [[ $ca_ch_anz -gt 0 ]]; then
         echo "Es sind $ca_ch_anz vom STV CatchAll Skript angelegte Channels vorhanden,"
         echo "beim Channellöschen bleiben bereits erfolgte Aufnahmen erhalten."
@@ -487,9 +487,9 @@ channelrestechecken () {
         read -p "Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
         if [[ $ch_cleanup_check == "L" || $ch_cleanup_check == "l" ]]; then
         echo ''
-            echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '_CA'"
+            echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre'"
             for ch_test in "${ch_in[@]}"; do
-                grep -o "$ca_ch_pre[^|]*" <<< "$ch_test"
+                grep -o "[0-9]*|$ca_ch_pre[^|]*" <<< "$ch_test"
             done
             read -p "Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
         fi
@@ -501,7 +501,6 @@ channelrestechecken () {
     else
         echo 'Es sind keine von STV CatchAll angelegte Channels vorhanden.'
     fi
-
 }
 
 
