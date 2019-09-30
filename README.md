@@ -20,7 +20,6 @@ Direkt zu [TL;DR](#tldr) am Seitenende springen.
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
-    + [Besonderheit beim XXL Paket](#besonderheit-beim-xxl-paket)
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehler während der Skriptausführung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
@@ -80,7 +79,7 @@ SaveTV aktualisert sein Angebot einmal täglich gegen 4:30 Uhr, so daß das Skri
 
 Siehe auch [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
 
-Auf einem Raspberry Pi Zero W beträgt die Laufzeit je nach der aktuellen Auslastung des SaveTV Servers und der Anzahl der zu programmierenden Channels ungefähr 8 Minuten, was in etwa 13-14 Sekunden je Sender entspricht. 
+Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslastung des SaveTV Servers etwa 18 Sekunden für die vier Channels eines Senders, bei mir um die 10 bis 11 Minuten für 36 aufzunehmende Sender. 
 	
 ## Einrichten und Starten
 ### Username und Passwort hinterlegen
@@ -95,7 +94,7 @@ Sind die Accountdaten weder gespeichert noch wurden sie beim Aufruf übergeben, 
 
 ### Sender von der automatischen Aufnahme ausschließen
 Standardmäßig wird die Aufnahme aller Sendungen aller Sender programmiert. 
-Im Skriptverzeichnis befindet sich die Datei `stv_sender.txt` in der alle bei SaveTV verfügbaren Sender hinterlegt sind. Wird diese Datei gelöscht, holt das Skript beim nächsten Start automatisch eine aktualiserte Senderliste vom SaveTV Server und legt die Datei neu an. Eventuell neu hinzugekommenede Sender werden automatisch zur Aufnahme prorammiert.
+Im Skriptverzeichnis befindet sich die Datei `stv_sender.txt` in der alle bei SaveTV verfügbaren Sender hinterlegt sind. Wird diese Datei gelöscht, holt das Skript beim nächsten Start automatisch eine aktualisierte Senderliste vom SaveTV Server und legt die Datei neu an. Eventuell neu hinzugekommene Sender werden automatisch zur Aufnahme programmiert.
 
 Über die Datei `stv_skip.txt` können einzelne Sender von der Aufnahme ausgeschlossen werden. Wird diese Datei gelöscht, legt das Skript beim Start eine neue Datei mit "17|RTL" als Defaulteintrag an.
 
@@ -130,10 +129,10 @@ Sollten beim Start nicht genügend ungenutzte Channels vorhanden sein, bricht da
 Vom Skript angelegte Channels bleiben immer erhalten. Das Skript prüft vor dem Start, ob noch genügend ungenutzte Channels vorhanden sind und wechselt bei Bedarf zurück in den `auto` Modus. Ein Hinweistext wird ausgeben.
 
 ***`anlege_modus=nie`***  
-Vom Skript angelegte Channels werden nach dem Anlegen wieder gelöscht, auch wenn mehr ungenutze Channels verfügbar sind als benötigt werden. Auch der Pseudostichwortchannel mit dem Ausführungsstatus wird nicht angelegt.
+Vom Skript angelegte Channels werden nach dem Anlegen wieder gelöscht, auch wenn mehr ungenutzte Channels verfügbar sind als benötigt werden. Der Pseudostichwortchannel mit dem Ausführungsstatus wird nicht angelegt.
 
 #### Tip: Channels "korrigieren"
-Hat man aus Versehen zuviele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
+Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
@@ -146,7 +145,7 @@ Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.
 
 	_CA  OK 0731 2258 Delta 49	bedeutet
 	_CA				von CatchAll angelegt
-	OK / FEHLER			feherfrei bzw. Fehler sind aufgetreten
+	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
 	0728				Datum Monat Tag
 	2257				Uhrzeit Stunde Minute
 	Delta 49			49 Sendungen wurden zusätzlich programmiert
@@ -224,7 +223,7 @@ Um die *Reste aufräumen* Funktion auszuführen, muß das Skript mit dem Paramet
 Die Sicherheitsabfrage der *Reste aufräumen* Funktion 'Alles bereinigen (J/N)?' wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
 
 	./stvcatchall.sh --cleanupauto
-Dadruch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
+Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
 
 ### Beispielausgabe Reste aufräumen
                 _______ _______ _    _ _______   _______ _    _
@@ -295,7 +294,7 @@ Der erster Teil ist identisch zu [Beispielausgabe Reste aufräumen](#beispielaus
 Die Datei [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) direkt auf dem Raspberry runterladen.
 
 	wget https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh
-Die Dateien für die Senderliste und die Skipliste der zuüberspringenden Sender müssen nicht runtergeladen werden, diese legt das Skript automatisch an.
+Die Dateien für die Senderliste und die Skipliste der zu überspringenden Sender müssen nicht runtergeladen werden, diese legt das Skript automatisch an.
 
 ### Per Git installieren
 Statt des einmaligen Downloads kann man auch das komplette stv-catchall Repository auf den Raspberry clonen
@@ -329,7 +328,8 @@ Es ist auch möglich, dem Skriptaufruf Parameter mitzugeben, so daß täglich ei
 Wenn das SaveTV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --help` aufgerufen wird, wird ein kurzer Hilfetext angezeigt.
 
 ## Geplante ToDos
-  * bei Serverfehlern wegen Fehler 500 zweiten Anlegeversuch starten (in Arbeit 80 %)
+  * bei Serverfehlern wegen Fehler 500 zweiten Anlegeversuch starten
+  * Funktionstest (Username/Passwort, Login, Accountstatus, Channels lesen/anlegen/löschen)
 
 ## TL;DR
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
