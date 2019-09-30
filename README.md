@@ -143,8 +143,8 @@ Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm 
 Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt. Der Channeltitel hat dabei folgenden Aufbau:
 
 
-	_CA  OK 0731 2258 Delta 49	bedeutet
-	_CA				von CatchAll angelegt
+	_  OK 0731 2258 Delta 49	bedeutet
+	_				Underscore am Anfang = von CatchAll angelegt
 	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
 	0728				Datum Monat Tag
 	2257				Uhrzeit Stunde Minute
@@ -265,8 +265,8 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 Wenn man im XXL Paket 188 Channel angelegt hat und CatchAll nicht mehr verwenden möchte oder wenn die Ausführung des Skripts beim Channelanlegen abgebrochen wurde (Ctrl C, Stromausfall ...) bleiben vom Skript angelegte Channels übrig, die von Hand gelöscht werden müssen.
 
 ### Channels aufräumen Funktionsweise und Aufruf
-Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `_CA ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
-Es sind 4 vom STV CatchAll Skript angelegte Channels '`_CA `' vorhanden, diese Channels löschen (J/N)?  
+Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `_ ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
+Es sind 4 vom STV CatchAll Skript angelegte Channels '`_ `' vorhanden, diese Channels löschen (J/N)?  
 
 Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Channels und die zukünftigen Programmierungen, die vorhandenen Aufnahmen bleiben erhalten.
 
