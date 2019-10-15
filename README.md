@@ -8,8 +8,14 @@ Nachbildung der CatchAll Funktion durch automatische Anlage der dafür notwendig
 
 Getestet auf Raspbian/DietPi (Stretch und Buster) und MacOS 10.13 High Sierra. 
 
-Keine Zeit? Das Skript läuft defaultmäßig im Automatikmodus, erkennt das gebuchte SaveTV Paket und wählt die dafür passenden Einstellungen. Die vollständige Dokumentation wird nur als Einrichtungshilfe und für Sonderfälle oder Probleme benötigt.   
+**Keine Zeit?** Das Skript läuft defaultmäßig im Automatikmodus, erkennt das gebuchte SaveTV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
+
+Die vollständige Dokumentation wird nur als Einrichtungshilfe und für Sonderfälle oder Probleme benötigt.   
 Direkt zu [TL;DR](#tldr) am Seitenende springen.
+
+**Neuste Änderung**
+
+2019-10-15 [Funktionstest](#funktionstest) ergänzt
 
 ## Table of contents
   * [Hintergrund](#hintergrund)
@@ -20,6 +26,9 @@ Direkt zu [TL;DR](#tldr) am Seitenende springen.
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
+    + [Funktionstest](#funktionstest)
+        + [Funktionstest aufrufen](#funktionstest-aufrufen)
+    	+ [Beispielausgabe des Funktionstests](#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehler während der Skriptausführung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
@@ -41,7 +50,7 @@ Direkt zu [TL;DR](#tldr) am Seitenende springen.
     + [Dateirechte setzen](#dateirechte-setzen)
     + [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
   * [Hilfefunktion](#hilfefunktion)
-  * [Ausblick auf geplante Funktionen](#ausblick-auf-geplante-funktionen)
+  * [Ausblick auf geplante Funktionen](#geplante-funktionen)
   * [TL;DR](#tldr)
  
 ## Hintergrund
@@ -136,6 +145,37 @@ Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels l
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
+
+### Funktionstest
+Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account.
+
+#### Funktionstest aufrufen
+Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest durchgeführt werden (J/N)? :` automatisch angeboten. 
+
+Zusätzlich zum automatischen Aufruf beim ersten Skriptstart kann der Funktionstest mit den Optionen `-t` `--test` direkt aufgerufen werden.
+
+Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_ca.log` erkannt.
+
+#### Beispielausgabe des Funktionstests
+    Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.
+    
+    [✓] Schreibrechte im Skriptverzeichnis
+    [✓] Login mit UserID 0815 erfolgreich
+    [✓] Paket 'Save.TV XL 24 Monate' mit 20 Channels, 0 benutzt
+        Channelanlegemodus 'auto' wird verwendet
+    
+    [✓] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
+        KiKA                MTV                 Health TV          
+        Folx TV             SPORT 1             DMAX               
+        Eurosport           Disney Channel      RiC                
+        TLC                 Fix und Foxi        RTL                
+                                                                   
+    [✓] Testchannel erfolgreich angelegt
+    [✓] Channelliste einlesen
+    [✓] Testchannel erfolgreich gelöscht
+    [✓] Logout durchgeführt
+  
+    Funktionstest wurde in 6 Sekunden abgeschlossen
 
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
@@ -327,12 +367,11 @@ Es ist auch möglich, dem Skriptaufruf Parameter mitzugeben, so daß täglich ei
 ## Hilfefunktion
 Wenn das SaveTV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --help` aufgerufen wird, wird ein kurzer Hilfetext angezeigt.
 
-## Geplante ToDos
-  * bei Serverfehlern wegen Fehler 500 zweiten Anlegeversuch starten
-  * Funktionstest (Username/Passwort, Login, Accountstatus, Channels lesen/anlegen/löschen)
+## Geplante Funktionen
+  * Aufnahmeprogrammierung splitten, um Sondersendungen o.ä. aufzunehmen
 
 ## TL;DR
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
 2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen oder beim manuellen Aufruf mit `./stvcatchall.sh username passwort` übergeben ([mehr …](#username-und-passwort-hinterlegen))
-3. Die Datei `senderskip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
+3. Optional Die Datei `senderskip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 4. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
