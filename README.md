@@ -4,18 +4,21 @@
     ===============================================
     ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
 
-Nachbildung der CatchAll Funktion durch automatische Anlage der dafür notwendigen Channels.
+Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle Sendungen aller 47 Save.TV Sender 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket und beim XXL Paket spart man sich das manuelle Channelanlegen.
 
-Getestet auf Raspbian/DietPi (Stretch und Buster) und MacOS 10.13 High Sierra. 
-
-**Keine Zeit?** Das Skript läuft defaultmäßig im Automatikmodus, erkennt das gebuchte SaveTV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
-
-Die vollständige Dokumentation wird nur als Einrichtungshilfe und für Sonderfälle oder Probleme benötigt.   
-Direkt zu [TL;DR](#tldr) am Seitenende springen.
+Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
 **Neuste Änderung**
 
 2019-10-15 [Funktionstest](#funktionstest) ergänzt
+
+## Schnelleinstieg
+Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
+1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
+2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen ([mehr …](#username-und-passwort-hinterlegen))
+3. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
+4. *Optional* Die Datei `senderskip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
+
 
 ## Table of contents
   * [Hintergrund](#hintergrund)
@@ -32,7 +35,8 @@ Direkt zu [TL;DR](#tldr) am Seitenende springen.
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehler während der Skriptausführung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
-    + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)    
+    + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)
+    + [Hinweis zur Verwendung unter Termux](#hinweis-zur-verwendung-unter-termux)
     + [Beispielausgabe CatchAll Programmierung](#beispielausgabe-catchall-programmierung)
   * [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen)
     + [Reste aufräumen Hintergrund](#reste-aufr%C3%A4umen-hintergrund)
@@ -51,7 +55,6 @@ Direkt zu [TL;DR](#tldr) am Seitenende springen.
     + [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
   * [Hilfefunktion](#hilfefunktion)
   * [Ausblick auf geplante Funktionen](#geplante-funktionen)
-  * [TL;DR](#tldr)
  
 ## Hintergrund
 [SaveTV](https://www.save.tv/) bietet keine CatchAll Funktion bei der automatisch alle Sendungen aller verfügbaren Sender aufgenommen werden.
@@ -213,6 +216,10 @@ Durch Ändern der Fileextension von `stvcatchall.sh` in `stvcatchall.console` ka
 Diese Datei kann man auch als Autostartobjekt verwenden, dann wird es bei jedem Systemstart automatisch ausgeführt.
 [Externe Anleitung: Autostart-Programme über die Systemeinstellungen festlegen](https://www.heise.de/tipps-tricks/Mac-Autostart-Programme-festlegen-4025523.html#anchor_2)
 
+### Hinweis zur Verwendung unter Termux
+Das Skript kann mit [Termux unter Android](https://termux.com/) verwendet werden.  
+In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit `pkg install curl` nachinstalliert werden.
+
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
                 |______ |_____|  \  /  |______      |     \  /
@@ -369,9 +376,3 @@ Wenn das SaveTV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --h
 
 ## Geplante Funktionen
   * Aufnahmeprogrammierung splitten, um Sondersendungen o.ä. aufzunehmen
-
-## TL;DR
-1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
-2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen oder beim manuellen Aufruf mit `./stvcatchall.sh username passwort` übergeben ([mehr …](#username-und-passwort-hinterlegen))
-3. Optional Die Datei `senderskip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
-4. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
