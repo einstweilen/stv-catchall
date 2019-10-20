@@ -115,9 +115,8 @@ channel_liste() {
                  ch_in[i]=$(sed 's/CHANNELID..\([^\.]*\).*SNAME...\([^\"]*\).*/\1|\2/g' <<< "${ch_rw[i]}")
             done
             
-            # sortieren ch_sid nach ChannelID, ch_sna nach ChannelNamen
+            # sortieren ch_sid nach ChannelID
             IFS=$'\n' ch_sid=($(sort <<< "${ch_in[*]}" | sort -n )) ; unset IFS
-            IFS=$'\n' ch_sna=($(sort <<< "${ch_in[*]}" | sort -t\| +1 )) ; unset IFS
         fi
 }
 
