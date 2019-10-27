@@ -556,7 +556,7 @@ funktionstest() {
         echo '    und danach den Funktionstest mit --test erneut starten.'
         echo
         echo '    Aktueller Inhalt der Zeilen:'
-        sed -n '8,9p' stvcatchall.sh
+        sed -n '8,9p' "$0"
         echo
         fkt_stoerung
         echo '    Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen'
