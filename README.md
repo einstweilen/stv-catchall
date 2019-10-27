@@ -180,6 +180,20 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
   
     Funktionstest wurde in 6 Sekunden abgeschlossen
 
+#### Beispielausgabe des Funktionstests mit Loginfehler
+    [✓] Schreibrechte im Skriptverzeichnis
+    [-] Fehler beim Login mit UserID 373737!
+        Bitte in den Zeilen 8 und 9 Username und Passwort prüfen,
+        und danach den Funktionstest mit --test erneut starten.
+
+        Aktueller Inhalt der Zeilen 8 und 9:
+    stv_user='373737'       # für Autologin Username ausfüllen z.B. 612612
+    stv_pass='passwort'     # für Autologin Passwort ausfüllen z.B. R2D2C3PO
+
+        Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen.
+        In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
+        gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
+
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
 
