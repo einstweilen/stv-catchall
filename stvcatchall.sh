@@ -525,6 +525,12 @@ fkt_ch_delete() {
     done
 }
 
+fkt_stoerung() {
+    webstoerung=$(curl -s "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
+    # wenn auch nicht erreichbar, IN prüfen
+    stoer_akt=$(grep -o "{ date: '20[^}]*" <<<$webstoerung | tail -4 | awk '{stoer += $5} END{print stoer}')
+}
+
 funktionstest() {
     clear ; banner
     echo 'Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.'
@@ -540,7 +546,6 @@ funktionstest() {
         echo "[✓] Schreibrechte im Skriptverzeichnis"
     fi
 
-
     # 02 login
     login
     if [[ $login_return -eq 0 ]]; then
@@ -549,14 +554,31 @@ funktionstest() {
         echo "[-] Fehler beim Login mit UserID $stv_user!"
         echo '    Bitte in den Zeilen 8 und 9 Username und Passwort prüfen,'
         echo '    und danach den Funktionstest mit --test erneut starten.'
+        echo
+        echo '    Aktueller Inhalt der Zeilen:'
+        sed -n '8,9p' stvcatchall.sh
+        echo
+        fkt_stoerung
+        echo '    Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen'
+        echo "    In der letzten Stunde wurden $stoer_akt Störungen auf AlleStörungen.de"
+        echo '    gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>'
+        echo
         exit 1
     fi
         
     # 03 gebuchtes Paket, freie Channels, Senderliste
-    paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=7' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
+    paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=7' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
     paket=$(sed 's/.*SNAME":"\([^"]*\).*/\1/' <<<$paket_return )
+
+    if [[ $paket != *"Save"* ]]; then
+        echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
+        echo "Fehler bei Paketname: '$paket'" > "$stvlog"
+        exit 1
+    fi
+
+
     channel_liste
-    echo "[✓] Paket '$paket' mit $ch_max Channels, $ch_use benutzt"
+    echo "[✓] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
     echo
     if [[ ch_fre -eq 0 ]]; then
@@ -619,6 +641,7 @@ funktionstest() {
     echo "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen" > "$stvlog"
     exit 0
 }
+
 
 # foo="$(time ( ls ) 2>&1 1>/dev/null)"
 # echo "$foo" | grep real | sed -E 's/[^0-9\.]+//g' | tr -d '\n' | (cat && echo " * 1000") | bc | sed 's/.000//'
