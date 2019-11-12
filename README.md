@@ -8,9 +8,9 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
-**Neuste Änderung**
-
-2019-10-15 [Funktionstest](#funktionstest) ergänzt
+**Neuste Änderungen**
+  * 2019-11-12 [Fehlerbehandlung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
+  * 2019-10-15 [Funktionstest](#funktionstest) ergänzt
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
@@ -214,9 +214,28 @@ Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel
 ### Fehler während der Skriptausführung
 Sollten bei der Verarbeitung Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei `stv_ca.log` an.
 
-Meistens treten Fehler auf, wenn der SaveTV Server im Moment überlastet ist. Bei einem erneuten Skriptlauf werden diese Channels wieder ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft.
+Wird die Anzahl der maxmial erlaubten Fehler überschritten, defaultmäßig `err_max=5`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
-Die komplette Serverfehlermeldung ist in der Logdatei `stv_ca.log` enthalten.
+    Es sind 6 Fehler aufgetreten, das Skript wird beendet.
+    AlleStörungen.de meldet in der letzten Stunde 14 Störungen 
+
+Meistens treten Fehler auf, wenn die SaveTV Server im Moment überlastet sind. Bei einem erneuten Skriptlauf werden diese Channels wieder ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft.
+
+Die konkrete Serverfehlermeldung ist in der Logdatei `stv_ca.log` enthalten.
+Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang markiert.
+
+    : *** Fehler *** bei 2 arte Nachmittag
+    : Grund : 500 - Internal server error.
+    : *** Fehler *** bei 2 arte Abend
+    : Grund : 504 - www.save.tv | 504: Gateway time-out
+    : *** Fehler *** bei 2 arte Nacht
+    : Grund: Channel mit gleichem Zeitraum ist bereits vorhanden!
+    : Tip  : Channelliste mit -c prüfen und bereinigen
+    : Es sind 6 Fehler aufgetreten, das Skript wird vorzeitig beendet.
+    : AlleStörungen.de meldet in der letzten Stunde keine Störungen
+    
+Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nichtgelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
+
 
 ### Servicehinweis: Save.TV Aufnahme-Optionen prüfen
 Bitte vor dem ersten Skriptlauf prüfen, ob die Save.TV Einstellungen zu Vorlauf-, Nachlaufzeit und Auto-Schnittlisten den eigenen Wünschen entsprechen.
