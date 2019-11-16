@@ -8,7 +8,7 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
-**Neuste Änderungen**
+**Neueste Änderungen**
   * 2019-11-12 [Fehlerbehandlung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
   * 2019-10-15 [Funktionstest](#funktionstest) ergänzt
 
@@ -166,12 +166,13 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Login mit UserID 0815 erfolgreich
     [✓] Paket 'Save.TV XL 24 Monate' mit 20 Channels, 0 benutzt
         Channelanlegemodus 'auto' wird verwendet
+	Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
     
     [✓] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
-        KiKA                MTV                 Health TV          
-        Folx TV             SPORT 1             DMAX               
-        Eurosport           Disney Channel      RiC                
-        TLC                 Fix und Foxi        RTL                
+        KiKA                  MTV                   Health TV          
+        Folx TV               SPORT 1               DMAX               
+        Eurosport             Disney Channel        RiC                
+        TLC                   Fix und Foxi          RTL                
                                                                    
     [✓] Testchannel erfolgreich angelegt
     [✓] Channelliste einlesen
@@ -300,7 +301,7 @@ Um die *Reste aufräumen* Funktion auszuführen, muß das Skript mit dem Paramet
 	./stvcatchall.sh --cleanup
 	
 ### Reste aufräumen starten und anschließend Catchall Channel anlegen
-Die Sicherheitsabfrage der *Reste aufräumen* Funktion 'Alles bereinigen (J/N)?' wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
+Die Sicherheitsabfrage der *Reste aufräumen* Funktion `Alles bereinigen (J/N)?` wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
 
 	./stvcatchall.sh --cleanupauto
 Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
