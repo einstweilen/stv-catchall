@@ -1,5 +1,5 @@
 #! /bin/bash
-# 2019-11-12
+# 2019-11-16
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
@@ -578,17 +578,23 @@ funktionstest() {
     # 03 gebuchtes Paket, freie Channels, Senderliste
     paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=7' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
     paket=$(sed 's/.*SNAME":"\([^"]*\).*/\1/' <<<$paket_return )
-
+    
+    rec_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=1' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
+    rec_vor=$(sed 's/.*ISTARTRECORDINGBUFFER":\([0-9]*\).*/\1/' <<<$rec_return)
+    rec_nach=$(sed 's/.*IENDRECORDINGBUFFER":\([0-9]*\).*/\1/' <<<$rec_return)
+    rec_auto=$(sed 's/.*BAUTOADCUTENABLED":\([0-9]*\).*/\1/' <<<$rec_return)
+    if [[ $rec_auto = "1" ]]; then rec_auto="AN" ; else rec_auto="AUS" ; fi
+    
     if [[ $paket != *"Save"* ]]; then
         echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
         echo "Fehler bei Paketname: '$paket'" > "$stvlog"
         exit 1
     fi
 
-
     channel_liste
     echo "[✓] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
+    printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
     echo
     if [[ ch_fre -eq 0 ]]; then
         echo '    Für den Test wird ein freier Channel benötigt.'
