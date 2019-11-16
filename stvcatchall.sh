@@ -619,7 +619,7 @@ funktionstest() {
     else
         echo "[✓] Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet:"
         for (( i=0; i<=${#skip_name[@]}; i=i+3)); do
-            printf "%-3s %-19s %-19s %-19s\n" "   " "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}"
+            printf "%-3s %-21s %-21s %-21s\n" "   " "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}"
         done
     fi
 
