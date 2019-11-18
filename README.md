@@ -9,6 +9,7 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
 **Neueste Änderungen**
+  * 2019-11-18 [Updatebenachrichtigung](#ausf%C3%BChrungsstatus-kontrollieren) ergänzt 
   * 2019-11-12 [Fehlerbehandlung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
   * 2019-10-15 [Funktionstest](#funktionstest) ergänzt
 
@@ -162,7 +163,9 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
 #### Beispielausgabe des Funktionstests
     Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.
     
+    [✓] Skript ist aktuell
     [✓] Schreibrechte im Skriptverzeichnis
+    
     [✓] Login mit UserID 0815 erfolgreich
     [✓] Paket 'Save.TV XL 24 Monate' mit 20 Channels, 0 benutzt
         Channelanlegemodus 'auto' wird verwendet
@@ -177,12 +180,15 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Testchannel erfolgreich angelegt
     [✓] Channelliste einlesen
     [✓] Testchannel erfolgreich gelöscht
+    
     [✓] Logout durchgeführt
   
     Funktionstest wurde in 6 Sekunden abgeschlossen
 
 #### Beispielausgabe des Funktionstests mit Loginfehler
+    [-] Neue Skriptversion '2019-11-19' ist verfügbar, Update wird empfohlen
     [✓] Schreibrechte im Skriptverzeichnis
+    
     [-] Fehler beim Login mit UserID 373737!
         Bitte in den Zeilen 8 und 9 Username und Passwort prüfen,
         und danach den Funktionstest mit --test erneut starten.
@@ -198,18 +204,15 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
 
-Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt. Der Channeltitel hat dabei folgenden Aufbau:
+Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt. Sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt. Der Channeltitel hat dabei folgenden Aufbau:
 
-
-	_  OK 0731 2258 Delta 49	bedeutet
+	_  OK 0731 2258 Neue Version	bedeutet
 	_				Underscore am Anfang = von CatchAll angelegt
 	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
 	0728				Datum Monat Tag
 	2257				Uhrzeit Stunde Minute
-	Delta 49			49 Sendungen wurden zusätzlich programmiert
+	Neue Version			eine neuere Skriptversion ist verfügbar
 	
-Das Delta für die Anzahl der programmierten Sendungen wird gegenüber dem letzten Skriptlauf ermittelt und kann auch negativ sein, da mal mehr und mal weniger Sendungen in den nächsten 7 Tagen gesendet werden.
-
 Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel bei der nächsten Skriptausführung als erstes gelöscht wird, bevor weitere Channels angelegt werden. Und da der "Pseudochannel" erst ganz am Ende neu angelegt wird, nachdem alle zur Skriptausführung benötigten temporären Channels bereits wieder gelöscht wurden, belegt er quasi nur den Platz eines der temporären Channels während das Skript nicht läuft.
 
 ### Fehler während der Skriptausführung
