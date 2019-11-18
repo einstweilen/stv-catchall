@@ -18,7 +18,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
 2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen ([mehr …](#username-und-passwort-hinterlegen))
 3. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
-4. *Optional* Die Datei `senderskip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
+4. *Optional* Die Datei `stv_skip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 
 
 ## Table of contents
