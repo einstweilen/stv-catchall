@@ -1,8 +1,8 @@
-#! /bin/bash
-# 2019-11-18
-# https://github.com/einstweilen/stv-catchall/
+#!/bin/bash
+# https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
+version_ist="2019-11-18"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -32,7 +32,6 @@ ca_ch_pre='_ '                      # Prefix-Kennung für vom Skript erstelle Ch
 ca_ch_preurl='_+'                   # dito URLencoded *ein* Leerzeichen
 ca_in_pre="$ca_ch_pre "             # Prefix-Kennung für vom Skript erstellen Infotext
 ca_in_preurl="$ca_ch_preurl+"       # dito URLencoded *zwei* Leerzeichen (alphabetisch vor den anderen Channels)
-
 
 #### Login
 login() {
@@ -297,7 +296,14 @@ channels_loeschen () {
 
 #### legt einen Stichwortchannel mit Status und Uhrzeit des Laufs an
 channelinfo_set() {  
-    ch_text="sTelecastTitle=$ca_in_preurl$1+$(date '+%m%d+%H%M')+Delta+$pro_delta&channelTypeId=3"
+    versioncheck
+    if [[ $version_aktuell == "true" ]]; then
+        version_info=""
+    else
+        version_info="+Neue+Version"
+    fi
+
+    ch_text="sTelecastTitle=$ca_in_preurl$1+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
     channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")  
 }
 
@@ -537,8 +543,15 @@ funktionstest() {
     echo 'Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.'
     echo
 
-    # 01 Scriptverzeichnis R/W
+    # 01 Script testen
     echo "$(date) Funktionstest begonnen" > "$stvlog"
+    versioncheck
+    if [[ $version_aktuell == "true" ]]; then
+        echo "[✓] Skript ist aktuell"
+    else
+        echo "[-] Neue Skriptversion '$version_onl' ist verfügbar, Update wird empfohlen"
+    fi
+
     if [ ! -e "$stvlog" ]; then
         echo "[-] Keine Schreibrechte im Skriptverzeichnis vorhanden"
         echo "    Verzeichnis $DIR prüfen"
@@ -554,6 +567,7 @@ funktionstest() {
 
 
     # 02 login
+    echo
     login
     if [[ $login_return -eq 0 ]]; then
         echo "[✓] Login mit UserID $stv_user erfolgreich"
@@ -647,6 +661,7 @@ funktionstest() {
     fi
 
     # 07 ausloggen
+    echo
     logout
     echo "[✓] Logout durchgeführt"
 
@@ -656,6 +671,16 @@ funktionstest() {
     echo
     echo "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen" > "$stvlog"
     exit 0
+}
+
+
+versioncheck () {
+    version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check")
+    if [[ $version_onl -lt $version_ist ]]; then
+        version_aktuell=false
+    else 
+        version_aktuell=true
+    fi
 }
 
 hilfetext() {
