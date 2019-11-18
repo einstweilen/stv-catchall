@@ -1,5 +1,5 @@
 #! /bin/bash
-# 2019-11-16
+# 2019-11-18
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
@@ -491,6 +491,7 @@ abbrechen() {
     echo "    In der letzten Stunde wurden $stoer_akt Störungen auf AlleStörungen.de gemeldet"
     echo "    Stand: $stoer_let <https://AlleStörungen.de/stoerung/save-tv/>"
     echo ": AlleStörungen.de meldet in der letzten Stunde $stoer_akt Störungen " >> "$stvlog"
+    channelinfo_set "ABGREBROCHEN+FEHLER+$err_ges"
     logout
     exit 1
 }
@@ -773,7 +774,7 @@ banner () {
                 echo "------"
                 echo ''
                 cat "$stvlog" | grep "^:"
-                channelinfo_set FEHLER
+                channelinfo_set "FEHLER+$err_ges"
             else 
                 channelinfo_set OK
             fi
