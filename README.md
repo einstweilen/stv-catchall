@@ -166,7 +166,7 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Login mit UserID 0815 erfolgreich
     [✓] Paket 'Save.TV XL 24 Monate' mit 20 Channels, 0 benutzt
         Channelanlegemodus 'auto' wird verwendet
-	Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
+        Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
     
     [✓] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
