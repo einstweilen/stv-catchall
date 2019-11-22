@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="2019-11-18"            # Scriptversion
+version_ist="2019-11-22"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -21,6 +21,8 @@ stvcookie="$DIR/stv_cookie.txt"     # Session Cookie
 
 err_flag=false                      # Flag für Bearbeitungsfehler
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
+
+check_version=false                 # auf neue Skriptversion prüfen (true|false)
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -235,7 +237,7 @@ channelanz_check() {
 }
 
 
-#### einzelenen Channel für eine Tageszeit anlegen
+#### einzelnen Channel für eine Tageszeit anlegen
 channel_senderid_timeframe_anlegen () {
     senderid="$1"
     timeframe="$2"
@@ -296,13 +298,17 @@ channels_loeschen () {
 
 #### legt einen Stichwortchannel mit Status und Uhrzeit des Laufs an
 channelinfo_set() {  
-    versioncheck
-    if [[ $version_aktuell == "true" ]]; then
-        version_info=""
+    if [[ $check_version == "true" ]]; then
+        versioncheck
+        if [[ $version_aktuell == "true" ]]; then
+          version_info=""
+        else
+            version_info="+Neue+Version"
+        fi
     else
-        version_info="+Neue+Version"
+        version_info=""
     fi
-
+    
     ch_text="sTelecastTitle=$ca_in_preurl$1+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
     channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")  
 }
@@ -549,7 +555,7 @@ funktionstest() {
     if [[ $version_aktuell == "true" ]]; then
         echo "[✓] Skript ist aktuell"
     else
-        echo "[-] Neue Skriptversion '$version_onl' ist verfügbar, Update wird empfohlen"
+        echo "[-] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
     fi
 
     if [ ! -e "$stvlog" ]; then
@@ -675,7 +681,8 @@ funktionstest() {
 
 
 versioncheck () {
-    version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check")
+    version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check" |
+                          grep -o "20[12][0-9]-[01][0-9]-[0-3][0-9]")
     if [[ $version_onl -lt $version_ist ]]; then
         version_aktuell=false
     else 
