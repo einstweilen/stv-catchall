@@ -9,6 +9,7 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
 **Neueste Änderungen**
+  * 2019-11-22 [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) an-/abschaltbar
   * 2019-11-18 [Updatebenachrichtigung](#ausf%C3%BChrungsstatus-kontrollieren) ergänzt 
   * 2019-11-12 [Fehlerbehandlung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
   * 2019-10-15 [Funktionstest](#funktionstest) ergänzt
@@ -30,6 +31,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
+    + [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung)
     + [Funktionstest](#funktionstest)
         + [Funktionstest aufrufen](#funktionstest-aufrufen)
     	+ [Beispielausgabe des Funktionstests](#beispielausgabe-des-funktionstests)
@@ -150,13 +152,20 @@ Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels l
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
 
+
+### Versionsüberprüfung
+Wenn gewünscht kann durch das Ändern des Flags `check_version` von defaultmäßig `false` auf `true` bei jedem Skriptlauf eine Überprüfung auf verfügbare Sktiptupdates stattfinden. Dabei wird die Datei `stv-version-check` von Github geladen und lokal überprüft, ob ein Update verfügbar ist.
+
+Wird eine neuere Version gefunden, wird "Neue version" an die Ausführungsinformation des Skripts angehängt - siehe '[Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)'.
+
 ### Funktionstest
-Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account.
+Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account. Die für die Sendungsprogrammierung relevanten Daten werden angezeigt, um besonders beim ersten Start, keine "falschen" Programmierungen anzulegen.
 
 #### Funktionstest aufrufen
 Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest durchgeführt werden (J/N)? :` automatisch angeboten. 
 
 Zusätzlich zum automatischen Aufruf beim ersten Skriptstart kann der Funktionstest mit den Optionen `-t` `--test` direkt aufgerufen werden.
+
 
 Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_ca.log` erkannt.
 
@@ -201,17 +210,22 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
         gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
 
+
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
 
-Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt. Sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt. Der Channeltitel hat dabei folgenden Aufbau:
+Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt.
+
+Optional: Ist die [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) aktiviert und sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt.
+
+Der Channeltitel hat dabei folgenden Aufbau:
 
 	_  OK 0731 2258 Neue Version	bedeutet
 	_				Underscore am Anfang = von CatchAll angelegt
 	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
 	0728				Datum Monat Tag
 	2257				Uhrzeit Stunde Minute
-	Neue Version			eine neuere Skriptversion ist verfügbar
+	Neue Version			(optional) eine neuere Skriptversion ist verfügbar
 	
 Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel bei der nächsten Skriptausführung als erstes gelöscht wird, bevor weitere Channels angelegt werden. Und da der "Pseudochannel" erst ganz am Ende neu angelegt wird, nachdem alle zur Skriptausführung benötigten temporären Channels bereits wieder gelöscht wurden, belegt er quasi nur den Platz eines der temporären Channels während das Skript nicht läuft.
 
