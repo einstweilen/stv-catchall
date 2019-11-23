@@ -98,14 +98,14 @@ Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslast
 	
 ## Einrichten und Starten
 ### Username und Passwort hinterlegen
-Die notwendigen Accountdaten, der SaveTV Username und das Passwort, können entweder direkt im Skript in den `Zeilen 8 und 9` hinterlegt werden oder beim Aufruf an das Skript übergeben werden.
+Die notwendigen Accountdaten, der SaveTV Username und das Passwort, können direkt im Skript in den `Zeilen 8 und 9` hinterlegt werden. Sind die Accountdaten nicht im Skript gespeichert, werden diese beim Skriptstart abgefragt
 
     ./stvcatchall.sh
-bzw.
+bzw. falls keine Daten hinterlegt sind 
 
-    ./stvcatchall.sh username passwort
-    
-Sind die Accountdaten weder gespeichert noch wurden sie beim Aufruf übergeben, werden diese durch das Skript abgefragt.
+    ./stvcatchall.sh
+    Save.TV Username: 612612
+    Save.TV Passwort: R2D2C3PO
 
 ### Sender von der automatischen Aufnahme ausschließen
 Standardmäßig wird die Aufnahme aller Sendungen aller Sender programmiert. 
