@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="2019-11-22"            # Scriptversion
+version_ist="2019-11-23"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -22,7 +22,7 @@ stvcookie="$DIR/stv_cookie.txt"     # Session Cookie
 err_flag=false                      # Flag für Bearbeitungsfehler
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
 
-check_version=false                 # auf neue Skriptversion prüfen (true|false)
+check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -394,7 +394,7 @@ sender_bereinigen() {
     
     if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
         echo "Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste"
-        # Webinterface umschalten auf ungruppierte Darstellung wg. EinzelsTelecastIds
+        # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
         list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data '')
         
         del_ids_tot=0       # Gesamtsumme der TelecastIds
@@ -542,6 +542,8 @@ fkt_stoerung() {
     # wenn auch nicht erreichbar, IN prüfen
     stoer_akt=$(grep -o "{ date: '20[^}]*" <<<$webstoerung | tail -4 | awk '{stoer += $5} END{print stoer}')
     stoer_let=$(grep -o "{ date: '20[^}]*" <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
+    if [[ -z $stoer_akt ]]; then stoer_akt=0 ; fi
+    if [[ -z $stoer_let ]]; then stoer_let="siehe" ; fi
 }
 
 funktionstest() {
@@ -655,7 +657,7 @@ funktionstest() {
 
     # 054 channelliste lesen
     channel_liste
-    echo "[✓] Channelliste einlesen"
+    echo "[✓] Channelliste eingelesen"
     
     # 06 channel löschen
     fkt_ch_delete
