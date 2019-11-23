@@ -284,11 +284,12 @@ channels_loeschen () {
                 else
                     ((err_cha++))
                     ((err_ges++))
+                    fehlertext=$(grep -F "<title>" <<< "$delete_return" | sed 's/.*title>\(.[^<]*\)<.*/\1/g')
+                    echo '' >> "$stvlog"
+                    echo ": *** Fehler *** beim Löschen $(sed 's/|/ /' <<< "${ch_sid[i]}") $fehlertext" >> "$stvlog"
                     if [[ err_ges -gt err_max ]]; then
                         abbrechen
                     fi
-                    echo '' >> "$stvlog"
-                    echo ": *** Fehler *** beim Löschen $(sed 's/|/ /' <<< "${ch_sid[i]}") $delete_return" >> "$stvlog"
                 fi
             done
         echo '' >> "$stvlog"
