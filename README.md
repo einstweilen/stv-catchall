@@ -17,8 +17,8 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](#einmaliger-download))
-2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen ([mehr …](#username-und-passwort-hinterlegen))
-3. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
+2. das Skript einmalig manuell oder regelmäßig per Cron ausführen ([mehr …](#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
+3. *Optional* In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen, wird sonst beim Start abgefragt ([mehr …](#username-und-passwort-hinterlegen))
 4. *Optional* Die Datei `stv_skip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 
 
