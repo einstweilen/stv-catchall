@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="2019-11-23"            # Scriptversion
+version_ist="2019-12-07"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -258,7 +258,7 @@ channel_senderid_timeframe_anlegen () {
             echo ": Tip  : Channelliste mit -c prüfen und bereinigen" >> "$stvlog"
         else
             fehlertext=$(grep -F "<title>" <<< "$channel_return" | sed 's/.*title>\(.[^<]*\)<.*/\1/g')
-            echo ": Grund : $fehlertext" >> "$stvlog"
+            echo ": Grund: $fehlertext" >> "$stvlog"
             # "
         fi
         ch_ok=false
@@ -286,7 +286,8 @@ channels_loeschen () {
                     ((err_ges++))
                     fehlertext=$(grep -F "<title>" <<< "$delete_return" | sed 's/.*title>\(.[^<]*\)<.*/\1/g')
                     echo '' >> "$stvlog"
-                    echo ": *** Fehler *** beim Löschen $(sed 's/|/ /' <<< "${ch_sid[i]}") $fehlertext" >> "$stvlog"
+                    echo ": *** Fehler *** beim Löschen $(sed 's/|/ /' <<< "${ch_sid[i]}")" >> "$stvlog"
+                    echo ": Grund: $fehlertext" >> "$stvlog"
                     if [[ err_ges -gt err_max ]]; then
                         abbrechen
                     fi
@@ -386,7 +387,7 @@ sender_bereinigen() {
         echo 'Bereinigung im Batchmodus' >> "$stvlog"
     else        
         echo "Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
-        echo "aufgenommenen Sendungen endgültig gelöscht werden?"
+        echo "aufgenommenen Sendungen *endgültig* gelöscht werden?"
         echo 
         read -p 'Alles bereinigen (J/N)? : ' cleanup_check
     fi
@@ -538,16 +539,34 @@ fkt_ch_delete() {
     done
 }
 
+
+
+
 fkt_stoerung() {
     webstoerung=$(curl -s "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
     # wenn auch nicht erreichbar, IN prüfen
-    stoer_akt=$(grep -o "{ date: '20[^}]*" <<<$webstoerung | tail -4 | awk '{stoer += $5} END{print stoer}')
-    stoer_let=$(grep -o "{ date: '20[^}]*" <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
+    stoer_tag=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -96 | awk '{stoer += $3} END{print stoer}')
+    stoer_akt=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -4 | awk '{stoer += $3} END{print stoer}')
+    stoer_let=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
     if [[ -z $stoer_akt ]]; then stoer_akt=0 ; fi
     if [[ -z $stoer_let ]]; then stoer_let="siehe" ; fi
 }
 
+
+fkt_stoerung_info() {
+    fkt_stoerung
+    if [ $stoer_akt -eq 0 ] ; then
+        stoer_akt="keine"
+    fi
+    echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_tag Störungen gemeldet,"
+    echo "    davon $stoer_akt Störungen in der letzten Stunde."
+    echo "    Stand: $stoer_let <https://AlleStörungen.de/stoerung/save-tv/>" 
+    echo 
+}
+
+
 funktionstest() {
+    SECONDS=0 
     clear ; banner
     echo 'Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.'
     echo
@@ -556,7 +575,7 @@ funktionstest() {
     echo "$(date) Funktionstest begonnen" > "$stvlog"
     versioncheck
     if [[ $version_aktuell == "true" ]]; then
-        echo "[✓] Skript ist aktuell"
+        echo "[✓] Skriptversion ist aktuell"
     else
         echo "[-] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
     fi
@@ -589,13 +608,7 @@ funktionstest() {
         sed -n '8,9p' "$0"
         echo
         echo '    Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen'
-        fkt_stoerung
-        if [ $stoer_akt -eq 0 ] ; then
-            stoer_akt="keine"
-        fi
-        echo "    In der letzten Stunde wurden $stoer_akt Störungen auf AlleStörungen.de gemeldet"
-        echo "    Stand: $stoer_let <https://AlleStörungen.de/stoerung/save-tv/>" 
-        echo  
+        fkt_stoerung_info 
         exit 1
     fi
         
@@ -611,6 +624,8 @@ funktionstest() {
     
     if [[ $paket != *"Save"* ]]; then
         echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
+        echo '    Es kann auch eine allgemeine Störung vorliegen'
+        fkt_stoerung_info
         echo "Fehler bei Paketname: '$paket'" > "$stvlog"
         exit 1
     fi
@@ -653,6 +668,8 @@ funktionstest() {
         echo "[✓] Testchannel erfolgreich angelegt"
     else
         echo "[-] Testchannel konnte nicht angelegt werden"
+        echo '    Es kann auch eine allgemeine Störung vorliegen'
+        fkt_stoerung_info
         exit 1
     fi
 
@@ -666,6 +683,8 @@ funktionstest() {
         echo "[✓] Testchannel erfolgreich gelöscht"
     else
         echo "[-] Testchannel konnte nicht gelöscht werden"
+        echo '    Es kann auch eine allgemeine Störung vorliegen'
+        fkt_stoerung_info
         exit 1
     fi
 
@@ -698,9 +717,9 @@ hilfetext() {
     echo
     echo "-t, --test     Skripteinstellungen und SaveTV Account überprüfen"
     echo
-    echo "-s, --slot     gezielt einzelne Timeslots programmieren"
-    echo "               v_ormittag, m_ittag, a_bend, n_acht"
-    echo 
+ #   echo "-s, --slot     gezielt einzelne Timeslots programmieren"
+ #   echo "               v_ormittag, m_ittag, a_bend, n_acht"
+ #   echo 
     echo "-c, --cleanup  'Reste aufräumen' Funktion aufrufen"
     echo
     echo "--cleanupauto  'Reste aufräumen' ohne Sicherheitsabfrage ausführen,"
@@ -709,7 +728,7 @@ hilfetext() {
     echo
     echo "-?, --help     Hilfetext anzeigen"
     echo 
-    echo "In den Zeilen 8 und 9 den SaveTV Username und das Passwort eintragen"
+    echo "Optional: In den Zeilen 8 und 9 den SaveTV Username und das Passwort eintragen"
     echo "Optional: '$(basename "$send_skip")' anpassen, um Sender von der Programmierung auszunehmen"
     echo
     echo "Vollständige Anleitung unter https://github.com/einstweilen/stv-catchall"
@@ -735,6 +754,8 @@ banner () {
         read -p 'Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
         if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
             funktionstest
+        else
+            exit 0
         fi
     fi
 
