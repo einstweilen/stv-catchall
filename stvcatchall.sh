@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="2019-12-07"            # Scriptversion
+version_ist="20191207"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -705,7 +705,7 @@ funktionstest() {
 versioncheck () {
     version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check" |
                           grep -o "20[12][0-9]-[01][0-9]-[0-3][0-9]")
-    if [[ $version_onl -lt $version_ist ]]; then
+    if [[ $version_onl -gt $version_ist ]]; then
         version_aktuell=false
     else 
         version_aktuell=true
