@@ -704,7 +704,7 @@ funktionstest() {
 
 versioncheck () {
     version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check" |
-                          grep -o "20[12][0-9]-[01][0-9]-[0-3][0-9]")
+                          grep -o "20[12][0-9][01][0-9][0-3][0-9]")
     if [[ $version_onl -gt $version_ist ]]; then
         version_aktuell=false
     else 
