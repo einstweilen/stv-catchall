@@ -9,10 +9,9 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig. 
 
 **Neueste Änderungen**
+  * 2019-12-07 Zählung der Meldungen von AlleStörungen.de an neues Format angepaßt
   * 2019-11-22 [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) an-/abschaltbar
   * 2019-11-18 [Updatebenachrichtigung](#ausf%C3%BChrungsstatus-kontrollieren) ergänzt 
-  * 2019-11-12 [Fehlerbehandlung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
-  * 2019-10-15 [Funktionstest](#funktionstest) ergänzt
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
