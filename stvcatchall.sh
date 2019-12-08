@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20191207"            # Scriptversion
+version_ist="20191208"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -23,6 +23,7 @@ err_flag=false                      # Flag für Bearbeitungsfehler
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
 
 check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
+fkt_dauer=9                         # als normale angesehene Dauer für den Funktionstest
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -103,6 +104,10 @@ channel_liste() {
         allchannels=$(curl -sL 'https://www.save.tv/STV/M/obj/channels/JSON/myChannelsApi.cfm?iFunction=1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" -H 'Cache-Control: max-age=0')
         
         ch_max=$(grep -o "IMAXCHANNELS[^\.]*" <<< "$allchannels"| grep -o "[0-9]*$")
+        if [[ -z $ch_max ]]; then
+            server_prob=true
+            return
+        fi
         ch_use=$(grep -o "IUSEDCHANNELS[^,]*" <<< "$allchannels"| grep -o "[0-9]*$")
         ch_fre=$((ch_max - ch_use))
 
@@ -540,8 +545,6 @@ fkt_ch_delete() {
 }
 
 
-
-
 fkt_stoerung() {
     webstoerung=$(curl -s "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
     # wenn auch nicht erreichbar, IN prüfen
@@ -631,6 +634,14 @@ funktionstest() {
     fi
 
     channel_liste
+    if [[ $server_prob = true ]]; then
+        echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
+        echo '    Es kann auch eine allgemeine Störung vorliegen'
+        fkt_stoerung_info
+        echo "Fehler bei Paketname: '$paket'" > "$stvlog"
+        exit 1
+    fi
+
     echo "[✓] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
     printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
@@ -698,6 +709,10 @@ funktionstest() {
     echo "Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     echo
     echo "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen" > "$stvlog"
+    if [[ SECONDS -gt fkt_dauer ]]; then
+        echo "[i] Der Funktionstest hat länger als die erwarteten $fkt_dauer Sekunden benötigt!"
+        fkt_stoerung_info
+    fi
     exit 0
 }
 
