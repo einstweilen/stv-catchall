@@ -153,12 +153,14 @@ STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten
 
 
 ### Versionsüberprüfung
-Wenn gewünscht kann durch das Ändern des Flags `check_version` von defaultmäßig `false` auf `true` bei jedem Skriptlauf eine Überprüfung auf verfügbare Sktiptupdates stattfinden. Dabei wird die Datei `stv-version-check` von Github geladen und lokal überprüft, ob ein Update verfügbar ist.
+Die automatische Prüfung auf eine neuere Skriptversion findet nur während des Funktionstests statt. Wenn gewünscht kann durch das Ändern des Flags `check_version` von defaultmäßig `false` auf `true` bei jedem Skriptlauf eine Überprüfung auf verfügbare Skriptupdates stattfinden. Dabei wird die Datei `stv-version-check` von Github geladen und mit der lokalen Skriptversion verglichen.
 
-Wird eine neuere Version gefunden, wird "Neue version" an die Ausführungsinformation des Skripts angehängt - siehe '[Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)'.
+Wird eine neuere Version gefunden, wird "Neue Version" an die Ausführungsinformation des Skripts angehängt - siehe '[Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)'.
 
 ### Funktionstest
 Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account. Die für die Sendungsprogrammierung relevanten Daten werden angezeigt, um besonders beim ersten Start, keine "falschen" Programmierungen anzulegen.
+
+Werden beim Test langsame Antwortzeiten oder Timeouts festgestellt, wird die Anzahl der Störungungsmeldungen auf AlleStörungen.de der letzten 24 Stunden und der letzten Stunde ausgegeben.
 
 #### Funktionstest aufrufen
 Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest durchgeführt werden (J/N)? :` automatisch angeboten. 
@@ -209,6 +211,11 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
         gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
 
+#### Beispielausgabe bei langer Laufzeit des Funktionstests
+    [i] Der Funktionstest hat länger als die erwarteten 9 Sekunden benötigt!
+        Auf AlleStörungen.de wurden in den letzten 24 Std. 74 Störungen gemeldet,
+        davon 5 Störungen in der letzten Stunde.
+        Stand: 2019-12-09 17:19:17 <https://AlleStörungen.de/stoerung/save-tv/>
 
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
