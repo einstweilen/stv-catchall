@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20191208"            # Scriptversion
+version_ist="20200107"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -13,7 +13,7 @@ anlege_modus=auto       # auto  (löschen bei Basis & XL, behalten bei XXL)
 
 #### Dateipfade
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
-send_list="$DIR/stv_sender.txt"     # Liste alle Sender
+send_list="$DIR/stv_sender.txt"     # Liste aller Save.TV Sender
 send_skip="$DIR/stv_skip.txt"       # Liste der zu überspringenden Sender
 stvlog="$DIR/stv_ca.log"            # Ausführungs- und Fehlerlog
 stvsend="$DIR/stv_sendungen.txt"    # Programmierte Sendungen
@@ -23,7 +23,7 @@ err_flag=false                      # Flag für Bearbeitungsfehler
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
 
 check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
-fkt_dauer=9                         # als normale angesehene Dauer für den Funktionstest
+fkt_dauer=10                        # als normale angesehene Dauer für den Funktionstest
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -53,7 +53,7 @@ login() {
 
 
 #### Logout
-logout () {
+logout() {
             curl -s 'https://www.save.tv/STV/M/obj/user/usLogout.cfm' -H 'Accept-Encoding: gzip, deflate, sdch, br' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' -H 'Upgrade-Insecure-Requests: 1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' --cookie "$stvcookie" -H 'Connection: keep-alive' --compressed >/dev/null 2>&1
             rm "$stvcookie"
 }
@@ -77,6 +77,8 @@ senderliste_holen() {
         echo "$sender_return" | sed 's/.*)"},{//g ; s/"},{"ID":/;/g ; s/,"NAME":"/|/g ; s/"ID"://g ; s/"}]}//g' | tr ';' '\n' >"$send_list"
         echo 'Aktualisierte Senderliste vom Server geholt' >> "$stvlog"
     fi
+    
+    sender_alle=$(cat "$send_list" | wc -l | xargs)
 
     index=0
     while read line; do
@@ -127,7 +129,7 @@ channel_liste() {
 
 
 #### Channels anhand der Senderliste anlegen
-channels_anlegen () {
+channels_anlegen() {
     sender_bearbeitet=0
     ch_angelegt=0   # Counter für insgesamt angelegte Channel
 
@@ -166,7 +168,7 @@ channels_anlegen () {
 
 
 #### Senderchannel für alle Tageszeiten anlegen
-senderchannel_anlegen () {
+senderchannel_anlegen() {
         senderid="$1"
         sendername="$2"
         ch_sender=0
@@ -243,7 +245,7 @@ channelanz_check() {
 
 
 #### einzelnen Channel für eine Tageszeit anlegen
-channel_senderid_timeframe_anlegen () {
+channel_senderid_timeframe_anlegen() {
     senderid="$1"
     timeframe="$2"
     sendername="$3"
@@ -272,7 +274,7 @@ channel_senderid_timeframe_anlegen () {
 
 
 #### Channel löschen: bestehende Programmierung und Aufnahmen bleiben erhalten
-channels_loeschen () {        
+channels_loeschen() {        
         channel_liste  
         ch_loeschen=$((ch_use - ch_start))   # wieviele Channel sind vom Skript angelegt worden und zulöschen        
         if [[ ch_loeschen -gt 0 ]]; then
@@ -463,7 +465,7 @@ sender_bereinigen() {
 
 
 #### auf Channels beginnend mit '_ ' prüfen und löschen
-channelrestechecken () {
+channelrestechecken() {
     echo ''
     echo ''
     echo '         Prüfe die Channelliste auf von STV CatchAll angelegte Channels'
@@ -504,12 +506,12 @@ abbrechen() {
     echo "    Liste der aufgetretene Fehler:"
     cat stv_ca.log | grep "^:" | sed 's/: /    /g'
     fkt_stoerung
-    if [ $stoer_akt -eq 0 ] ; then
-        stoer_akt="keine"
+    if [ $stoer_std -eq 0 ] ; then
+        stoer_std="keine"
     fi
-    echo "    In der letzten Stunde wurden $stoer_akt Störungen auf AlleStörungen.de gemeldet"
-    echo "    Stand: $stoer_let <https://AlleStörungen.de/stoerung/save-tv/>"
-    echo ": AlleStörungen.de meldet in der letzten Stunde $stoer_akt Störungen " >> "$stvlog"
+    echo "    In der letzten Stunde wurden $stoer_std Störungen auf AlleStörungen.de gemeldet"
+    echo "    Stand: $stoer_akt <https://AlleStörungen.de/stoerung/save-tv/>"
+    echo ": AlleStörungen.de meldet in der letzten Stunde $stoer_std Störungen " >> "$stvlog"
     channelinfo_set "ABGREBROCHEN+FEHLER+$err_ges"
     logout
     exit 1
@@ -549,21 +551,23 @@ fkt_stoerung() {
     webstoerung=$(curl -s "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
     # wenn auch nicht erreichbar, IN prüfen
     stoer_tag=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -96 | awk '{stoer += $3} END{print stoer}')
-    stoer_akt=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -4 | awk '{stoer += $3} END{print stoer}')
-    stoer_let=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
-    if [[ -z $stoer_akt ]]; then stoer_akt=0 ; fi
-    if [[ -z $stoer_let ]]; then stoer_let="siehe" ; fi
+    stoer_std=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -4 | awk '{stoer += $3} END{print stoer}')
+    stoer_let=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | grep -v "y: 0 }" | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
+    stoer_akt=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
+
+    if [[ -z $stoer_std ]]; then stoer_std=0 ; fi
+    if [[ -z $stoer_akt ]]; then stoer_akt="siehe" ; fi
 }
 
 
 fkt_stoerung_info() {
     fkt_stoerung
-    if [ $stoer_akt -eq 0 ] ; then
-        stoer_akt="keine"
+    if [ $stoer_std -eq 0 ] ; then
+        stoer_std="keine"
     fi
     echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_tag Störungen gemeldet,"
-    echo "    davon $stoer_akt Störungen in der letzten Stunde."
-    echo "    Stand: $stoer_let <https://AlleStörungen.de/stoerung/save-tv/>" 
+    echo "    letzte Medlung um $stoer_let. Letzte Stunde gab es $stoer_std Störungen."
+    echo "    Stand: $stoer_akt <https://AlleStörungen.de/stoerung/save-tv/>" 
     echo 
 }
 
@@ -577,10 +581,17 @@ funktionstest() {
     # 01 Script testen
     echo "$(date) Funktionstest begonnen" > "$stvlog"
     versioncheck
+
+    if [[ $check_version == "true" ]]; then
+        echo "[✓] Automatische Versionsüberprüfung ist AN"
+    else
+        echo "[-] Automatische Versionsüberprüfung ist AUS"
+    fi
+
     if [[ $version_aktuell == "true" ]]; then
         echo "[✓] Skriptversion ist aktuell"
     else
-        echo "[-] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
+        echo "[i] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
     fi
 
     if [ ! -e "$stvlog" ]; then
@@ -588,7 +599,7 @@ funktionstest() {
         echo "    Verzeichnis $DIR prüfen"
         exit 1
     else
-        echo "[✓] Schreibrechte im Skriptverzeichnis"
+        echo "[✓] Schreibrechte im Skriptverzeichnis OK"
     fi
     
     if [[ -z $(which curl) ]]; then
@@ -642,8 +653,10 @@ funktionstest() {
         exit 1
     fi
 
-    echo "[✓] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
+    echo "[i] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
+    echo
+    echo "[i] Eingestelle Pufferzeiten und Aufnahmeoptionen"
     printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
     echo
     if [[ ch_fre -eq 0 ]]; then
@@ -653,7 +666,9 @@ funktionstest() {
         exit 1
     fi
 
+    rm "$send_list" 2> /dev/null            # sicherstellen dass neue Sender dabei sind
     senderliste_holen
+    
     index=0
     while read line; do
         if [[ -n $line ]]; then
@@ -667,7 +682,8 @@ funktionstest() {
         echo "[-] Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' ist nicht vorhanden,"
         echo "    alle $sender_anz bei Save.TV verfügbaren Sender werden aufgenommen."
     else
-        echo "[✓] Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet:"
+        echo "[i] Aktuell sind $sender_alle Sender bei Save.TV verfügbar."
+        echo "[i] Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet:"
         for (( i=0; i<=${#skip_name[@]}; i=i+3)); do
             printf "%-3s %-21s %-21s %-21s\n" "   " "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}"
         done
@@ -706,18 +722,20 @@ funktionstest() {
 
     # Status ausgeben
     echo
-    echo "Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
-    echo
+    echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     echo "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen" > "$stvlog"
     if [[ SECONDS -gt fkt_dauer ]]; then
-        echo "[i] Der Funktionstest hat länger als die erwarteten $fkt_dauer Sekunden benötigt!"
+        echo "[-] Der Funktionstest hat länger als die erwarteten $fkt_dauer Sekunden benötigt!"
         fkt_stoerung_info
+    else
+        echo "[✓] Laufzeit des Funktionstest liegt im erwarteten Bereich"
     fi
+    echo 
     exit 0
 }
 
 
-versioncheck () {
+versioncheck() {
     version_onl=$(curl -s "https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stv-version-check" |
                           grep -o "20[12][0-9][01][0-9][0-3][0-9]")
     if [[ $version_onl -gt $version_ist ]]; then
@@ -726,6 +744,8 @@ versioncheck () {
         version_aktuell=true
     fi
 }
+
+
 
 hilfetext() {
     echo "CatchAll-Funktion für alle SaveTV Sender programmieren"
@@ -751,7 +771,7 @@ hilfetext() {
 
 
 #### Headergrafik
-banner () {
+banner() {
     echo '                _______ _______ _    _ _______   _______ _    _'
     echo '                |______ |_____|  \  /  |______      |     \  /'
     echo '                ______| |     |   \/   |______ .    |      \/ ' 
