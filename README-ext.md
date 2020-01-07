@@ -156,19 +156,23 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
 #### Beispielausgabe des Funktionstests
     Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.
     
+    [-] Automatische Versionsüberprüfung ist AUS
     [✓] Skript ist aktuell
     [✓] Schreibrechte im Skriptverzeichnis
     
     [✓] Login mit UserID 0815 erfolgreich
-    [✓] Paket 'Save.TV XL 24 Monate' mit 20 Channels, 0 benutzt
+    [i] Paket 'Save.TV XL 24 Monate' mit 20 Channels davon 1 benutzt
         Channelanlegemodus 'auto' wird verwendet
+
+    [i] Eingestelle Pufferzeiten und Aufnahmeoptionen
         Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
     
-    [✓] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
+    [i] Aktuell sind 47 Sender bei Save.TV verfügbar.    
+    [i] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
         Folx TV               SPORT 1               DMAX               
         Eurosport             Disney Channel        RiC                
-        TLC                   Fix und Foxi          RTL                
+        TLC                   Fix und Foxi                          
                                                                    
     [✓] Testchannel erfolgreich angelegt
     [✓] Channelliste einlesen
@@ -176,10 +180,11 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     
     [✓] Logout durchgeführt
   
-    Funktionstest wurde in 6 Sekunden abgeschlossen
+    [i] Funktionstest wurde in 6 Sekunden abgeschlossen
+    [✓] Laufzeit des Funktionstest liegt im erwarteten Bereich   
 
 #### Beispielausgabe des Funktionstests mit Loginfehler
-    [-] Neue Skriptversion '2019-11-19' ist verfügbar, Update wird empfohlen
+    [-] Neue Skriptversion '2020-01-07' ist verfügbar, Update wird empfohlen
     [✓] Schreibrechte im Skriptverzeichnis
     
     [-] Fehler beim Login mit UserID 373737!
@@ -195,10 +200,10 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
 
 #### Beispielausgabe bei langer Laufzeit des Funktionstests
-    [i] Der Funktionstest hat länger als die erwarteten 9 Sekunden benötigt!
+    [-] Der Funktionstest hat länger als die erwarteten 10 Sekunden benötigt!
         Auf AlleStörungen.de wurden in den letzten 24 Std. 74 Störungen gemeldet,
-        davon 5 Störungen in der letzten Stunde.
-        Stand: 2019-12-09 17:19:17 <https://AlleStörungen.de/stoerung/save-tv/>
+        letzte Meldung um 2020-01-07 15:46:38. Letzte Stunde gab es keine Störungen.
+        Stand: 2020-01-07 18:46:38 <https://AlleStörungen.de/stoerung/save-tv/>
 
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
