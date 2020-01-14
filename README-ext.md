@@ -90,17 +90,18 @@ bzw. falls keine Daten hinterlegt sind
     Save.TV Passwort: R2D2C3PO
 
 ### Sender von der automatischen Aufnahme ausschließen
-Standardmäßig wird die Aufnahme aller Sendungen aller Sender programmiert. 
-Im Skriptverzeichnis befindet sich die Datei `stv_sender.txt` in der alle bei SaveTV verfügbaren Sender hinterlegt sind. Wird diese Datei gelöscht, holt das Skript beim nächsten Start automatisch eine aktualisierte Senderliste vom SaveTV Server und legt die Datei neu an. Eventuell neu hinzugekommene Sender werden automatisch zur Aufnahme programmiert.
+Standardmäßig wird die Aufnahme **aller** Sendungen **aller** Sender programmiert. 
+Das Skript holt beim Start eine aktuelle Senderliste vom SaveTV Server und speichert diese als `stv_sender.txt` ab. Eventuell neu hinzugekommene Sender werden automatisch zur Aufnahme programmiert.
 
-Über die Datei `stv_skip.txt` können einzelne Sender von der Aufnahme ausgeschlossen werden. Wird diese Datei gelöscht, legt das Skript beim Start eine neue Datei mit "17|RTL" als Defaulteintrag an.
+Durch die Datei `stv_skip.txt` können einzelne Sender von der Aufnahme ausgeschlossen werden. Wird diese Datei gelöscht, legt das Skript beim Start automatisch eine neue leere Datei an.
 
-Da `stv_sender.txt` und `stv_skip.txt` das gleiche Format benutzen ("SenderID|Sendername" "17|RTL") kann man seine persönliche Skipliste am einfachsten erstellen, indem man die `stv_sender.txt` nach `stv_skip.txt` kopiert
+`stv_sender.txt` und `stv_skip.txt` verwenden das gleiche Format ("SenderID|Sendername" "10|KiKA").
 
-	cp stv_sender.txt stv_skip.txt
-und dann mit einem Texteditor diejenigen Sender/Zeilen entfernt, die weiterhin aufgenommen werden sollen, sodaß nur noch die nicht aufzunehmenden Sender übrigleiben:
+Damit man seine persönliche Skipliste einfach erstellen kann und nicht die SaveTV Sendernummern manuell raussuchen muß, wird bei jedem Skriptlauf eine aktuelle Senderliste als `stv_skip_vorlage.txt` angelegt. Dort kann man mit einem Texteditor diejenigen Sender/Zeilen entfernen, die weiterhin aufgenommen werden sollen, sodaß **nur die nicht aufzunehmenden Sender** übrigleiben.
 
-	> cat senderskip.txt
+Wenn man fertig ist speichert man diese geänderte Datei unter dem Namen `stv_skip.txt` ab.
+
+	> cat stv_skip.txt
 	92|Disney Channel
 	60|DMAX
 	7|Eurosport
@@ -110,9 +111,18 @@ und dann mit einem Texteditor diejenigen Sender/Zeilen entfernt, die weiterhin a
 	10|KiKA
 	11|MTV
 	93|RiC
-	17|RTL
 	6|SPORT 1
 	95|TLC
+
+Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr ...](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
+
+    [i] Aktuell sind 47 Sender bei Save.TV verfügbar.    
+    [i] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
+        KiKA                  MTV                   Health TV          
+        Folx TV               SPORT 1               DMAX               
+        Eurosport             Disney Channel        RiC                
+        TLC                   Fix und Foxi  
+
 
 ### Angelegte Channels behalten `auto`, `immer`, `nie`
 Durch den Parameter `anlege_modus` in `Zeile 10` wird gesteuert, wie mit den durch das Skript angelegten Channels verfahren wird. Normalerweise wird man die voreingestellte Option `auto` verwenden, kann sie aber auch überschreiben.
@@ -328,7 +338,7 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 	Die Liste der nicht aufzunehmenden Sender 'senderskip.txt' beinhaltet zur Zeit:
 	KiKA                MTV                 Health TV           Folx TV            
 	SPORT 1             DMAX                Eurosport           Disney Channel     
-	RiC                 TLC                 Fix und Foxi        RTL                
+	RiC                 TLC                 Fix und Foxi                
                                                                                
 	Sollen für diese 12 Sender die vorhandenen Programmierungen und
 	aufgenommenen Sendungen endgültig gelöscht werden?
@@ -346,8 +356,7 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 	'Disney Channel' hat 316 Einträge, beginne Löschung : ..........✓
 	'RiC' hat 159 Einträge, beginne Löschung : .....✓
 	'TLC' hat 274 Einträge, beginne Löschung : ........✓
-	'Fix und Foxi' hat 387 Einträge, beginne Löschung : ............✓
-	'RTL' muß nicht gesäubert werden
+	'Fix und Foxi' muß nicht gesäubert werden
 	Alle Aufnahmen und Programmierungen wurden gelöscht.
 
 	Bearbeitungszeit 178 Sekunden
