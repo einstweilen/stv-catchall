@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200107"            # Scriptversion
+version_ist="20200114"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -61,31 +61,31 @@ logout() {
 
 #### Aktuelle Senderliste einlesen oder von Server holen
 senderliste_holen() {
-    if [ ! -e "$send_skip" ]; then
-        echo '17|RTL' >"$send_skip" # keine Liste vorhanden? => Minimalliste mit RTL
-        echo 'Liste der nicht aufzunehmenden Sender ist nicht vorhanden, Defaultliste angelegt' >> "$stvlog"
-    fi
-    
-    index=0
-    while read line; do
-        senderskip[index]="$line"
-        ((index++))
-    done < "$send_skip"
-    
     if [ ! -e "$send_list" ]; then
         sender_return=$(curl -s 'https://www.save.tv/STV/M/obj/JSON/TvStationGroupsApi.cfm?iFunction=2&loadTvStationsWithAllStationOption=true&bIsMemberarea=true'  -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive')
         echo "$sender_return" | sed 's/.*)"},{//g ; s/"},{"ID":/;/g ; s/,"NAME":"/|/g ; s/"ID"://g ; s/"}]}//g' | tr ';' '\n' >"$send_list"
         echo 'Aktualisierte Senderliste vom Server geholt' >> "$stvlog"
     fi
-    
     sender_alle=$(cat "$send_list" | wc -l | xargs)
+    cp "$send_list" "$DIR/stv_skip_vorlage.txt"
 
-    index=0
+    if [ ! -e "$send_skip" ]; then
+        touch "$send_skip" # leere Datei anlegen
+        echo 'Liste der nicht aufzunehmenden Sender ist nicht vorhanden, leere Datei angelegt' >> "$stvlog"
+    fi
+    
+    skipindex=0
+    while read line; do
+        senderskip[skipindex]="$line"
+        ((skipindex++))
+    done < "$send_skip"
+
+    sendindex=0
     while read line; do
         if [[ "${senderskip[@]}" != *"$line"* ]]; then 
-            sender_name[index]=${line#*|}
-            sender_id[index]=${line%|*}
-            ((index++))
+            sender_name[sendindex]=${line#*|}
+            sender_id[sendindex]=${line%|*}
+            ((sendindex++))
         fi
     done < "$send_list"
     
@@ -322,6 +322,7 @@ channelinfo_set() {
     channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")  
 }
 
+
 #### Pseudochannel mit letztem Status als Text löschen
 channelinfo_del() {
     stvchinfo=$(grep -o "[0-9]*|$ca_in_pre" <<< "${ch_in[*]}" | head -1 | grep -o "[0-9]*") 
@@ -368,98 +369,100 @@ sender_bereinigen() {
     cleanup_check=$1
     echo "        Programmierungen und Aufnahmen der Sender der Skipliste löschen"
     if [ ! -e "$send_skip" ]; then
-        echo '17|RTL' >"$send_skip" # keine Liste vorhanden? => Minimalliste mit RTL
-        echo 'Liste der nicht aufzunehmenden Sender war nicht vorhanden, Defaultliste wurde angelegt' >> "$stvlog"
+        touch "$send_skip" # leere Datei anlegen
+        echo 'Liste der nicht aufzunehmenden Sender war nicht vorhanden, leere Datei wurde angelegt' >> "$stvlog"
     fi
 
-    index=0
+    skipindex=0
     while read line; do
         if [[ -n $line ]]; then
-            skip_name[index]=${line#*|}
-            skip_id[index]=${line%|*}      
-            ((index++))
-        fi
+            skip_name[skipindex]=${line#*|}
+            skip_id[skipindex]=${line%|*}      
+            ((skipindex++))
+        fi  
     done < "$send_skip"
-        
     echo ''
-    echo "Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet zur Zeit:"
-    for (( i=0; i<=${#skip_name[@]}; i=i+4)); do
-        printf "%-19s %-19s %-19s %-19s\n" "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}" "${skip_name[i+3]}"
-    done
-    
-    if [[ $cleanup_check == "J" ]]; then
-        echo "Für diese ${#skip_name[@]} Sender werden die vorhandenen Programmierungen und"
-        echo "aufgenommenen Sendungen endgültig gelöscht"
-        
-        echo 'Bereinigung im Batchmodus' >> "$stvlog"
-    else        
-        echo "Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
-        echo "aufgenommenen Sendungen *endgültig* gelöscht werden?"
-        echo 
-        read -p 'Alles bereinigen (J/N)? : ' cleanup_check
-    fi
-    SECONDS=0 
-    echo
-    
-    if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
-        echo "Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste"
-        # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
-        list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data '')
-        
-        del_ids_tot=0       # Gesamtsumme der TelecastIds
-        del_ids_err=false   # Flag für mgl. Fehler
-        for (( i=0; i<=${#skip_name[@]}; i++)); do
-            sendername=${skip_name[i]}
-            senderid=${skip_id[i]}
-            if [[ senderid -gt 0 ]]; then     
-                list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
-                temp_te=$(grep -o "IENTRIESPERPAGE.*ITOTALPAGES"<<< "$list_return" | grep -o '"ITOTALENTRIES":[0-9]*'); totalentries=${temp_te#*:}
-                totalpages=$(grep -o '"ITOTALPAGES":[0-9]*' <<< "$list_return" | grep -o "[0-9]*$")
-                echo "$sendername hat $totalentries zu löschende Einträge auf $totalpages Seiten" >> "$stvlog" 
-            
-                if [[ totalpages -gt 0 ]]; then
-                    echo -n "'$sendername' hat $totalentries Einträge, beginne Löschung : "
-                    del_ids_tot=$((del_ids_tot + totalentries))  
-                    for ((page=1; page<=totalpages; page++)); do
-                        list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
-                        delete_ids=$(grep -o "TelecastId=[0-9]*" <<< "$list_return" | sed 's/TelecastId=\([0-9]*\)/\1%2C/g' | tr -d '\n')                        
-                        if [ -n "$delete_ids" ]; then               
-                            echo "Lösche $senderid|$sendername : $delete_ids" >> "$stvlog"
-                            delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "lTelecastID=$delete_ids")
-                            if [[ "$delete_return" == *"ok"* ]]; then 
-                                echo -n "."
-                            else
-                                echo -n "F"
-                                del_ids_err=true
-                            fi
-                            echo "$(grep -oF '%2C' <<< "$delete_ids" | wc -l) von $sendername gelöscht : $delete_return" >> "$stvlog"
-                        fi
-                    done
-                    echo -n '✓'
-                    echo ''
-                else
-                    echo "'$sendername' muß nicht gesäubert werden"   
-                fi
-            fi
+
+    if [[ skipindex -gt 0 ]]; then
+        echo "Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet zur Zeit:"
+        for (( i=0; i<=${#skip_name[@]}; i=i+4)); do
+            printf "%-19s %-19s %-19s %-19s\n" "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}" "${skip_name[i+3]}"
         done
-        if [[ $del_ids_err = true ]]; then
-            echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stvlog"'')!"
-            echo
+
+        if [[ $cleanup_check == "J" ]]; then
+            echo "Für diese ${#skip_name[@]} Sender werden die vorhandenen Programmierungen und"
+            echo "aufgenommenen Sendungen endgültig gelöscht"
+            
+            echo 'Bereinigung im Batchmodus' >> "$stvlog"
+        else        
+            echo "Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
+            echo "aufgenommenen Sendungen *endgültig* gelöscht werden?"
+            echo 
+            read -p 'Alles bereinigen (J/N)? : ' cleanup_check
         fi
-        if [[ del_ids_tot -gt 0 ]]; then
-            echo "Es wurden insgesamt $del_ids_tot Aufnahmen und Programmierungen gelöscht."
+        SECONDS=0 
+        echo
+        
+        if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
+            echo "Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste"
+            # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
+            list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data '')
+            
+            del_ids_tot=0       # Gesamtsumme der TelecastIds
+            del_ids_err=false   # Flag für mgl. Fehler
+            for (( i=0; i<=${#skip_name[@]}; i++)); do
+                sendername=${skip_name[i]}
+                senderid=${skip_id[i]}
+                if [[ senderid -gt 0 ]]; then     
+                    list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
+                    temp_te=$(grep -o "IENTRIESPERPAGE.*ITOTALPAGES"<<< "$list_return" | grep -o '"ITOTALENTRIES":[0-9]*'); totalentries=${temp_te#*:}
+                    totalpages=$(grep -o '"ITOTALPAGES":[0-9]*' <<< "$list_return" | grep -o "[0-9]*$")
+                    echo "$sendername hat $totalentries zu löschende Einträge auf $totalpages Seiten" >> "$stvlog" 
+                
+                    if [[ totalpages -gt 0 ]]; then
+                        echo -n "'$sendername' hat $totalentries Einträge, beginne Löschung : "
+                        del_ids_tot=$((del_ids_tot + totalentries))  
+                        for ((page=1; page<=totalpages; page++)); do
+                            list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
+                            delete_ids=$(grep -o "TelecastId=[0-9]*" <<< "$list_return" | sed 's/TelecastId=\([0-9]*\)/\1%2C/g' | tr -d '\n')                        
+                            if [ -n "$delete_ids" ]; then               
+                                echo "Lösche $senderid|$sendername : $delete_ids" >> "$stvlog"
+                                delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "lTelecastID=$delete_ids")
+                                if [[ "$delete_return" == *"ok"* ]]; then 
+                                    echo -n "."
+                                else
+                                    echo -n "F"
+                                    del_ids_err=true
+                                fi
+                                echo "$(grep -oF '%2C' <<< "$delete_ids" | wc -l) von $sendername gelöscht : $delete_return" >> "$stvlog"
+                            fi
+                        done
+                        echo -n '✓'
+                        echo ''
+                    else
+                        echo "'$sendername' muß nicht gesäubert werden"   
+                    fi
+                fi
+            done
+            if [[ $del_ids_err = true ]]; then
+                echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stvlog"'')!"
+                echo
+            fi
+            if [[ del_ids_tot -gt 0 ]]; then
+                echo "Es wurden insgesamt $del_ids_tot Aufnahmen und Programmierungen gelöscht."
+            else
+                echo "Es sind keine Aufnahmen und Programmierungen vorhanden."
+            fi
         else
-            echo "Es sind keine Aufnahmen und Programmierungen vorhanden."
-        fi
-        # nur bei manuellem Aufruf Channelaufräumen zusätzlich anbieten
-        if [[ $cleanup_modus == "manuell" ]]; then
-            channelrestechecken
+            echo "[i] Bereinigung abgebrochen, es wurde nichts gelöscht."
         fi
     else
-        echo "Bereinigung abgebrochen, es wurde nichts gelöscht."
-        if [[ $cleanup_modus == "manuell" ]]; then
-            channelrestechecken
-        fi
+        echo "[i] Die Skipliste '$(basename "$send_skip")' ist leer, Bereinigung übersprungen."
+    fi
+    
+    # bei manuellem Aufruf Channelaufräumen zusätzlich anbieten
+    if [[ $cleanup_modus == "manuell" ]]; then
+        channelrestechecken
     fi
 }
 
@@ -494,9 +497,10 @@ channelrestechecken() {
             echo "Bereinigung abgebrochen, es wurden keine Channels gelöscht."
         fi
     else
-        echo 'Es sind keine von STV CatchAll angelegte Channels vorhanden.'
+        echo '[i] Es sind keine von STV CatchAll angelegte Channels vorhanden.'
     fi
 }
+
 
 #### Abbruch wegen zuvieler Fehler
 abbrechen() {
@@ -506,12 +510,9 @@ abbrechen() {
     echo "    Liste der aufgetretene Fehler:"
     cat stv_ca.log | grep "^:" | sed 's/: /    /g'
     fkt_stoerung
-    if [ $stoer_std -eq 0 ] ; then
-        stoer_std="keine"
-    fi
     echo "    In der letzten Stunde wurden $stoer_std Störungen auf AlleStörungen.de gemeldet"
     echo "    Stand: $stoer_akt <https://AlleStörungen.de/stoerung/save-tv/>"
-    echo ": AlleStörungen.de meldet in der letzten Stunde $stoer_std Störungen " >> "$stvlog"
+    echo ": AlleStörungen.de meldet in der letzten Stunde $stoer_std Meldungen" >> "$stvlog"
     channelinfo_set "ABGREBROCHEN+FEHLER+$err_ges"
     logout
     exit 1
@@ -528,6 +529,7 @@ fkt_ch_anlegen() {
         ch_ok=false
     fi
 }
+
 
 #### Funktionstest angelegten Channel löschen
 fkt_ch_delete() {
@@ -554,19 +556,18 @@ fkt_stoerung() {
     stoer_std=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -4 | awk '{stoer += $3} END{print stoer}')
     stoer_let=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | grep -v "y: 0 }" | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
     stoer_akt=$(grep -o "20[123][0-9]-[^}]*}," <<<$webstoerung | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
-
-    if [[ -z $stoer_std ]]; then stoer_std=0 ; fi
+    if [[ -z $stoer_std || $stoer_std -eq 0 ]]; then stoer_std="keine" ; fi
+    if [[ -z $stoer_tag || $stoer_tag -eq 0 ]]; then stoer_tag="keine" ; fi
     if [[ -z $stoer_akt ]]; then stoer_akt="siehe" ; fi
 }
 
 
 fkt_stoerung_info() {
     fkt_stoerung
-    if [ $stoer_std -eq 0 ] ; then
-        stoer_std="keine"
+    echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_tag Störungen gemeldet"
+    if [[ stoer_tag != "keine" ]]; then
+        echo "    letzte Meldung um $stoer_let. Letzte Stunde gab es $stoer_std Meldungen."
     fi
-    echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_tag Störungen gemeldet,"
-    echo "    letzte Medlung um $stoer_let. Letzte Stunde gab es $stoer_std Störungen."
     echo "    Stand: $stoer_akt <https://AlleStörungen.de/stoerung/save-tv/>" 
     echo 
 }
@@ -666,21 +667,21 @@ funktionstest() {
         exit 1
     fi
 
-    rm "$send_list" 2> /dev/null            # sicherstellen dass neue Sender dabei sind
+    rm -f "$send_list"                      # sicherstellen dass neuhinzugekommene Sender dabei sind
     senderliste_holen
     
-    index=0
+    skipindex=0
     while read line; do
         if [[ -n $line ]]; then
-            skip_name[index]=${line#*|}
-            skip_id[index]=${line%|*}      
-            ((index++))
+            skip_name[skipindex]=${line#*|}
+            skip_id[skipindex]=${line%|*}      
+            ((skipindex++))
         fi  
     done < "$send_skip"
-
-    if [ ! -e "$send_skip" ]; then
-        echo "[-] Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' ist nicht vorhanden,"
-        echo "    alle $sender_anz bei Save.TV verfügbaren Sender werden aufgenommen."
+    
+    if [[ skipindex -eq 0 ]]; then
+        echo "[-] Keine nicht aufzunehmenden Sender in '$(basename "$send_skip")' vorhanden,"
+        echo "    alle $sender_anz aktuell bei Save.TV verfügbaren Sender werden aufgenommen."
     else
         echo "[i] Aktuell sind $sender_alle Sender bei Save.TV verfügbar."
         echo "[i] Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet:"
@@ -688,6 +689,7 @@ funktionstest() {
             printf "%-3s %-21s %-21s %-21s\n" "   " "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}"
         done
     fi
+    echo 
 
     # 04 channel anlegen
     fkt_ch_anlegen
@@ -726,10 +728,10 @@ funktionstest() {
     echo "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen" > "$stvlog"
     if [[ SECONDS -gt fkt_dauer ]]; then
         echo "[-] Der Funktionstest hat länger als die erwarteten $fkt_dauer Sekunden benötigt!"
-        fkt_stoerung_info
     else
-        echo "[✓] Laufzeit des Funktionstest liegt im erwarteten Bereich"
+        echo "[✓] Laufzeit des Funktionstests liegt im erwarteten Bereich"
     fi
+    fkt_stoerung_info
     echo 
     exit 0
 }
@@ -746,15 +748,11 @@ versioncheck() {
 }
 
 
-
 hilfetext() {
     echo "CatchAll-Funktion für alle SaveTV Sender programmieren"
     echo
     echo "-t, --test     Skripteinstellungen und SaveTV Account überprüfen"
     echo
- #   echo "-s, --slot     gezielt einzelne Timeslots programmieren"
- #   echo "               v_ormittag, m_ittag, a_bend, n_acht"
- #   echo 
     echo "-c, --cleanup  'Reste aufräumen' Funktion aufrufen"
     echo
     echo "--cleanupauto  'Reste aufräumen' ohne Sicherheitsabfrage ausführen,"
