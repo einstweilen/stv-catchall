@@ -11,10 +11,10 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-01-14 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe und Skiplisten Vorlage ergänzt
   * 2020-01-07 [Funktionstest](README-ext.md#funktionstest) erweitert um Senderlistenaktualisierung / Laufzeit / Zeitpunkt der letzten Störung
   * 2019-11-22 [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung) an-/abschaltbar
   * 2019-11-18 [Updatebenachrichtigung](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren) ergänzt 
-  * 2019-11-12 [Fehlerbehandlung](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung) erweitert
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
