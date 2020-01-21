@@ -30,6 +30,7 @@ stv_ch_xl=20                        # XL-Paket mit 20 Channeln
 stv_ch_xxl=200                      # XXL-Paket mit 200 Channeln
 
 tageszeit=('' 'Vormittag' 'Nachmittag' 'Abend' 'Nacht')
+wochentag=(So Mo Di Mi Do Fr Sa So)
 
 ca_ch_pre='_ '                      # Prefix-Kennung für vom Skript erstelle Channel
 ca_ch_preurl='_+'                   # dito URLencoded *ein* Leerzeichen
@@ -318,7 +319,7 @@ channelinfo_set() {
         version_info=""
     fi
     
-    ch_text="sTelecastTitle=$ca_in_preurl$1+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
+    ch_text="sTelecastTitle=$ca_in_preurl$1+${wochentag[$(date '+%w')]}+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
     channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")  
 }
 
@@ -619,8 +620,8 @@ funktionstest() {
         echo '    Bitte in den Zeilen 8 und 9 Username und Passwort prüfen,'
         echo '    und danach den Funktionstest mit --test erneut starten.'
         echo
-        echo '    Aktueller Inhalt der Zeilen 8 und 9:'
-        sed -n '8,9p' "$0"
+        echo '    Aktueller Inhalt:'
+        cat -n "$0" | sed -n '8,9p'
         echo
         echo '    Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen'
         fkt_stoerung_info 
@@ -732,7 +733,6 @@ funktionstest() {
         echo "[✓] Laufzeit des Funktionstests liegt im erwarteten Bereich"
     fi
     fkt_stoerung_info
-    echo 
     exit 0
 }
 
