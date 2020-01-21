@@ -202,8 +202,8 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         und danach den Funktionstest mit --test erneut starten.
 
         Aktueller Inhalt der Zeilen 8 und 9:
-    stv_user='373737'       # für Autologin Username ausfüllen z.B. 612612
-    stv_pass='passwort'     # für Autologin Passwort ausfüllen z.B. R2D2C3PO
+        8  stv_user='373737'       # für Autologin Username ausfüllen z.B. 612612
+        9  stv_pass='passwort'     # für Autologin Passwort ausfüllen z.B. R2D2C3PO
 
         Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen.
         In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
@@ -218,17 +218,17 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
 
-Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status enthält, angelegt.
+Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status und das Datum der Ausführung enthält, angelegt.
 
 Optional: Ist die [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) aktiviert und sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt.
 
 Der Channeltitel hat dabei folgenden Aufbau:
 
-	_  OK 0731 2258 Neue Version	bedeutet
+	_  OK Mi 0731 2258 Neue Version	bedeutet
 	_				Underscore am Anfang = von CatchAll angelegt
 	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
-	0728				Datum Monat Tag
-	2257				Uhrzeit Stunde Minute
+	Mi 0731				Datum Wochentag Monat Tag
+	2258				Uhrzeit Stunde Minute
 	Neue Version			(optional) eine neuere Skriptversion ist verfügbar
 	
 Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel bei der nächsten Skriptausführung als erstes gelöscht wird, bevor weitere Channels angelegt werden. Und da der "Pseudochannel" erst ganz am Ende neu angelegt wird, nachdem alle zur Skriptausführung benötigten temporären Channels bereits wieder gelöscht wurden, belegt er quasi nur den Platz eines der temporären Channels während das Skript nicht läuft.
