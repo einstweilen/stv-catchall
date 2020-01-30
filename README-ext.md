@@ -39,7 +39,6 @@
     + [Dateirechte setzen](#dateirechte-setzen)
     + [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
   * [Hilfefunktion](#hilfefunktion)
-  * [Ausblick auf geplante Funktionen](#geplante-funktionen)
  
 ## Hintergrund
 [SaveTV](https://www.save.tv/) bietet keine CatchAll Funktion bei der automatisch alle Sendungen aller verfügbaren Sender aufgenommen werden.
