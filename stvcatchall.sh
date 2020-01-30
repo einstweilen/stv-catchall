@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200121"            # Scriptversion
+version_ist="20200130"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -36,6 +36,7 @@ ca_ch_pre='_ '                      # Prefix-Kennung für vom Skript erstelle Ch
 ca_ch_preurl='_+'                   # dito URLencoded *ein* Leerzeichen
 ca_in_pre="$ca_ch_pre "             # Prefix-Kennung für vom Skript erstellen Infotext
 ca_in_preurl="$ca_ch_preurl+"       # dito URLencoded *zwei* Leerzeichen (alphabetisch vor den anderen Channels)
+
 
 #### Login
 login() {
@@ -93,6 +94,7 @@ senderliste_holen() {
     # Anzahl der anzulegenden Sender 
     sender_anz=${#sender_id[@]}           
 }
+
 
 #### Sendernamen vierspaltig ausgeben   
 sender_info() {
@@ -187,10 +189,6 @@ senderchannel_anlegen() {
                 if [[ err_ges -gt err_max ]]; then
                     abbrechen
                 fi
-                err_send_id[err_cha]="$senderid"
-                err_send_time[err_cha]="$timeframe"
-                err_send_name[err_cha]="$sendername"
-                err_send_text[err_cha]="$fehlertext"
             fi
             echo -en "\b"
         done
@@ -566,7 +564,7 @@ fkt_stoerung() {
 fkt_stoerung_info() {
     fkt_stoerung
     echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_tag Störungen gemeldet"
-    if [[ stoer_tag != "keine" ]]; then
+    if [[ $stoer_tag != "keine" ]]; then
         echo "    letzte Meldung um $stoer_let. Letzte Stunde gab es $stoer_std Meldungen."
     fi
     echo "    Stand: $stoer_akt <https://AlleStörungen.de/stoerung/save-tv/>" 
