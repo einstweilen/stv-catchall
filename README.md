@@ -87,4 +87,3 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Dateirechte setzen](README-ext.md#dateirechte-setzen)
     + [Tägliche Ausführung einrichten](README-ext.md#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
   * [Hilfefunktion](README-ext.md#hilfefunktion)
-  * [Ausblick auf geplante Funktionen](README-ext.md#geplante-funktionen)
