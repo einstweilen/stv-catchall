@@ -4,17 +4,17 @@
     ===============================================
     ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
 
-Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle Sendungen aller 47 Save.TV Sender 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket und beim XXL Paket spart man sich das manuelle Channelanlegen.
+Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle Sendungen aller bei Save.TV [verfügbaren Sender](https://hilfe.save.tv/Knowledgebase/50080/Senderliste) 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket. Beim XXL Paket spart man sich das manuelle Channelanlegen.
 
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.  
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
   * 2020-01-21 [Ausführungsstatus](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren) um Wochentag ergänzt 
   * 2020-01-14 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe und Skiplisten Vorlage ergänzt
   * 2020-01-07 [Funktionstest](README-ext.md#funktionstest) erweitert um Senderlistenaktualisierung / Laufzeit / Zeitpunkt der letzten Störung
-  * 2019-11-22 [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung) an-/abschaltbar
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
