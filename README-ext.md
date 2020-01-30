@@ -48,7 +48,7 @@ Zur Aufnahmeprogrammierung können [je nach gebuchtem Paket](https://www.save.tv
 
 Über die [Erweiterten Einstellungen](https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm) kann ein Channel für einen Sender und einen Zeitslot (0-6 Uhr, 6-12 Uhr, 12-18 Uhr, 18-24 Uhr) programmiert werden.
 
-Während sich mit den 200 Channels des XXL-Pakets die Catchall Funktion durch Programmierung von vier Zeitslots für die 47 SaveTV Sender (4 x 47 = 188 Channels) mit etwas Anlegefleiß nachbilden läßt, bieten das Basis-Paket mit 5 Channels und des XL Paket mit 20 Channels nicht genug Channels um alle Slots für alle Sender zu programmieren.
+Während sich mit den 200 Channels des XXL-Pakets die Catchall Funktion durch Programmierung von vier Zeitslots für die 46 SaveTV Sender (4 x 46 = 184 Channels) mit etwas Anlegefleiß nachbilden läßt, bieten das Basis-Paket mit 5 Channels und des XL Paket mit 20 Channels nicht genug Channels um alle Slots für alle Sender zu programmieren.
 
 Die Grundidee von SaveTV Catchall basiert auf den unterschiedlichen Optionen, die beim Channellöschen angeboten werden 
 
@@ -68,7 +68,7 @@ Direkt nach Anlage der vier Zeitslotchannels eines Sender werden diese wieder ge
 
 Je Sender erfolgen 9 save.tv Zugriffe, wodurch das Skript relativ langsam läuft
 * 4 x Senderzeitslotchannel anlegen (0-6 Uhr, 6-12 Uhr, 12-18 Uhr, 18-24 Uhr)
-* 1 x Aufruf Channelübersicht, um die zu löschenden ChannelIDs abzufragen (die IDs werden bei der Anlage nicht zurückgegeben)
+* 1 x Aufruf Channelübersicht, um die ChannelIDs der angelegten Channels abzufragen
 * 4 x Senderzeitslotchannel löschen
 
 Der Nachteil dieses Verfahren besteht allerdings darin, daß die Programmierung der Aufnahmen nur ca. sieben Tage in die Zukunft reicht, so daß das Skript regelmäßig ausgeführt werden muß, um die neu hinzugekommenen Sendungen und eventuelle Programmänderungen zu programmieren.
@@ -116,7 +116,7 @@ Wenn man fertig ist speichert man diese geänderte Datei unter dem Namen `stv_sk
 
 Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr ...](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
 
-    [i] Aktuell sind 47 Sender bei Save.TV verfügbar.    
+    [i] Aktuell sind 46 Sender bei Save.TV verfügbar.    
     [i] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
         Folx TV               SPORT 1               DMAX               
@@ -177,7 +177,7 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [i] Eingestelle Pufferzeiten und Aufnahmeoptionen
         Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
     
-    [i] Aktuell sind 47 Sender bei Save.TV verfügbar.    
+    [i] Aktuell sind 46 Sender bei Save.TV verfügbar.    
     [i] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
         Folx TV               SPORT 1               DMAX               
@@ -340,7 +340,7 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 	SPORT 1             DMAX                Eurosport           Disney Channel     
 	RiC                 TLC                 Fix und Foxi                
                                                                                
-	Sollen für diese 12 Sender die vorhandenen Programmierungen und
+	Sollen für diese 11 Sender die vorhandenen Programmierungen und
 	aufgenommenen Sendungen endgültig gelöscht werden?
 
 	Alles bereinigen (J/N)? : j
@@ -427,6 +427,3 @@ Es ist auch möglich, dem Skriptaufruf Parameter mitzugeben, so daß täglich ei
 
 ## Hilfefunktion
 Wenn das SaveTV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --help` aufgerufen wird, wird ein kurzer Hilfetext angezeigt.
-
-## Geplante Funktionen
-  * Aufnahmeprogrammierung splitten, um Sondersendungen o.ä. aufzunehmen
