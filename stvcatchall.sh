@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200130"            # Scriptversion
+version_ist="20200210"            # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -19,7 +19,7 @@ stvlog="$DIR/stv_ca.log"            # Ausführungs- und Fehlerlog
 stvsend="$DIR/stv_sendungen.txt"    # Programmierte Sendungen
 stvcookie="$DIR/stv_cookie.txt"     # Session Cookie
 
-err_flag=false                      # Flag für Bearbeitungsfehler
+err_flag=false                      # Flag für Bearbeitungsfehler (true|false)
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
 
 check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
@@ -50,7 +50,7 @@ login() {
             fi
             userpass="sUsername=$stv_user&sPassword=$stv_pass"
 
-            login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stvcookie" | grep -c -F Login_Failed)     
+            login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stvcookie" | grep -c -F "user_id\": $stv_user")     
 }
 
 
@@ -611,7 +611,7 @@ funktionstest() {
     # 02 login
     echo
     login
-    if [[ $login_return -eq 0 ]]; then
+    if [[ $login_return -ne 0 ]]; then
         echo "[✓] Login mit UserID $stv_user erfolgreich"
     else
         echo "[-] Fehler beim Login mit UserID $stv_user!"
@@ -805,7 +805,7 @@ banner() {
     login
     
     # Login erfolgreich?
-    if [[ $login_return -eq 0 ]]; then
+    if [[ $login_return -ne 0 ]]; then
         if [[ $cmd == "--cleanup" ||  $cmd == "-c" ]]; then # Bereinigen mit Sicherheitsabfrage
             cleanup_modus=manuell
             sender_bereinigen
