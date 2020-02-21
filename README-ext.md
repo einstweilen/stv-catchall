@@ -51,10 +51,7 @@ Während sich mit den 200 Channels des XXL-Pakets die Catchall Funktion durch Pr
 
 Die Grundidee von SaveTV Catchall basiert auf den unterschiedlichen Optionen, die beim Channellöschen angeboten werden 
 
-* Nur Channel löschen (Programmierungen der kommenden 4 Wochen bleiben erhalten)
-* Diesen Channel und alle darin enthaltenen Programmierungen löschen
-* Diesen Channel und alle darin enthaltenen abgeschlossenen Aufnahmen aus dem Videoarchiv löschen
-* Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv
+![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-channel-delete.png)
 
 Da bei der ersten Option die Programmierungen erhalten bleiben, kann man nach der Anlage der Programmierung den Channel wieder löschen und einen anderen Zeitslot / Sender mit dem gleichen Channel programmieren.
 
