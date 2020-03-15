@@ -11,9 +11,9 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
   * 2020-01-21 [Ausführungsstatus](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren) um Wochentag ergänzt 
-  * 2020-01-14 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe und Skiplisten Vorlage ergänzt
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
@@ -65,7 +65,9 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
         + [Funktionstest aufrufen](README-ext.md#funktionstest-aufrufen)
     	+ [Beispielausgabe des Funktionstests](README-ext.md#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren)
-    + [Fehler während der Skriptausführung](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+    + [Fehlerausgabe](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+        + [im Direktmodus](README-ext.md#im-direktmodus)
+    	+ [im Batchmodus](README-ext.md#im-batchmodus)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](README-ext.md#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](README-ext.md#hinweis-zur-verwendung-unter-termux)
