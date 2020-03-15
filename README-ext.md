@@ -19,6 +19,8 @@
     	+ [Beispielausgabe des Funktionstests](#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehler während der Skriptausführung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+        + [im Direktmodus](#im-direktmodus)
+    	+ [im Batchmodus](#im-batchmodus)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](#hinweis-zur-verwendung-unter-termux)
@@ -230,9 +232,10 @@ Der Channeltitel hat dabei folgenden Aufbau:
 Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel bei der nächsten Skriptausführung als erstes gelöscht wird, bevor weitere Channels angelegt werden. Und da der "Pseudochannel" erst ganz am Ende neu angelegt wird, nachdem alle zur Skriptausführung benötigten temporären Channels bereits wieder gelöscht wurden, belegt er quasi nur den Platz eines der temporären Channels während das Skript nicht läuft.
 
 ### Fehler während der Skriptausführung
-Sollten bei der Verarbeitung Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei `stv_ca.log` an.
+#### im Direktmodus
+Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei `stv_ca.log` an.
 
-Wird die Anzahl der maxmial erlaubten Fehler überschritten, defaultmäßig `err_max=5`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
+Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=5`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
     Es sind 6 Fehler aufgetreten, das Skript wird beendet.
     AlleStörungen.de meldet in der letzten Stunde 14 Störungen 
@@ -253,7 +256,15 @@ Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang 
     : AlleStörungen.de meldet in der letzten Stunde keine Störungen
     
 Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nichtgelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
+#### im Batchmodus
+Durch Auswertung des Exitcodes nach der Skriptausführung kann über die Ausgabe eventueller Anlagefehler im Statuschannel hinaus ([mehr …](#ausf%C3%BChrungsstatus-kontrollieren)) auch auf eventuell aufgetretene schwere Fehler, die zu einem Skriptabbruch geführt haben, reagiert werden.
 
+`Exitcode 0` zeigt eine erfolgreiche Skriptausführung, alle Channels konnten angelegt werden
+
+`Exitcode 1` wird für schwerwiegende Fehler wie Loginfehler oder gehäufte Fehler bei der Channelanlage verwendet, die zu einem vorzeitigen Skriptabbruch führen und bei denen deshalb vom Skript kein neuer Statuschannel angelegt werden konnte.
+Eine fehlerhafte Ausführung ist dann nur am veralteten Datum des Statuschannels oder dem gänzlichen Fehlen des Statuschannels erkennbar.
+
+`Exitcode 2` zeigt an, daß bei der Channelanlage Fehler aufgetreten sind, die sich aber unterhalb der festgelegten Grenze, defaultmäßig `err_max=5`, bewegten
 
 ### Servicehinweis: Save.TV Aufnahme-Optionen prüfen
 Bitte vor dem ersten Skriptlauf prüfen, ob die Save.TV Einstellungen zu Vorlauf-, Nachlaufzeit und Auto-Schnittlisten den eigenen Wünschen entsprechen.
