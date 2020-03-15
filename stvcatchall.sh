@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200210"            # Scriptversion
+version_ist="20200315"  # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -21,6 +21,8 @@ stvcookie="$DIR/stv_cookie.txt"     # Session Cookie
 
 err_flag=false                      # Flag für Bearbeitungsfehler (true|false)
 err_max=5                           # maximal erlaubte Fehler bis Skriptabbruch
+                                    # EXIT Codes:   1 kritischer Fehler, Abbruch
+                                    #               2 einzelne Channels konnte nicht angelegt werden
 
 check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
 fkt_dauer=10                        # als normale angesehene Dauer für den Funktionstest
@@ -164,6 +166,7 @@ channels_anlegen() {
             fi
         else
             echo ": Fehler: Sender $sender ohne ID in Senderliste gefunden!" >> "$stvlog"
+            err_flag=true
         fi
     done
     echo
@@ -216,7 +219,7 @@ channelanz_check() {
         echo "Aktuell sind bereits $ch_use von $ch_max Channels des Pakets belegt"
         echo "Bitte manuell unter 'www.save.tv/Meine Channels' mindestens $((ch_nec - ch_fre)) Channels löschen"
         echo "und das Skript anschließend erneut starten."
-        exit 0
+        exit 1
     fi
 
     echo "Aufnahme aller Sendungen der nächsten 7 Tage für folgende $sender_anz Sender einrichten:"
@@ -602,10 +605,7 @@ funktionstest() {
         echo "[✓] Schreibrechte im Skriptverzeichnis OK"
     fi
     
-    if [[ -z $(which curl) ]]; then
-        echo "[-] 'curl' wird benötigt, ist aber nicht installiert"
-        exit 1
-    fi
+    command -v curl >/dev/null 2>&1 || { echo >&2 "[-] 'curl' wird benötigt, ist aber nicht installiert"; exit 1; }
 
 
     # 02 login
@@ -829,7 +829,6 @@ banner() {
                 echo "Bei der Channelanlage sind $err_cha Fehler aufgetreten"
             fi
 
-
             if [[ $ch_angelegt -ne 0 ]] ; then
                 echo ''
                 if [[ $channels_behalten = false ]]; then
@@ -870,8 +869,14 @@ banner() {
     else
         echo "Fehler beim Login - bitte Username und Passwort prüfen!"
         echo ": Fehler beim Login - bitte Username und Passwort prüfen!" >> "$stvlog"
+        exit 1 
     fi
     echo ''
     echo "Bearbeitungszeit $SECONDS Sekunden"
     echo "Ende: $(date)" >> "$stvlog"
-exit 0
+
+if [[ $err_flag = true ]]; then
+    exit 2
+else 
+    exit 0
+fi
