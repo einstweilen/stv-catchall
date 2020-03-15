@@ -18,7 +18,7 @@
         + [Funktionstest aufrufen](#funktionstest-aufrufen)
     	+ [Beispielausgabe des Funktionstests](#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
-    + [Fehler während der Skriptausführung](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+    + [Fehlerausgabe](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
         + [im Direktmodus](#im-direktmodus)
     	+ [im Batchmodus](#im-batchmodus)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
