@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200315"  # Scriptversion
+version_ist="20200327"  # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -503,6 +503,33 @@ channelrestechecken() {
     fi
 }
 
+#### kostenloser Upgrade auf XXL?
+upgradexxl() {
+    upg_start=20200326
+     upg_ende=20200527
+    heute=$(date '+%Y%m%d')
+
+    if [[ $heute -gt $upg_start && $heute -lt $upg_ende ]]; then
+        echo "Ihr Paket wurde kostenlos durch Save.TV bis zum $((upg_ende-1)) auf XXL upgegradet."
+        echo "Upgrade auf XXL aktiv bis $upg_ende" >> "$stvlog"
+
+        ca_ch_anz=$(grep -o "[0-9]*|$ca_ch_pre[^ ]" <<< "${ch_in[*]}" | wc -l | xargs) # xarg entfernt whitespace
+        if [[ $ca_ch_anz -gt 2 ]]; then
+            echo "Es sind bereits $ca_ch_anz vom STV CatchAll Skript angelegte Channels vorhanden,"
+            echo "das Skript wird daher beendet."
+            echo 
+            echo "Sollen vorhandene Channels gelöscht und alles neu angelegt werden,"
+            echo "die Funktion 'Channels aufräumen' -c verwenden. Vorher ReadMe lesen!"
+            echo "bereits $ca_ch_anz skriptangelegte Channels vorhanden, EXIT 0" >> "$stvlog"
+            channelinfo_set "Upgrade auf XXL aktiv"
+            echo ''
+            echo "Bearbeitungszeit $SECONDS Sekunden"
+            echo "Ende: $(date)" >> "$stvlog"
+            exit 0
+        fi
+    fi
+}
+
 
 #### Abbruch wegen zuvieler Fehler
 abbrechen() {
@@ -701,7 +728,7 @@ funktionstest() {
         exit 1
     fi
 
-    # 054 channelliste lesen
+    # 05 channelliste lesen
     channel_liste
     echo "[✓] Channelliste eingelesen"
     
@@ -821,7 +848,7 @@ banner() {
             channel_liste       # Liste vorhandener Channels
             channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
             ch_start=$ch_use    # Anzahl der belegten Channels bei Skriptstart
-                
+            upgradexxl          # SAVETV kostenloser XXL Upgrade?
             channelanz_check    # prüfen ob freie Channels ausreichen
             channels_anlegen
 
