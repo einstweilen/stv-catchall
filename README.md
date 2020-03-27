@@ -35,7 +35,7 @@ Mit dem heutigen Update wird beim Skriptstart geprüft, ob das Ausführungsdatum
 
 Sollten nicht alle gewünschten XXL Channels angelegt worden sin, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden. Beim nächsten Start legt das Skript dann alle Channels gemäß der eigenen Sender- und Skipliste an.
 
-Beim erstmaligen Einstaz das Skripts ändert sich nichts, auch der [Funktionstest](README-ext.md#funktionstest) funktioniert weiterhin.
+Beim erstmaligen Einsatz das Skripts ändert sich nichts, auch der [Funktionstest](README-ext.md#funktionstest) funktioniert weiterhin.
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
