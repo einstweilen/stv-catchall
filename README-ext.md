@@ -62,7 +62,7 @@ STV CatchAll benötigt vier Channels (für die vier Zeitslots eines Senders) um 
 
 Eventuell im Account bereits enthaltene manuell vorgenommene Channelprogrammierungen bleiben erhalten. Sollten weniger als vier freie Channels vorhanden sein, wird das Skript mit einem entsprechenden Hinweis abgebrochen.
 
-Direkt nach Anlage der vier Zeitslotchannels eines Sender werden diese wieder gelöscht, wobei die Programmierungen erhalten bleiben (s.o.). Dadurch können die gleichen Channels für den nächsten Sender wiederverwendet werden.
+Direkt nach Anlage der vier Zeitslotchannels eines Senders werden diese wieder gelöscht, wobei die Programmierungen erhalten bleiben (s.o.). Dadurch können die gleichen Channels für den nächsten Sender wiederverwendet werden.
 
 Je Sender erfolgen 9 save.tv Zugriffe, wodurch das Skript relativ langsam läuft
 * 4 x Senderzeitslotchannel anlegen (0-6 Uhr, 6-12 Uhr, 12-18 Uhr, 18-24 Uhr)
@@ -70,7 +70,7 @@ Je Sender erfolgen 9 save.tv Zugriffe, wodurch das Skript relativ langsam läuft
 * 4 x Senderzeitslotchannel löschen
 
 Der Nachteil dieses Verfahren besteht allerdings darin, daß die Programmierung der Aufnahmen nur ca. sieben Tage in die Zukunft reicht, so daß das Skript regelmäßig ausgeführt werden muß, um die neu hinzugekommenen Sendungen und eventuelle Programmänderungen zu programmieren.
-SaveTV aktualisert sein Angebot einmal täglich gegen 4:30 Uhr, so daß das Skript kurz danach laufen sollte, um alle Änderungen zeitnah zu berücksichtigen.
+SaveTV aktualisiert sein Angebot einmal täglich gegen 4:30 Uhr, so daß das Skript kurz danach laufen sollte, um alle Änderungen zeitnah zu berücksichtigen.
 
 Siehe auch [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
 
@@ -257,7 +257,7 @@ Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang 
     
 Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nichtgelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
 #### im Batchmodus
-Durch Auswertung des Exitcodes nach der Skriptausführung kann über die Ausgabe eventueller Anlagefehler im Statuschannel hinaus ([mehr …](#ausf%C3%BChrungsstatus-kontrollieren)) auch auf eventuell aufgetretene schwere Fehler, die zu einem Skriptabbruch geführt haben, reagiert werden.
+Durch Auswertung des EXITcodes nach der Skriptausführung kann über die Ausgabe eventueller Anlagefehler im Statuschannel hinaus ([mehr …](#ausf%C3%BChrungsstatus-kontrollieren)) auch auf eventuell aufgetretene schwere Fehler, die zu einem Skriptabbruch geführt haben, reagiert werden.
 
 `Exitcode 0` zeigt eine erfolgreiche Skriptausführung, alle Channels konnten angelegt werden
 
@@ -381,7 +381,7 @@ Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Ch
 Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion`./stvcatchall.sh --cleanup` erneut aufrufen.
 
 ### Beispielausgabe der Zusatzfunktion Channels aufräumen
-Der erster Teil ist identisch zu [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) denn folgt:
+Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) danach folgt:
 
 	         Prüfe die Channelliste auf von STV CatchAll angelegte Channels
 	
