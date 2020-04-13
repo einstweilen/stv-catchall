@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist="20200327"  # Scriptversion
+version_ist="20200413"  # Scriptversion
 
 #### Userdaten & Löschmodus
 stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
@@ -848,7 +848,9 @@ banner() {
             channel_liste       # Liste vorhandener Channels
             channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
             ch_start=$ch_use    # Anzahl der belegten Channels bei Skriptstart
-            upgradexxl          # SAVETV kostenloser XXL Upgrade?
+            if [[ $anlege_modus != "nie" ]]; then 
+                upgradexxl      # SAVETV kostenloser XXL Upgrade?
+            fi
             channelanz_check    # prüfen ob freie Channels ausreichen
             channels_anlegen
 
