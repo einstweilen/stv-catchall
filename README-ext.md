@@ -147,13 +147,13 @@ Im [defaultmäßigen `auto` Modus](#angelegte-channels-behalten-auto-immer-nie) 
 
 Das Anlegen und Behalten der Channels ist eine einmalige Arbeitserleichterung für XXL Nutzer.
 
-Beim Skriptstart wird geprüft, ob das Ausführungsdatum vor dem 27.05.2020 liegt **und** bereits vom Skript angelegte Channels vorhanden sind **und** der Modus [`auto` oder `nie` Modus](#angelegte-channels-behalten-auto-immer-nie) aktiv ist, in diesem Fall wird nur der Infochannel erstellt `_ Upgrade auf XXL aktiv` und das Skript anschließend beendet.
+Beim Skriptstart wird geprüft, ob das Ausführungsdatum vor dem 27.05.2020 liegt **und** bereits vom Skript angelegte Channels vorhanden sind **und** der Modus [`auto` oder `immer` Modus](#angelegte-channels-behalten-auto-immer-nie) aktiv ist, in diesem Fall wird nur der Infochannel erstellt `_ Upgrade auf XXL aktiv` und das Skript anschließend beendet.
 
 #### Tips zum XXL Upgrade
-* Das Löschen der angelegten Channels trotz XXL Upgrades kann durch Setzen des [`immer` Modus](#angelegte-channels-behalten-auto-immer-nie) erzwungen werden.
+* Das Löschen der angelegten Channels trotz XXL Upgrades kann durch Setzen des [`nie` Modus](#angelegte-channels-behalten-auto-immer-nie) erzwungen werden.
 
-* Wurden nicht alle gewünschten XXL Channels angelegt, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden.
-Beim nächsten Start legt das Skript dann alle Channels gemäß der eigenen Sender- und Skipliste an.
+* Wurden nicht alle gewünschten XXL Channels angelegt oder möchte man Sender aufnehmen, die vorher in der Skipliste standen, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden.
+Beim nächsten Start legt das Skript dann alle Channels gemäß der aktuellen Sender- und Skipliste an.
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
