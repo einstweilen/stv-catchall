@@ -11,6 +11,8 @@
     + [Username und Passwort hinterlegen](#username-und-passwort-hinterlegen)
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
+    + [Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.](#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)
+        + [Tips zum XXL Upgrade](#tips-zum-xxl-upgrade)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung)
@@ -139,9 +141,22 @@ Vom Skript angelegte Channels werden nach dem Anlegen wieder gelöscht, auch wen
 #### Tip: Channels "korrigieren"
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
+### Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.
+
+Im [defaultmäßigen `auto` Modus](#angelegte-channels-behalten-auto-immer-nie) für die Channelanlage, erkennt das Skript seit dem 26.03. das "neue" XXL Paket anhand der 200 nutzbaren Channels (im Account steht weiterhin der gebuchte Tarif z.B. "Save.TV XL 24 Monate") und die angelegten Channels werden deshalb auch nicht wieder gelöscht. 
+
+Das Anlegen und Behalten der Channels ist eine einmalige Arbeitserleichterung für XXL Nutzer.
+
+Beim Skriptstart wird geprüft, ob das Ausführungsdatum vor dem 27.05.2020 liegt **und** bereits vom Skript angelegte Channels vorhanden sind **und** der Modus [`auto` oder `nie` Modus](#angelegte-channels-behalten-auto-immer-nie) aktiv ist, in diesem Fall wird nur der Infochannel erstellt `_ Upgrade auf XXL aktiv` und das Skript anschließend beendet.
+
+#### Tips zum XXL Upgrade
+* Das Löschen der angelegten Channels trotz XXL Upgrades kann durch Setzen des [`immer` Modus](#angelegte-channels-behalten-auto-immer-nie) erzwungen werden.
+
+* Wurden nicht alle gewünschten XXL Channels angelegt, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden.
+Beim nächsten Start legt das Skript dann alle Channels gemäß der eigenen Sender- und Skipliste an.
+
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
-
 
 ### Versionsüberprüfung
 Die automatische Prüfung auf eine neuere Skriptversion findet nur während des Funktionstests statt. Wenn gewünscht kann durch das Ändern des Flags `check_version` von defaultmäßig `false` auf `true` bei jedem Skriptlauf eine Überprüfung auf verfügbare Skriptupdates stattfinden. Dabei wird die Datei `stv-version-check` von Github geladen und mit der lokalen Skriptversion verglichen.
