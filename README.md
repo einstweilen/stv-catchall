@@ -12,30 +12,15 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 
 **Neueste Änderungen**
 
+  * 2020-04-13 optionales [Channellöschen](README-ext.md#tips-zum-xxl-upgrade) trotz kostenlosem XXL Upgrade
   * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade	
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
-  * 2020-01-21 [Ausführungsstatus](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren) um Wochentag ergänzt 
 
-## AKTUELLER HINWEIS ZUM KOSTENLOSEN XXL UPGRADE 26.03.bis 26.05.
-Save.TV hat aktuell kostenlos für zwei Monate das XL Paket (ob auch das Basispaket weiß ich nicht) auf das XXL Paket upgegradet.
+## HINWEIS ZUM KOSTENLOSEN XXL UPGRADE 26.03.bis 26.05.
+Save.TV hat aktuell kostenlos für zwei Monate neue und bestehende Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet.
 
-
-> Schön, wenn man in diesen Zeiten zusammensteht, auch wenn man Abstand halten muss. Wir sind an deiner Seite und upgraden dein Save.TV Paket jetzt zwei Monate kostenlos auf das XXL-Paket*.
-> _Das kostenlose Upgrade in den XXL Tarif ist gültig von **26.03.2020 bis einschließlich 26.05.2020**._
-
-
-Wer sein Skript im [defaultmäßigen `auto` Modus](README-ext.md#angelegte-channels-behalten-auto-immer-nie) für die Channelanlage betreibt, wird feststellen, dass das Skript heute Morgen das "neue" XXL Paket anhand der 200 nutzbaren Channels korrekt erkannt hat (im Account steht weiterhin der gebuchte Tarif z.B. "Save.TV XL 24 Monate") und die angelegten Channels deshalb korrekterweise auch nicht wieder gelöscht hat. 
-
-![Screenshot Channels](img-fuer-readme/cor_info_2.png)
-
-Beim nächsten Lauf würde das Skript aber mit einer Fehlermeldung abbrechen, da sämtliche anzulegenden Channels bereits angelegt sind, das Einrichten der XXL Channels ist eine einmalig Arbeitserleichterung für XXL Nutzer.
-
-Mit dem heutigen Update wird beim Skriptstart geprüft, ob das Ausführungsdatum vor dem 27.05.2020 liegt **und** bereits vom Skript angelegte Channels vorhanden sind, in diesem Fall wird nur der Infochannel erstellt `_ Upgrade auf XXL aktiv` und das Skript anschließend beendet.
-
-Sollten nicht alle gewünschten XXL Channels angelegt worden sin, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden. Beim nächsten Start legt das Skript dann alle Channels gemäß der eigenen Sender- und Skipliste an.
-
-Beim erstmaligen Einsatz das Skripts ändert sich nichts, auch der [Funktionstest](README-ext.md#funktionstest) funktioniert weiterhin.
+Die vom Skript angelegten Channels werden bis zum 26.05.2020 auch beim Basis/XL Paket nicht gelöscht. ([mehr …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605))
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
@@ -80,6 +65,8 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Username und Passwort hinterlegen](README-ext.md#username-und-passwort-hinterlegen)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
+    + [Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)
+        + [Tips zum XXL Upgrade](README-ext.md#tips-zum-xxl-upgrade)    
     + [Tip: Channels "korrigieren"](README-ext.md#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](README-ext.md#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
