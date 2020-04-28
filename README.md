@@ -12,15 +12,18 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 
 **Neueste Änderungen**
 
+  * 2020-04-28 Hinweis zum Hack und die Auswirkungen auf Save.TV CatchAll
   * 2020-04-13 optionales [Channellöschen](README-ext.md#tips-zum-xxl-upgrade) trotz kostenlosem XXL Upgrade
   * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade	
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
 
-## HINWEIS ZUM KOSTENLOSEN XXL UPGRADE 26.03.bis 26.05.
-Save.TV hat aktuell kostenlos für zwei Monate neue und bestehende Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet.
+## Hinweis zum Hack vom 25.04.
+Save.TV wurde im noch nicht näher bekannten Umfang gehackt, die Server sind daher seit Samstag 25.04. nicht mehr erreichbar. [Infos dazu auf der Save.TV Webseite](https://save.tv/).
 
-Die vom Skript angelegten Channels werden bis zum 26.05.2020 auch beim Basis/XL Paket nicht gelöscht. ([mehr …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605))
+Da Save.TV vom 26.03. bis zum 26.05. alle neuen und bestehenden Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet hat ([mehr zum Upgrade …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)), besteht bei denen, die die notwendigen Channels bereits angelegt haben, bis zum 26.05. kein akuter Handlungsbedarf in Bezug auf das Save.TV CatchAll Skript.
+
+Sobald Save.TV wieder normal nutzbar ist, werde ich prüfen, welche eventuellen Anpassungen notwendig sind und die entsprechend bis zum 26.05. durchführen und hier informieren.
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
