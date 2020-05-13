@@ -12,18 +12,18 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 
 **Neueste Änderungen**
 
-  * 2020-04-28 Hinweis zum Hack und die Auswirkungen auf Save.TV CatchAll
+  * 2020-05-13 Save.TV ist wieder online, keine Skriptanpassungen notwendig
   * 2020-04-13 optionales [Channellöschen](README-ext.md#tips-zum-xxl-upgrade) trotz kostenlosem XXL Upgrade
   * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade	
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
 
-## Hinweis zum Hack vom 25.04.
-Save.TV wurde im noch nicht näher bekannten Umfang gehackt, die Server sind daher seit Samstag 25.04. nicht mehr erreichbar. [Infos dazu auf der Save.TV Webseite](https://save.tv/).
+## Save.TV ist wieder online, keine Skriptanpassungen notwendig
+Seit dem 12.05. ist Save.TV wieder online ([Zusammenfassung zum Hack auf netzwelt.de](https://www.netzwelt.de/news/178330-savetv-online-videorekorder-hackerangriff-neustart.html)). Wenn man sich ein [neues Passwort](https://reset.save.tv/) gegeben und das auch im Skript eingetragen hat ([Username und Passwort hinterlegen …](README-ext.md#username-und-passwort-hinterlegen)) funktioniert alles ohne weitere Anpassungen wieder.
 
-Da Save.TV vom 26.03. bis zum 26.05. alle neuen und bestehenden Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet hat ([mehr zum Upgrade …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)), besteht bei denen, die die notwendigen Channels bereits angelegt haben, bis zum 26.05. kein akuter Handlungsbedarf in Bezug auf das Save.TV CatchAll Skript.
+Die Server sind noch überlastet, es kann zu langen Skriptlaufzeiten und Timeouts kommen. Der Funktionstest dauert aktuell dreimal solange wie sonst `Funktionstest wurde in 31 Sekunden abgeschlossen`.
 
-Sobald Save.TV wieder normal nutzbar ist, werde ich prüfen, welche eventuellen Anpassungen notwendig sind und die entsprechend bis zum 26.05. durchführen und hier informieren.
+Da Save.TV vom 26.03. bis zum 26.05. alle neuen und bestehenden Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet hat ([mehr zum Upgrade …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)), besteht bei denen, die die notwendigen Channels bereits angelegt haben, bis zum 26.05. kein Handlungsbedarf.
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
