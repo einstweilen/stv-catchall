@@ -6,9 +6,9 @@
 
 
 ## 14.05. Save.TV Fehler bei der Channelanlage per Skript und Website
-Nachdem heute Abend der Server wieder halbwegs performant läuft, habe ich ein paar Tests durchgeführt. Während letzte Nacht 140 Channels zwar sehr langsam aber korrekt angelegt wurden, erhält das Skript laut Logdatei immer die Fehlermeldung "Dein Suchbegriff muss mindestens 1 Zeichen enthalten. Bitte wähle einen längeren Suchbegriff.".
+Nachdem heute Abend der Server wieder halbwegs performant läuft, habe ich ein paar Tests durchgeführt. Während letzte Nacht 140 Channels zwar sehr langsam aber korrekt angelegt wurden, erhält das Skript aktuell laut Logdatei immer die Fehlermeldung "Dein Suchbegriff muss mindestens 1 Zeichen enthalten. Bitte wähle einen längeren Suchbegriff.".
 
-Ich habe das dann auch online genau nach Vorschrift auf der Seite https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm ausprobiert: _Tippe TATORT in das untenstehende Suchfeld und wähle die Option "Serienchannel"_ und erhalte auch dort die gleiche Fehlermeldung:
+Ich habe das auch im Web genau nach Vorschrift auf der Seite https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm ausprobiert: _Tippe TATORT in das untenstehende Suchfeld und wähle die Option "Serienchannel"_ und erhalte auch dort die gleiche Fehlermeldung:
 Weder als Serien- noch als Stichwortchannel läßt sich 'TATORT' anlegen.
 
 ![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-channel-stoerung-sc.jpg)
@@ -18,18 +18,20 @@ Weder als Serien- noch als Stichwortchannel läßt sich 'TATORT' anlegen.
 ## 14.05. Save.TV Timeouts bei der Channelanlage
 Wer nicht unbedingt muß, sollte aktuell nur zusätzliche Sender programmieren, aber nicht die Funktion zum Bereinigen/Löschen der alten Channels verwenden, da nicht garantiert werden kann, daß die Channelanlage komplett und korrekt durchläuft.
 
-Falls man doch die kompletten Catchall Channel anlegen lassen will oder muß:
+Falls man doch die kompletten Catchall Channels anlegen lassen will oder muß:
 
 1. [Funktionstest](README-ext.md#funktionstest) `-t` durchführen, wenn der bereits Fehler zeigt, später nochmal wiederholen
-2. [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) `-c` starten, `Alles bereinigen (J/N)? : N` NEIN, `Channels und zugehörigen Programmierungen löschen (J/N/L)? : J` JA
+2. [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) `-c` starten,
+`Alles bereinigen (J/N)? : N` NEIN,
+`Channels und zugehörige Programmierungen löschen (J/N/L)? : J` JA
 3. OPTIONAL in Zeile 5 bei `err_max=5` einen sehr hohen Wert z.B. `999` wählen, damit das Skript trotz verienzelter Timeouts möglichst viele Channels anlegt
-4. Skript ohne Zusatzparamter starten, um alle Channel neu anzulegen
+4. Skript ohne Zusatzparamter starten, um alle Channels neu anzulegen
 
-Es besteht das Risiko, daß der Save.TV Server bei der Neuanlage gestört ist und man beim Test nur "Glück hatte", also wirklich nur machen, wenn erfroderlich oder alles wieder stabil läuft.
+Es besteht das **Risiko**, daß der Save.TV Server bei der Neuanlage gestört ist und man beim Test nur "Glück hatte", also wirklich nur machen, wenn erfroderlich oder alles wieder stabil läuft.
 
 
 ## 14.05. Save.TV Schnittlisten fehlen
-Zur Zeit werden keine Schnittlisten erstellt. Bei allen Senders steht bei den aktuellen Aufnahmen "Für Aufnahmen dieses Senders ist kein Werbeschnitt verfügbar", wenn man sich ältere Aufnahmen vor dem 24.04. des gleichen Sender ansieht, sind dort Schnittlisten erstellt worden.
+Zur Zeit werden keine Schnittlisten erstellt. Bei allen Senders steht bei den aktuellen Aufnahmen "Für Aufnahmen dieses Senders ist kein Werbeschnitt verfügbar", wenn man sich ältere Aufnahmen vor dem 24.04. des gleichen Sender ansieht, sind dort Schnittlisten erstellt worden, sowohl ÖR als auch Privat.
 
 Es wird wohl noch eine Weile dauern, bis alles wieder wie vorher funktioniert. Da mindestens bis zum 26.05. noch das XXL-Upgrade gilt, müssen bis dahin keine neuen Channel angelegt werden. 
 
