@@ -15,6 +15,10 @@ Weder als Serien- noch als Stichwortchannel läßt sich 'TATORT' anlegen.
 
 ![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-channel-stoerung.jpg)
 
+Auch der vom Skript für die Sender genutzte Erweiterte Channeltyp https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm liefert nur  `Internal Error`
+
+![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-timeslot-error.jpg)
+
 ## 14.05. Save.TV Timeouts bei der Channelanlage
 Wer nicht unbedingt muß, sollte aktuell nur zusätzliche Sender programmieren, aber nicht die Funktion zum Bereinigen/Löschen der alten Channels verwenden, da nicht garantiert werden kann, daß die Channelanlage komplett und korrekt durchläuft.
 
