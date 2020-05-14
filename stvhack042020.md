@@ -22,12 +22,15 @@ Falls man doch die kompletten Catchall Channels anlegen lassen will oder muß:
 
 1. [Funktionstest](README-ext.md#funktionstest) `-t` durchführen, wenn der bereits Fehler zeigt, später nochmal wiederholen
 2. [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) `-c` starten,
-`Alles bereinigen (J/N)? : N` NEIN,
-`Channels und zugehörige Programmierungen löschen (J/N/L)? : J` JA
-3. OPTIONAL in Zeile 5 bei `err_max=5` einen sehr hohen Wert z.B. `999` wählen, damit das Skript trotz verienzelter Timeouts möglichst viele Channels anlegt
+
+⋅⋅⋅`Alles bereinigen (J/N)? : N` NEIN,
+
+⋅⋅⋅`Channels und zugehörige Programmierungen löschen (J/N/L)? : J` JA
+
+3. in Zeile 5 für `err_max=5` einen sehr hohen Wert z.B. `999` wählen, damit das Skript trotz vereinzelter Timeouts möglichst viele Channels anlegt und nicht nach 5 Fehlern abbricht
 4. Skript ohne Zusatzparamter starten, um alle Channels neu anzulegen
 
-Es besteht das **Risiko**, daß der Save.TV Server bei der Neuanlage gestört ist und man beim Test nur "Glück hatte", also wirklich nur machen, wenn erfroderlich oder alles wieder stabil läuft.
+Es besteht das **Risiko**, daß der Save.TV Server bei der Neuanlage gestört ist und man beim Funktionstest nur "Glück hatte", also wirklich nur machen, wenn es erfroderlich ist oder alles wieder stabil läuft.
 
 
 ## 14.05. Save.TV Schnittlisten fehlen
