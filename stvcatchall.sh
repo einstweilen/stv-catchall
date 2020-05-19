@@ -4,15 +4,17 @@
 SECONDS=0 
 version_ist="20200413"  # Scriptversion
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
+
 #### Userdaten & Löschmodus
-stv_user=''     	      # für Autologin Username ausfüllen z.B. 612612
-stv_pass=''     	      # für Autologin Passwort ausfüllen z.B. R2D2C3PO
+[ -f "${DIR}/.stv-logindata" ] && . "${DIR}/.stv-logindata"    # Defaults aus Datei holen
+stv_user=${stv_user:=''}     	      # für Autologin Username ausfüllen z.B. 612612
+stv_pass=${stv_pass:=''}     	      # für Autologin Passwort ausfüllen z.B. R2D2C3PO
 anlege_modus=auto       # auto  (löschen bei Basis & XL, behalten bei XXL)
                         # immer (alle angelegte Channels werden nicht gelöscht)
                         # nie   (angelegte Channels werden wieder gelöscht)
 
 #### Dateipfade
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
 send_list="$DIR/stv_sender.txt"     # Liste aller Save.TV Sender
 send_skip="$DIR/stv_skip.txt"       # Liste der zu überspringenden Sender
 stvlog="$DIR/stv_ca.log"            # Ausführungs- und Fehlerlog
