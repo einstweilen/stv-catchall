@@ -4,6 +4,12 @@
     ===============================================
     ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
 
+## 22.05. Save.TV Serverprobleme 
+Auch wenn Save.TV bereits am 19. per eMail verkündete "_jetzt können wir es endlich sagen: Save.TV ist zurück!_" sind die Serverprobleme noch nicht behoben, während der Login aktuell funktioniert, liefern Sender- und Channellisten in drei von vier Fällen nur **500 - Internal server error**.
+
+Das Skript wird nächste Woche mit Auslaufen des kostenlosen XXL Upgrades robuster werden und optional selbständig die Channelanlage mehrmals wiederholen, bis sie hoffentlich erfolgreich durchgeführt werden kann.
+
+Aktuell ist ein Testen des neuen Skripts leider nicht möglich, da nicht mal die Ermittlung der freien Channels ohne 500er Fehler durchläuft.
 
 ## 14.05. Save.TV Fehler bei der Channelanlage per Skript und Website
 Nachdem heute Abend der Server wieder halbwegs performant läuft, habe ich ein paar Tests durchgeführt. Während letzte Nacht 140 Channels zwar sehr langsam aber korrekt angelegt wurden, erhält das Skript aktuell laut Logdatei immer die Fehlermeldung "Dein Suchbegriff muss mindestens 1 Zeichen enthalten. Bitte wähle einen längeren Suchbegriff.".
@@ -42,7 +48,7 @@ Zur Zeit werden keine Schnittlisten erstellt. Bei allen Senders steht bei den ak
 
 Es wird wohl noch eine Weile dauern, bis alles wieder wie vorher funktioniert. Da mindestens bis zum 26.05. noch das XXL-Upgrade gilt, müssen bis dahin keine neuen Channel angelegt werden. 
 
-## 14.05. Tip für fehleden Serienaufnahmen
+## 14.05. Tip für fehlende Serienaufnahmen
 Windowsuser sollten sich den [SERIEN! TV Serien Organizer](https://tv-forum.info/viewtopic.php?f=37&t=1123) ansehen, der Aufnahmen aus  zwei Quellen nutzen kann: Save.TV und MediathekViewWeb, der Web-Service zum Programm MediathekView, welches die Mediatheken aller Öffentlich-Rechtlichen bereitstellt.
 
 
