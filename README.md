@@ -18,8 +18,8 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
 
-## Hinweis zu den Auswirkungen des Hacks
-Zur besseren Übersicht augelagert [mehr zum Hack …](stvhack042020.md)
+## Hinweis zu den Auswirkungen des Hacks / Save.TV Ausfalls
+Zur besseren Übersicht augelagert [mehr zum Hack und Ausfall …](stvhack042020.md)
 
 ## Kostenloser Upgrade auf XXL bis zum 26.05.
 Da Save.TV vom 26.03. bis zum 26.05. alle neuen und bestehenden Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet hat ([mehr zum Upgrade …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)), besteht bei denen, die die notwendigen Channels bereits angelegt haben, bis zum 26.05. kein Handlungsbedarf.
