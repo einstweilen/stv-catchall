@@ -4,6 +4,11 @@
     ===============================================
     ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
 
+## 23.05. Kleiner Tipp Save.TV Serverprobleme 
+Da sich die Severprobleme verschlimmert haben, mittlerweile liefert auch das [Web TV Programm](https://www.save.tv/STV/M/obj/TVProgCtr/tvctShow.cfm) "500 - Internal server error", kann man notfalls auf die Mobile Apps ([iOS](https://apps.apple.com/app/id472963488?mt=8) und [Android](https://play.google.com/store/apps/details?id=com.savetv.android)) ausweichen. Die nutzen direkt die API https://api.save.tv/v3/... und funktionieren zur Zeit noch. (Getestet unter Android 11:45 Uhr)
+
+Durch Channels programmierte Aufnahmen lassen sich aktuell noch über das Web abrufen. Programmübersicht, Channelanzeige, Senderlisten funktionieren nicht.
+
 ## 22.05. Save.TV Serverprobleme 
 Auch wenn Save.TV bereits am 19. per eMail verkündete "_jetzt können wir es endlich sagen: Save.TV ist zurück!_" sind die Serverprobleme noch nicht behoben, während der Login aktuell funktioniert, liefern Sender- und Channellisten in drei von vier Fällen nur **500 - Internal server error**.
 
