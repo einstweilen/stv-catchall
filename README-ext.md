@@ -8,11 +8,11 @@
   * [Hintergrund](#hintergrund)
   * [Funktionsweise](#funktionsweise)
   * [Einrichten und Starten](#einrichten-und-starten)
-    + [Username und Passwort hinterlegen](#username-und-passwort-hinterlegen)
+    + [Username und Passwort](#username-und-passwort)
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
-    + [Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.](#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)
-        + [Tips zum XXL Upgrade](#tips-zum-xxl-upgrade)
+    + [Aufbau der Channeltitel](#aufbau-der-channeltitel)
+    + [Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.](#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung)
@@ -23,6 +23,7 @@
     + [Fehlerausgabe](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
         + [im Direktmodus](#im-direktmodus)
     	+ [im Batchmodus](#im-batchmodus)
+        + [Wiederholung der Channelanlage](#wiederholung-der-channelanlage)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](#hinweis-zur-verwendung-unter-termux)
@@ -79,15 +80,30 @@ Siehe auch [Installation auf einem Raspberry Pi mit täglicher Ausführung](#ins
 Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslastung des SaveTV Servers etwa 18 Sekunden für die vier Channels eines Senders, bei mir um die 10 bis 11 Minuten für 36 aufzunehmende Sender. 
 	
 ## Einrichten und Starten
-### Username und Passwort hinterlegen
-Die notwendigen Accountdaten, der SaveTV Username und das Passwort, können direkt im Skript in den `Zeilen 8 und 9` hinterlegt werden. Sind die Accountdaten nicht im Skript gespeichert, werden diese beim Skriptstart abgefragt
+### Username und Passwort
+Die notwendigen Accountdaten, der SaveTV Username und das Passwort, werden beim Skriptstart abgefragt und auf Wunsch für eine automatische Skriptausführung gespeichert. Die zugehörige Datei wird vom Skript angelegt.
+
+Nach der Eingabe von Username und Passwort loggt sich das Skript mit diesen Daten bei SaveTV ein und nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Login angeboten.
 
     ./stvcatchall.sh
-bzw. falls keine Daten hinterlegt sind 
+
+Die Userdaten werden autioatisch aus `stv_autologin.txt` eingelesen bzw. falls keine Daten hinterlegt sind abgefragt.
 
     ./stvcatchall.sh
-    Save.TV Username: 612612
-    Save.TV Passwort: R2D2C3PO
+    [i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben
+        Save.TV Username: 612612
+        Save.TV Passwort: R2D2C3PO
+    [✓] Login bei SaveTV als User 612612 war erfolgreich!
+        Die Zugangsdaten zum automatischen Login speichern (J/N)? : j
+    [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
+
+Sind die gespeicherten Daten nicht korrekt wird eine Fehlermeldung ausgegeben
+
+    [-] Fehler beim Login mit UserID 612612!
+        Bitte in 'stv_autologin' Username und Passwort prüfen
+    
+        Aktueller Inhalt von stv_autologin:
+        612612 FalschesPasswort
 
 ### Sender von der automatischen Aufnahme ausschließen
 Standardmäßig wird die Aufnahme **aller** Sendungen **aller** Sender programmiert. 
@@ -97,9 +113,9 @@ Durch die Datei `stv_skip.txt` können einzelne Sender von der Aufnahme ausgesch
 
 `stv_sender.txt` und `stv_skip.txt` verwenden das gleiche Format ("SenderID|Sendername" "10|KiKA").
 
-Damit man seine persönliche Skipliste einfach erstellen kann und nicht die SaveTV Sendernummern manuell raussuchen muß, wird bei jedem Skriptlauf eine aktuelle Senderliste als `stv_skip_vorlage.txt` angelegt. Dort kann man mit einem Texteditor diejenigen Sender/Zeilen entfernen, die weiterhin aufgenommen werden sollen, sodaß **nur die nicht aufzunehmenden Sender** übrigleiben.
+Damit man seine persönliche Skipliste einfach erstellen kann, wird die aktuelle Senderliste als Muster unter `stv_skip_vorlage.txt` angelegt. Dort kann man mit einem Texteditor diejenigen Sender/Zeilen entfernen, die weiterhin aufgenommen werden sollen, sodaß **nur die nicht aufzunehmenden Sender** übrigleiben.
 
-Wenn man fertig ist speichert man diese geänderte Datei unter dem Namen `stv_skip.txt` ab.
+Wenn man fertig ist, speichert man diese geänderte Datei unter dem Namen `stv_skip.txt` ab.
 
 	> cat stv_skip.txt
 	92|Disney Channel
@@ -138,22 +154,79 @@ Vom Skript angelegte Channels bleiben immer erhalten. Das Skript prüft vor dem 
 ***`anlege_modus=nie`***  
 Vom Skript angelegte Channels werden nach dem Anlegen wieder gelöscht, auch wenn mehr ungenutzte Channels verfügbar sind als benötigt werden. Der Pseudostichwortchannel mit dem Ausführungsstatus wird nicht angelegt.
 
+### Aufbau der Channeltitel
+Es werden zwei Arten von Channels durch das Skript angelegt, der Infochannel und die Senderchannels.
+Der Infochannel zeigt Statusinformationen zum letzten Skriptlauf und wird im Webinterface und der App ganz oben angezeigt, die Senderchannels werden entweder direkt nach der Anlage wieder gelöscht oder sortieren sich am Ende der Userchannelliste ein.
+
+Beispielhafte Channelliste mit automatisch vom Skript und vom XXL-User manuell angelegten Channels 
+
+	_ Upgrade auf XXL aktiv So 0524 1320
+	Hamsterikebana (manuell angelegter Stichwortchannel)
+	Tatort (manuell angelegter Serienchannel)
+	(...)
+	zz 3sat - Abend
+	zz 3sat - Nachmittag
+	zz 3sat - Nacht
+	zz 3sat - Vormittag
+	(...)
+
+#### Aufbau des Infochannels
+
+	_  OK Mi 0731 2258 Neue Version	bedeutet
+	_				Underscore am Anfang = von CatchAll angelegt
+	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
+	Mi 0731				Datum Wochentag Monat Tag
+	2258				Uhrzeit Stunde Minute
+	Neue Version			(optional) eine neuere Skriptversion ist verfügbar
+	
+#### Aufbau der Senderchannels
+Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht, beim XXL Paket soriteren sie sich ans Ende der Channelliste.
+
+	zz 3sat - Abend                 bedeutet
+	zz				zz sortiert die Catchall Channel nach hinten
+	3sat				Sendername
+	Abend				Timeslot (Vormittag,Nachmittag,Abend,Nacht)
+
 #### Tip: Channels "korrigieren"
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
-### Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.
+### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
+Eventuell übriggebliebene XXL-Channels durch einmaligen Aufruf des Skript mit der `-c` Cleanup Option bereinigen.
 
-Im [defaultmäßigen `auto` Modus](#angelegte-channels-behalten-auto-immer-nie) für die Channelanlage, erkennt das Skript seit dem 26.03. das "neue" XXL Paket anhand der 200 nutzbaren Channels (im Account steht weiterhin der gebuchte Tarif z.B. "Save.TV XL 24 Monate") und die angelegten Channels werden deshalb auch nicht wieder gelöscht. 
+    ./stvcatchall.sh -c
 
-Das Anlegen und Behalten der Channels ist eine einmalige Arbeitserleichterung für XXL Nutzer.
+Die erste Frage nach Aufräumen der Programmierungen und Aufnahmen der Skiplistensender mit **n** verneinen
 
-Beim Skriptstart wird geprüft, ob das Ausführungsdatum vor dem 27.05.2020 liegt **und** bereits vom Skript angelegte Channels vorhanden sind **und** der Modus [`auto` oder `immer` Modus](#angelegte-channels-behalten-auto-immer-nie) aktiv ist, in diesem Fall wird nur der Infochannel erstellt `_ Upgrade auf XXL aktiv` und das Skript anschließend beendet.
+    Alles bereinigen (J/N)? : n
+    
+    Prüfe die Channelliste auf von STV CatchAll angelegte Channels
 
-#### Tips zum XXL Upgrade
-* Das Löschen der angelegten Channels trotz XXL Upgrades kann durch Setzen des [`nie` Modus](#angelegte-channels-behalten-auto-immer-nie) erzwungen werden.
+und das Löschen der 'alten XXL'-Channels mit **j** bestätigen.
 
-* Wurden nicht alle gewünschten XXL Channels angelegt oder möchte man Sender aufnehmen, die vorher in der Skipliste standen, müssen zuerst mit der [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen) alle Skriptchannels gelöscht werden.
-Beim nächsten Start legt das Skript dann alle Channels gemäß der aktuellen Sender- und Skipliste an.
+    Es sind 140 vom STV CatchAll Skript angelegte Channels vorhanden,
+    beim Channellöschen bleiben bereits erfolgte *Aufnahmen erhalten*.
+
+    Hinweis: Die Option 'L' zeigt eine Liste der gefundenen STV Channels an.
+    Diese 140 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
+    Lösche 140 Channels : ...............................✓
+    Es wurden 140 Channels gelöscht.
+
+Beim nächsten Start `./stvcatchall.sh` legt das Skript dann alle Channels gemäß der aktuellen Sender- und Skipliste an.
+
+#### Falls Save.TV das XXL Upgrade verlängert
+Sollte Save.TV doch noch die XXL-Upgrade Laufzeit verlängern, erkennt das Skript die zur Verfügung stehenden 200 Channels und legt im `auto Modus` alle Channels an. Im Beispiel 35 Sender mit 35 x 4 = 140 Channels
+
+    Es werden 140 zusätzliche Channels angelegt, die Channels bleiben erhalten.
+    
+Beim nächsten Lauf wird dann erkannt, daß nicht genügend freie Channels zur Verfügung stehen (wir wissen noch nicht, wie Save.TV mit den Catchall Channels verfährt, die über die 20 Channelgrenze des XL Pakets hinausgehen) und das Skript beendet. Das ist jetzt wieder der Standardhinweis und nicht mehr der spezielle XXL Upgrade Hinweis. 
+
+    Das Skript benötigt 140 freie Channels zur Programmierung.
+    Aktuell sind bereits 140 von 200 Channels des Pakets belegt
+    Bitte manuell unter 'www.save.tv/Meine Channels' mindestens 80 Channels löschen
+    und das Skript anschließend erneut starten.
+    Alle Channels lassen sich auch mit der Option -c des Skripts löschen.
+
+Das kann man prinzipiell einfach so weiterlaufen lassen, bis das XXL-Upgrade endgültig ausgelaufen ist, dann wie oben beschrieben einmalig mit der `-c` Cleanup Option die alten XXL-Channels bereinigen.
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
@@ -173,7 +246,6 @@ Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest 
 
 Zusätzlich zum automatischen Aufruf beim ersten Skriptstart kann der Funktionstest mit den Optionen `-t` `--test` direkt aufgerufen werden.
 
-
 Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_ca.log` erkannt.
 
 #### Beispielausgabe des Funktionstests
@@ -183,6 +255,7 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Skript ist aktuell
     [✓] Schreibrechte im Skriptverzeichnis
     
+    [✓] gespeicherte Logindaten in 'stv_autologin' vorhanden
     [✓] Login mit UserID 0815 erfolgreich
     [i] Paket 'Save.TV XL 24 Monate' mit 20 Channels davon 1 benutzt
         Channelanlegemodus 'auto' wird verwendet
@@ -210,13 +283,11 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [-] Neue Skriptversion '2020-01-07' ist verfügbar, Update wird empfohlen
     [✓] Schreibrechte im Skriptverzeichnis
     
-    [-] Fehler beim Login mit UserID 373737!
-        Bitte in den Zeilen 8 und 9 Username und Passwort prüfen,
-        und danach den Funktionstest mit --test erneut starten.
-
-        Aktueller Inhalt der Zeilen 8 und 9:
-        8  stv_user='373737'       # für Autologin Username ausfüllen z.B. 612612
-        9  stv_pass='passwort'     # für Autologin Passwort ausfüllen z.B. R2D2C3PO
+    [-] Fehler beim Login mit UserID 612612!
+        Bitte in 'stv_autologin' Username und Passwort prüfen
+    
+        Aktueller Inhalt von stv_autologin:
+        612612 FalschesPasswort
 
         Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen.
         In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
@@ -250,7 +321,7 @@ Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel
 #### im Direktmodus
 Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei `stv_ca.log` an.
 
-Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=5`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
+Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=9`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
     Es sind 6 Fehler aufgetreten, das Skript wird beendet.
     AlleStörungen.de meldet in der letzten Stunde 14 Störungen 
@@ -270,7 +341,7 @@ Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang 
     : Es sind 6 Fehler aufgetreten, das Skript wird vorzeitig beendet.
     : AlleStörungen.de meldet in der letzten Stunde keine Störungen
     
-Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nichtgelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
+Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nicht gelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
 #### im Batchmodus
 Durch Auswertung des EXITcodes nach der Skriptausführung kann über die Ausgabe eventueller Anlagefehler im Statuschannel hinaus ([mehr …](#ausf%C3%BChrungsstatus-kontrollieren)) auch auf eventuell aufgetretene schwere Fehler, die zu einem Skriptabbruch geführt haben, reagiert werden.
 
@@ -279,12 +350,32 @@ Durch Auswertung des EXITcodes nach der Skriptausführung kann über die Ausgabe
 `Exitcode 1` wird für schwerwiegende Fehler wie Loginfehler oder gehäufte Fehler bei der Channelanlage verwendet, die zu einem vorzeitigen Skriptabbruch führen und bei denen deshalb vom Skript kein neuer Statuschannel angelegt werden konnte.
 Eine fehlerhafte Ausführung ist dann nur am veralteten Datum des Statuschannels oder dem gänzlichen Fehlen des Statuschannels erkennbar.
 
-`Exitcode 2` zeigt an, daß bei der Channelanlage Fehler aufgetreten sind, die sich aber unterhalb der festgelegten Grenze, defaultmäßig `err_max=5`, bewegten
+`Exitcode 2` zeigt an, daß bei der Channelanlage Fehler aufgetreten sind, die sich aber unterhalb der festgelegten Grenze, defaultmäßig `err_max=9`, bewegten
+
+#### Wiederholung der Channelanlage
+Die häufigsten Fehler treten durch eine momentane Überlastung des Webservers auf.
+
+Die bei der Channelanlage aufgetretenen Fehler werden gezählt und wenn die Gesamtfehlerzahl beim Channelanlegen unter dem Maximalwert von 9 Fehlern bleibt (konfigurierbar durch `err_max`) werden im Asnchluß bis zu 3 (konfigurierbar durch `vers_max`) weitere Versuche unternommen, die Channels anzulegen. Dabei wird zwischen den einzelnen Durchläufen jeweils eine Pause von 10 Minuten (konfigurierbar durch `vers_sleep`) eingelegt.
+
+Wird `vers_max=0` gesetzt, wird keine Wiederholung der Channelanlage durchgeführt.
+
+In Serverhochlastzeiten sollte `err_max` auf einen höheren Wert gesetzt werden, sonst bricht das Skript beim Erreichen des Maximalwerts ab, bevor der erste Durchlauf abgeschlossen wurde. Dann wird auch kein neuer Anlegeversuch durchgeführt.
+
+    Anlage der fehlerhaften Channels wird erneut versucht
+    Versuch 1 von 3, noch 3 Channels anzulegen
+    ✓ Erfolgreich angelegt: 3sat Nachmittag
+    - Fehler bei          : NDR Vormittag
+    - Fehler bei          : zdf Abend
+    Warte 600 Sekunden bis zum nächsten Durchlauf
+    Versuch 2 von 3, noch 2 Channels anzulegen
+    ✓ Erfolgreich angelegt: NDR Vormittag
+    ✓ Erfolgreich angelegt: zdf Abend
+    Alle 3 Channels konnten erfolgreich angelegt werden.
 
 ### Servicehinweis: Save.TV Aufnahme-Optionen prüfen
 Bitte vor dem ersten Skriptlauf prüfen, ob die Save.TV Einstellungen zu Vorlauf-, Nachlaufzeit und Auto-Schnittlisten den eigenen Wünschen entsprechen.
 
-[Save.TV > Account-Einstellungen > Aufnahme-Optionen](https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm?iActiveMenu=0)
+Link zu den Optionen bei [Save.TV > Account-Einstellungen > Aufnahme-Optionen](https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm?iActiveMenu=0)
 ![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-account-optionen.png)
 
 ### Tip für Mac-User
@@ -388,12 +479,14 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 Wenn man im XXL Paket 188 Channel angelegt hat und CatchAll nicht mehr verwenden möchte oder wenn die Ausführung des Skripts beim Channelanlegen abgebrochen wurde (Ctrl C, Stromausfall ...) bleiben vom Skript angelegte Channels übrig, die von Hand gelöscht werden müssen.
 
 ### Channels aufräumen Funktionsweise und Aufruf
-Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `_ ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
-Es sind 4 vom STV CatchAll Skript angelegte Channels '`_ `' vorhanden, diese Channels löschen (J/N)?  
+Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `zz ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
 
-Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Channels und die zukünftigen Programmierungen, die vorhandenen Aufnahmen bleiben erhalten.
+        Es sind 4 vom STV CatchAll Skript angelegte Channels vorhanden
+	Diese 4 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
 
-Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion`./stvcatchall.sh --cleanup` erneut aufrufen.
+Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Channels und die zukünftigen Programmierungen, die vorhandenen **Aufnahmen bleiben erhalten**.
+
+Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion `./stvcatchall.sh --cleanup` erneut aufrufen.
 
 ### Beispielausgabe der Zusatzfunktion Channels aufräumen
 Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) danach folgt:
