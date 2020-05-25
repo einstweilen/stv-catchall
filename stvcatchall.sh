@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200525'  # Scriptversion
+version_ist='20200526'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -46,6 +46,20 @@ log() {
 }
 
 
+#### https://stackoverflow.com/a/10797966
+urlencode() {
+    local data
+    data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$1" "")"
+    if [[ $? != 3 ]]; then
+        echo "[i] Fehler bei URLEncodierung von '$1'"
+        log ": Fehler bei URLEncodierung von '$1'"
+        exit 1
+    fi
+    echo "${data##/?}"
+    return 0
+}
+
+
 #### STV Webserver Login
 stv_login() {
     if [ -f "$stv_cred" ]; then
@@ -65,6 +79,7 @@ stv_login() {
     fi
     if [[ -z $stv_pass ]]; then
         read -p "    Save.TV Passwort: " stv_pass
+        stv_pass=$(urlencode $stv_pass)
         stv_manual=true
     fi
  
