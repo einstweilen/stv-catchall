@@ -18,7 +18,6 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 
 #### 2020-05-25
 1. Logindaten werden nicht mehr im Skript gespeichert ([mehr …](README-ext.md#username-und-passwort))
-ACHTUNG wenn das Passwort nicht nur aus ASCII Zeichen besteht, wird das gespeicherte Passwort falsch übermittelt, die fehlende Urlencodierung folgt ASAP
 2. Angelegte Senderchannels beginnen nicht mehr mit '_ ' sondern mit 'zz ' ([mehr …](README-ext.md#aufbau-der-channeltitel))
 3. Mit Ablauf des kostenlosen XXL-Upgrades müssen die alten XXL-Channel mit der Option -c manuell gelöscht werden ([mehr …](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605))
 4. Erneute Anlegeversuche im Fehlerfall ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
