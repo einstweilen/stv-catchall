@@ -11,24 +11,22 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
-  * 2020-05-14 Hinweis zu Channelanlegestörung
-  * 2020-05-13 Save.TV ist wieder online, keine Skriptanpassungen notwendig
-  * 2020-04-13 optionales [Channellöschen](README-ext.md#tips-zum-xxl-upgrade) trotz kostenlosem XXL Upgrade
-  * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade	
+  * 2020-05-25 [geänderter Login, Auslauf des XXL Upgrades, Channeltitel, Fehlerbehandlung](#2020-05-25)
+  * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
 
-## Hinweis zu den Auswirkungen des Hacks / Save.TV Ausfalls
-Zur besseren Übersicht augelagert [mehr zum Hack und Ausfall …](stvhack042020.md)
-
-## Kostenloser Upgrade auf XXL bis zum 26.05.
-Da Save.TV vom 26.03. bis zum 26.05. alle neuen und bestehenden Pakete auf das [XXL Paket mit 200 Channels](https://www.save.tv/lp-sah) upgegradet hat ([mehr zum Upgrade …](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)), besteht bei denen, die die notwendigen Channels bereits angelegt haben, bis zum 26.05. kein Handlungsbedarf.
+#### 2020-05-25
+1. Logindaten werden nicht mehr im Skript gespeichert ([mehr …](README-ext.md#username-und-passwort))
+2. Angelegte Senderchannels beginnen nicht mehr mit '_ ' sondern mit 'zz ' ([mehr …](README-ext.md#aufbau-der-channeltitel))
+3. Mit Ablauf des kostenlosen XXL-Upgrades müssen die alten XXL-Channel mit der Option -c manuell gelöscht werden ([mehr …](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605))
+4. Erneute Anlegeversuche im Fehlerfall ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
 
 ## Schnelleinstieg
-Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es erkennt hierfür das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den SaveTV Account überprüft.
+Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](README-ext.md#einmaliger-download))
-2. In `Zeile 8 und 9` den SaveTV Username und das Passwort eintragen ([mehr …](README-ext.md#username-und-passwort-hinterlegen))
-3. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](README-ext.md#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
+2. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](README-ext.md#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
+3. *Optional* Bei Save.TV die Einstellung der [Aufnahmeoptionen prüfen](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
 4. *Optional* Die Datei `stv_skip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
@@ -64,7 +62,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * [Hintergrund](README-ext.md#hintergrund)
   * [Funktionsweise](README-ext.md#funktionsweise)
   * [Einrichten und Starten](README-ext.md#einrichten-und-starten)
-    + [Username und Passwort hinterlegen](README-ext.md#username-und-passwort-hinterlegen)
+    + [Username und Passwort hinterlegen](README-ext.md#username-und-passwort)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
     + [Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)
@@ -79,6 +77,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Fehlerausgabe](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
         + [im Direktmodus](README-ext.md#im-direktmodus)
     	+ [im Batchmodus](README-ext.md#im-batchmodus)
+        + [Wiederholung der Channelanlage](#wiederholung-der-channelanlage)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](README-ext.md#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](README-ext.md#hinweis-zur-verwendung-unter-termux)
