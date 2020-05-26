@@ -191,60 +191,11 @@ Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht,
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
 ### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
-#### UPDATE 26.05.
-Save.TV hat das kostenlose XXL-Upgrade wie angekündigt auslaufen lassen. Bei einem XL-User werden die verfügbaren Channels wieder mit 20 angegeben. Allerdings sind die während des XXL-Upgrades angelegte Channels noch komplett vorhanden. Auf der Webseite steht "0 von 20 Channels verfügbar".
+Save.TV hat das kostenlose XXL-Upgrade wie angekündigt auslaufen lassen. Bei einem XL-User werden die verfügbaren Channels wieder mit '20' angegeben.
 
-Das Skript erkennt die 20 Channels und bricht dann ab, weil keine temporären Channels angelegt werden können
+Allerdings sind die während des XXL-Upgrades bereits darüberhinaus angelegten Channels weiterhin vorhanden.
 
-    [i] Paket 'Save.TV XL 24 Monate' mit 20 Channels davon 140 benutzt
-
-bzw. aus der Logdatei
-
-    : benötigt 4 freie Channels, bereits 140 von 20 Channels belegt
-
-D.h. wer alle Channels, die er benötigt bereits angelegt hat, wartet am besten ab, bis die Channels seitens Save.TV deaktiviert werden. 
-
-Wer für andere Zwecke freie Serien- oder Stichwortchannels benötigt, muß wie nachfolgend beschriebenen Channels löschen, um Platz zu schaffen.
-
-Die tägliche Ausführung des Skripts muß man in keinem Fall ändern, das Skript wird nichts "eigenmächtig" löschen, was es nicht während des aktuellen Laufs angeleget hat.
-
-#### Vorgehen wenn das XXL-Upgrade ausgelaufen ist
-Eventuell übriggebliebene XXL-Channels durch einmaligen Aufruf des Skript mit der `-c` Cleanup Option bereinigen.
-
-    ./stvcatchall.sh -c
-
-Die erste Frage nach Aufräumen der Programmierungen und Aufnahmen der Skiplistensender mit **n** verneinen
-
-    Alles bereinigen (J/N)? : n
-    
-    Prüfe die Channelliste auf von STV CatchAll angelegte Channels
-
-und das Löschen der 'alten XXL'-Channels mit **j** bestätigen.
-
-    Es sind 140 vom STV CatchAll Skript angelegte Channels vorhanden,
-    beim Channellöschen bleiben bereits erfolgte *Aufnahmen erhalten*.
-
-    Hinweis: Die Option 'L' zeigt eine Liste der gefundenen STV Channels an.
-    Diese 140 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
-    Lösche 140 Channels : ...............................✓
-    Es wurden 140 Channels gelöscht.
-
-Beim nächsten Start `./stvcatchall.sh` legt das Skript dann alle Channels gemäß der aktuellen Sender- und Skipliste an.
-
-#### Falls Save.TV das XXL Upgrade verlängert
-Sollte Save.TV doch noch die XXL-Upgrade Laufzeit verlängern, erkennt das Skript die zur Verfügung stehenden 200 Channels und legt im `auto Modus` alle Channels an. Im Beispiel 35 Sender mit 35 x 4 = 140 Channels
-
-    Es werden 140 zusätzliche Channels angelegt, die Channels bleiben erhalten.
-    
-Beim nächsten Lauf wird dann erkannt, daß nicht genügend freie Channels zur Verfügung stehen (wir wissen noch nicht, wie Save.TV mit den Catchall Channels verfährt, die über die 20 Channelgrenze des XL Pakets hinausgehen) und das Skript beendet. Das ist jetzt wieder der Standardhinweis und nicht mehr der spezielle XXL Upgrade Hinweis. 
-
-    Das Skript benötigt 140 freie Channels zur Programmierung.
-    Aktuell sind bereits 140 von 200 Channels des Pakets belegt
-    Bitte manuell unter 'www.save.tv/Meine Channels' mindestens 80 Channels löschen
-    und das Skript anschließend erneut starten.
-    Alle Channels lassen sich auch mit der Option -c des Skripts löschen.
-
-Das kann man prinzipiell einfach so weiterlaufen lassen, bis das XXL-Upgrade endgültig ausgelaufen ist, dann wie oben beschrieben einmalig mit der `-c` Cleanup Option die alten XXL-Channels bereinigen.
+Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
