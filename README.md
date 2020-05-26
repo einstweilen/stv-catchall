@@ -19,7 +19,7 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 #### 2020-05-25
 1. Logindaten werden nicht mehr im Skript gespeichert ([mehr …](README-ext.md#username-und-passwort))
 2. Angelegte Senderchannels beginnen nicht mehr mit '_ ' sondern mit 'zz ' ([mehr …](README-ext.md#aufbau-der-channeltitel))
-3. Mit Ablauf des kostenlosen XXL-Upgrades müssen die alten XXL-Channel mit der Option -c manuell gelöscht werden ([mehr …](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605))
+3. EDIT 2020-05-26 **Mit dem Löschen noch warten!** siehe ([mehr …](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)) ~~Mit Ablauf des kostenlosen XXL-Upgrades müssen die alten XXL-Channel mit der Option -c manuell gelöscht werden~~ 
 4. Erneute Anlegeversuche im Fehlerfall ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
 
 ## Schnelleinstieg
@@ -65,8 +65,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Username und Passwort hinterlegen](README-ext.md#username-und-passwort)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
-    + [Hinweis zum kostenlosen XXL Upgrade 26.03.bis 26.05.](README-ext.md#hinweis-zum-kostenlosen-xxl-upgrade-2603bis-2605)
-        + [Tips zum XXL Upgrade](README-ext.md#tips-zum-xxl-upgrade)    
+    + [Hinweis zum Ende das kostenlosen XXL Upgrades](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)   
     + [Tip: Channels "korrigieren"](README-ext.md#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](README-ext.md#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
