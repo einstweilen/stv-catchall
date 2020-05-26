@@ -191,6 +191,24 @@ Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht,
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
 ### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
+#### UPDATE 26.05.
+Save.TV hat das kostenlose XXL-Upgrade wie angekündigt auslaufen lassen. Bei einem XL-User werden die verfügbaren Channels wieder mit 20 angegeben. Allerdings sind die während des XXL-Upgrades angelegte Channels noch komplett vorhanden. Auf der Webseite steht "0 von 20 Channels verfügbar".
+
+Das Skript erkennt die 20 Channels und bricht dann ab, weil keine temporären Channels angelegt werden können
+
+    [i] Paket 'Save.TV XL 24 Monate' mit 20 Channels davon 140 benutzt
+
+bzw. aus der Logdatei
+
+    : benötigt 4 freie Channels, bereits 140 von 20 Channels belegt
+
+D.h. wer alle Channels, die er benötigt bereits angelegt hat, wartet am besten ab, bis die Channels seitens Save.TV deaktiviert werden. 
+
+Wer für andere Zwecke freie Serien- oder Stichwortchannels benötigt, muß wie nachfolgend beschriebenen Channels löschen, um Platz zu schaffen.
+
+Die tägliche Ausführung des Skripts muß man in keinem Fall ändern, das Skript wird nichts "eigenmächtig" löschen, was es nicht während des aktuellen Laufs angeleget hat.
+
+#### Vorgehen wenn das XXL-Upgrade ausgelaufen ist
 Eventuell übriggebliebene XXL-Channels durch einmaligen Aufruf des Skript mit der `-c` Cleanup Option bereinigen.
 
     ./stvcatchall.sh -c
