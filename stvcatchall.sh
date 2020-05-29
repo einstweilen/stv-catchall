@@ -2,26 +2,27 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200526'  # Scriptversion
+version_ist='20200529'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
 send_list="$DIR/stv_sender.txt"     # Liste aller Save.TV Sender
 send_skip="$DIR/stv_skip.txt"       # Liste der zu überspringenden Sender
-stvlog="$DIR/stv_ca.log"            # Ausführungs- und Fehlerlog
-stvprgsend="$DIR/stv_sendungen.txt" # Programmierte Sendungen
-stvcookie="$DIR/stv_cookie.txt"     # Session Cookie
+stv_log="$DIR/stv_ca_$(date '+%m%d_%H%M').log"  # Ausführungs- und Fehlerlog
 stv_cred="$DIR/stv_autologin"       # gespeicherte Zugangsdaten
+stv_cookie="$DIR/stv_cookie.txt"    # Session Cookie
 
+stv_cookie_login=false              # Permanentes Cookie verwenden (true|false)
+
+log_max=6                           # Anzahl zubehaltende Logdateien i.d.R. eine Woche
 err_flag=false                      # Flag für Bearbeitungsfehler (true|false)
 err_max=9                           # maximal erlaubte Fehler bis Skriptabbruch
                                     # EXIT Codes:   1 kritischer Fehler, Abbruch
-                                    #               2 einzelne Channels konnte nicht angelegt werden
+                                    #               2 einzelne Channels konnten nicht angelegt werden
 vers_max=3                          # Anzahl erneuter Versuche für die Channelanlage
 vers_sleep=600                      # Pause in Sekunden zwischen Durchläufen
 
 check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
-fkt_dauer=10                        # als normale angesehene Dauer für den Funktionstest
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -42,7 +43,22 @@ ca_in_preurl="_++"                  # dito URLencoded *zwei* Leerzeichen (alphab
 
 #### Logging 
 log() {
-    echo "$*" >> "$stvlog"
+    echo "$*" >> "$stv_log"
+}
+
+
+### alte Logs löschen
+log_delete () {
+    log_keep="$1"
+    log_keep=${log_keep:=$log_max}
+
+    cd "$DIR"
+    log_anz=$(ls stv_ca*.log 2>/dev/null | wc -l)
+    log_del=$((log_anz - log_keep))
+    if [[ $log_del -gt 0 ]]; then
+        rm -f $(find * -prune -name 'stv_ca*.log' | head -$((log_del)))
+    fi
+    ls stv_ca*.log 2>/dev/null | wc -l | xargs 
 }
 
 
@@ -62,45 +78,163 @@ urlencode() {
 
 #### STV Webserver Login
 stv_login() {
+
+    stv_login_cookie
+
+    if [ "$login_return" -eq 0 ]; then
+        stv_login_cred
+    else
+        return
+    fi
+
+    while [ "$login_return" -eq 0 ]; do
+        stv_login_manual
+   done
+}
+
+#### Login mit gespeichertem Cookie
+stv_login_cookie() {
+    if [ -f "$stv_cookie" ]; then
+        stv_cookie_login=true
+
+        if [[ $cmd == "-t" ]]; then
+            echo "[✓] Cookie '$(basename "$stv_cookie")' ist vorhanden"
+        fi
+        log "Logindaten aus $(basename "$stv_cookie") werden verwendet"
+
+        # um Cookiegültigkeit zu testen, stv_user ID von Accountseite holen
+        paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=2' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stv_cookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
+        stv_user=$(sed 's/.*SUSERNAME":\([^.]*\).*/\1/' <<<"$paket_return")
+
+        if grep -q "Server Error" <<< "$paket_return"; then
+            echo "[-] Login wegen Serverfehler nicht möglich"
+            echo
+            echo "[i] Skript wird abgebrochen"
+            log ': Login wegen Serverfehler nicht möglich, Skriptabbruch'
+            log "$paket_return"
+            exit 1
+        fi
+
+        if grep -q "^[0-9]\{6,7\}$" <<<"$stv_user" ; then
+            login_return=1
+            if [[ $cmd == "-t" ]]; then
+                echo "[✓] Cookie für User $stv_user ist gültig und wird verwendet"
+            fi
+            log "Cookie für User $stv_user ist gültig und wird verwendet"
+        else
+            login_return=0
+            stv_cookie_login=false
+            echo "[-] Cookie ist vorhanden, aber nicht mehr gültig"
+            echo "[i] alternative Loginmethoden werden versucht"
+            log ': Cookie ungültig, UserID Test nicht erfolgreich'
+            log "$(cat "$stv_cookie")"
+            log "paket_return: $paket_return"
+            log "paket_return EOF"
+        fi
+
+    else
+        login_return=0
+        log "Keine Cookiedatei '$(basename "$stv_cookie")' vorhanden"
+    fi
+}
+
+#### Login mit gespeicherten Zugangsdaten
+stv_login_cred() {
     if [ -f "$stv_cred" ]; then
         IFS=' ' read -r stv_user stv_pass  < "$stv_cred"
         unset IFS
         if [[ $cmd == "-t" ]]; then
             echo "[✓] gespeicherte Logindaten in '$(basename "$stv_cred")' vorhanden"
             log "Logindaten aus $(basename "$stv_cred") werden verwendet"
+        fi 
+        userpass="sUsername=$stv_user&sPassword=$stv_pass"
+        login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
+        
+        if [ "$login_return" -ne 0 ]; then
+            login_return=1
+            log "gespeicherte Zugangsdaten sind gültig"
+            # if [[ $cmd == "-t" ]]; then
+            #    echo "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
+            # fi
+        else
+            login_return=0
+            echo "[-] Gespeicherte Userdaten sind vorhanden, aber ungültig"
+            echo "[i] Manuelles Login ist notwendig"
+            log ': Userdaten in '$(basename "$stv_cred")' sind ungültig'
+            log "$(cat "$stv_cred")"
+            log "$login_return"
         fi
-        stv_manual=false
-    fi
-
-    if [[ -z $stv_user ]]; then
-        echo "[i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben"
-        read -p "    Save.TV Username: " stv_user
-        stv_manual=true
-    fi
-    if [[ -z $stv_pass ]]; then
-        read -p "    Save.TV Passwort: " stv_pass
-        stv_pass=$(urlencode $stv_pass)
-        stv_manual=true
-    fi
- 
-    userpass="sUsername=$stv_user&sPassword=$stv_pass"
-    login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stvcookie" | grep -c -F "user_id\": $stv_user")
-
-    if [ ! -f "$stv_cred" ] && [ "$login_return" -ne 0 ] && [ "$stv_manual" = true ]; then
-    echo "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
-        read -p '    Die Zugangsdaten zum automatischen Login speichern (J/N)? : ' login_jn
-        if [[ $login_jn == "J" || $login_jn == "j" ]]; then
-            echo "$stv_user $stv_pass" >"$stv_cred" 
-            echo "[i] Zugangsdaten wurden in '$(basename "$stv_cred")' gespeichert"
-        fi
+    else
+    log "Keine Zugangsdatendatei '$(basename "$stv_cred")' vorhanden"
     fi
 }
 
+### Login mit Eingabe der Zugangsdaten
+stv_login_manual() {
+    rm -f "$stv_cookie"
+    rm -f "$stv_cred"
+    echo    "[i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben"
+    read -p "    Save.TV Username: " stv_user
+    read -p "    Save.TV Passwort: " stv_pass
+    stv_pass=$(urlencode "$stv_pass")
+
+    userpass="sUsername=$stv_user&sPassword=$stv_pass&bAutoLoginActivate=1"
+    login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
+
+    if [ "$login_return" -ne 0 ]; then
+        echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
+        echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
+        read -p '    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? : ' login_opt
+        case $login_opt in
+            [cC]  )
+                cookie_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitAutoLogin.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Origin: https://www.save.tv' -H 'DNT: 1' -H 'Connection: keep-alive' --cookie "$stv_cookie" --cookie-jar "$stv_cookie" -H 'TE: Trailers' --data-raw 'IsAutoLogin=64&Messages=')
+                if grep -q "Die Änderung war erfolgreich" <<< "$cookie_return"; then
+                    stv_cookie_login=true
+                    echo "[✓] Auto-Login im Save.TV Account aktiviert"
+                    echo "[i] Das Cookie '$(basename "$stv_cookie")' bleibt dauerhaft gespeichert"
+                    rm -f "$stv_cred"
+                else
+                    stv_cookie_login=false
+                    echo "[-] Auto-Login konnte nicht aktiviert werden"
+                    echo "    erneut versuchen oder andere Option wählen"
+                    log ": Auto-Login konnte nicht aktiviert werden"
+                    log "$cookie_return"
+                    exit 1
+                fi
+                ;;
+            [dD]  )
+                stv_cookie_login=false
+                echo "$stv_user $stv_pass" >"$stv_cred"
+                echo "[i] Zugangsdaten wurden in '$(basename "$stv_cred")' gespeichert"
+                ;;
+            *)
+                echo "[i] Zugangsdaten werden bei jedem Login erneut abgefragt"
+                ;;
+        esac
+    else
+        if grep -q "Server Error" <<< "$login_return"; then
+            echo "[-] Manuelles Login wegen Serverfehler nicht möglich"
+            echo
+            echo "[i] Skript wird abgebrochen"
+            log ': Manuelles Login wegen Serverfehler nicht möglich, Skriptabbruch'
+            log "$login_return"
+            exit 1
+        fi
+        echo "[-] Login mit diesen Userdaten nicht möglich"
+        echo "    Username und Passwort prüfen und Eingabe wiederholen"
+        echo
+    fi    
+}
 
 #### STV Webserver Logout
-stv_logout() {
-            curl -s 'https://www.save.tv/STV/M/obj/user/usLogout.cfm' -H 'Accept-Encoding: gzip, deflate, sdch, br' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' -H 'Upgrade-Insecure-Requests: 1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' --cookie "$stvcookie" -H 'Connection: keep-alive' --compressed >/dev/null 2>&1
-            rm "$stvcookie"
+stv_logout() {     
+            if [[ $stv_cookie_login == true ]]; then
+                curl -s 'https://www.save.tv/STV/M/obj/user/usLogout.cfm' -H 'Accept-Encoding: gzip, deflate, sdch, br' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' -H 'Upgrade-Insecure-Requests: 1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' --cookie "$stv_cookie" -H 'Connection: keep-alive' --compressed >/dev/null 2>&1
+                log "Login mit Cookie aktiv, Session Cookie behalten"
+            else
+                rm -f "$stv_cookie"
+                log "Session Cookie gelöscht"
+            fi
 }
 
 
@@ -108,7 +242,7 @@ stv_logout() {
 senderliste_holen() {
     err_senderliste=false
     if [ ! -f "$send_list" ]; then
-        sender_return=$(curl -s 'https://www.save.tv/STV/M/obj/JSON/TvStationGroupsApi.cfm?iFunction=2&loadTvStationsWithAllStationOption=true&bIsMemberarea=true'  -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive')
+        sender_return=$(curl -s 'https://www.save.tv/STV/M/obj/JSON/TvStationGroupsApi.cfm?iFunction=2&loadTvStationsWithAllStationOption=true&bIsMemberarea=true'  -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stv_cookie" -H 'Connection: keep-alive')
         if grep -q "Server Error" <<< "$sender_return"; then
             err_senderliste=true
             log ': Senderliste konnte nicht geholt werden'
@@ -117,9 +251,8 @@ senderliste_holen() {
         fi
         echo "$sender_return" | sed 's/.*)"},{//g ; s/"},{"ID":/;/g ; s/,"NAME":"/|/g ; s/"ID"://g ; s/"}]}//g' | tr ';' '\n' >"$send_list"
         log 'Aktualisierte Senderliste vom Server geholt'
-
     fi
-    sender_alle=$(cat "$send_list" | wc -l | xargs)
+    sender_alle=$(wc -l < "$send_list" | xargs)
     cp "$send_list" "$DIR/stv_skip_vorlage.txt"
 
     if [ ! -f "$send_skip" ]; then
@@ -171,6 +304,9 @@ channelanz_check() {
         echo "Alle Channels lassen sich auch mit der Option -c des Skripts löschen."
         log ": benötigt $ch_nec freie Channels, bereits $ch_use von $ch_max Channels belegt"
         log ": mindestens $((ch_nec - ch_fre)) Channels löschen"
+        if [[ ch_fre -ne 0 ]]; then
+            channelinfo_set "zuwenige+freie+Channels"
+        fi
         exit 1
     fi
 
@@ -209,7 +345,7 @@ sender_info() {
 
 #### Liste der ChannelIDs und Channelnamen ####
 channel_liste() {     
-    allchannels=$(curl -sL 'https://www.save.tv/STV/M/obj/channels/JSON/myChannelsApi.cfm?iFunction=1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" -H 'Cache-Control: max-age=0')
+    allchannels=$(curl -sL 'https://www.save.tv/STV/M/obj/channels/JSON/myChannelsApi.cfm?iFunction=1' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" -H 'Cache-Control: max-age=0')
     
     ch_max=$(grep -o "IMAXCHANNELS[^\.]*" <<< "$allchannels"| grep -o "[0-9]*$")
     if [[ -z $ch_max ]]; then
@@ -313,7 +449,7 @@ channel_senderid_timeframe_anlegen() {
 
     ch_title=$(tr ' ' '+' <<<"$ca_ch_pre$sendername - ${tageszeit[$timeframe]}") # minimal URLencoding
 
-    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")            
+    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stv_cookie" -H 'Connection: keep-alive' --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")            
     if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
         log "+ '${tageszeit[$timeframe]}' "
         ch_ok=true
@@ -352,7 +488,7 @@ iterum() {          #AnzahlVersuche #Pause
                 sendername=${err_sendername[err_akt]}
                 timeframe=${err_timeframe[err_akt]}
                 ch_title=$(tr ' ' '+' <<<"$ca_ch_pre$sendername - ${tageszeit[$timeframe]}") # minimales URLencoding
-                channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")            
+                channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stv_cookie" -H 'Connection: keep-alive' --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")            
                 if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
                     ((err_ges--)); ((err_fix++))
                     err_senderid[err_akt]=0         # Flag 'nicht mehr versuchen'
@@ -399,8 +535,7 @@ channels_loeschen() {
             # channel_id
             # deleteProgrammedRecords 0=behalten 1=löschen
             # deleteReadyRecords 0=behalten 1=löschen
-            delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$chid&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie")           
-            # delete_return OK {"SMESSAGE":"Channel gelöscht"}
+            delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$chid&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie")
             if grep -q "Channel gelöscht" <<< "$delete_return"; then
                 log "- '$(sed 's/.* - //' <<< "${ch_sid[i]}")' "
             else
@@ -434,7 +569,7 @@ channelinfo_set() {
     fi
     
     ch_text="sTelecastTitle=$ca_in_preurl$1+${wochentag[$(date '+%w')]}+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
-    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")  
+    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stv_cookie" -H 'Connection: keep-alive' --data "$ch_text")  
 }
 
 
@@ -442,7 +577,7 @@ channelinfo_set() {
 channelinfo_del() {
     stvchinfo=$(grep -o "[0-9]*|$ca_in_pre" <<< "${ch_in[*]}" | head -1 | grep -o "[0-9]*") 
     if [[ stvchinfo -gt 0 ]]; then
-        delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie")
+        delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie")
         channel_liste   # aktualisierte Channelliste holen und erneut Anzahl der Channels ermitteln
     fi
 }
@@ -460,7 +595,7 @@ channel_cleanup() {
                 stvchinfo=$(grep -o "^[0-9]*" <<< "$ch_test")
                 if [[ stvchinfo -gt 0 ]]; then
                     log "CA Channel löschen $ch_test"
-                    delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie")   
+                    delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie")   
                     if [[ "$delete_return" == *"Channel gelöscht"* ]]; then 
                         echo -n "."
                         ((ch_del++))
@@ -477,7 +612,7 @@ channel_cleanup() {
         echo
         echo "Es wurden $ch_del Channels gelöscht."
         if [[ $err_flag = true ]]; then
-            echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stvlog"'')!"
+            echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
         fi   
     else
         echo "Es sind keine Channels vorhanden."
@@ -528,7 +663,7 @@ sender_bereinigen() {
         if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
             echo "Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste"
             # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
-            list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data '')
+            list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data '')
             
             del_ids_tot=0       # Gesamtsumme der TelecastIds
             del_ids_err=false   # Flag für mgl. Fehler
@@ -536,7 +671,7 @@ sender_bereinigen() {
                 sendername=${skip_name[i]}
                 senderid=${skip_id[i]}
                 if [[ senderid -gt 0 ]]; then     
-                    list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
+                    list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
                     temp_te=$(grep -o "IENTRIESPERPAGE.*ITOTALPAGES"<<< "$list_return" | grep -o '"ITOTALENTRIES":[0-9]*'); totalentries=${temp_te#*:}
                     totalpages=$(grep -o '"ITOTALPAGES":[0-9]*' <<< "$list_return" | grep -o "[0-9]*$")
                     log "$sendername hat $totalentries zu löschende Einträge auf $totalpages Seiten" 
@@ -545,11 +680,11 @@ sender_bereinigen() {
                         echo -n "'$sendername' hat $totalentries Einträge, beginne Löschung : "
                         del_ids_tot=$((del_ids_tot + totalentries))  
                         for ((page=1; page<=totalpages; page++)); do
-                            list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
+                            list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
                             delete_ids=$(grep -o "TelecastId=[0-9]*" <<< "$list_return" | sed 's/TelecastId=\([0-9]*\)/\1%2C/g' | tr -d '\n')                        
                             if [ -n "$delete_ids" ]; then               
                                 log "Lösche $senderid|$sendername : $delete_ids"
-                                delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data "lTelecastID=$delete_ids")
+                                delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "lTelecastID=$delete_ids")
                                 if [[ "$delete_return" == *"ok"* ]]; then 
                                     echo -n "."
                                 else
@@ -567,7 +702,7 @@ sender_bereinigen() {
                 fi
             done
             if [[ $del_ids_err = true ]]; then
-                echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stvlog"'')!"
+                echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
                 echo
             fi
             if [[ del_ids_tot -gt 0 ]]; then
@@ -648,14 +783,14 @@ abbrechen() {
 #### Funktionstest Channelanlage prüfen
 fkt_ch_anlegen() {
     ch_text="sTelecastTitle=$ca_in_preurl+$(date '+%m%d+%H%M')+Funktionstest&channelTypeId=3"
-    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stvcookie" -H 'Connection: keep-alive' --data "$ch_text")
+    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie "$stv_cookie" -H 'Connection: keep-alive' --data "$ch_text")
     if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
         ch_ok=true
     else
         ch_ok=false
         log "Testchannel konnte nicht angelegt werden"
         log "REQUEST"
-        log ": curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie \"$stvcookie\" -H 'Connection: keep-alive' --data \"$ch_text\""
+        log ": curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' --cookie \"$stv_cookie\" -H 'Connection: keep-alive' --data \"$ch_text\""
         log "ANSWER"
         log ": $channel_return"
     fi
@@ -668,7 +803,7 @@ fkt_ch_delete() {
         if [[ $ch_test == *Funktionstest* ]]; then
             stvchinfo=$(grep -o "^[0-9]*" <<< "$ch_test")
             if [[ stvchinfo -gt 0 ]]; then
-                delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie")   
+                delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=$stvchinfo&deleteProgrammedRecords=0&deleteReadyRecords=0" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie")   
                 if [[ "$delete_return" == *"Channel gelöscht"* ]]; then 
                     ch_ok=true
                 else
@@ -705,14 +840,13 @@ fkt_stoerung_info() {
 }
 
 funktionstest() {
-    SECONDS=0 
     clear ; banner
     cmd="-t"
     echo 'Funktionstest auf korrekte Logindaten und verfügbare Channels wird durchgeführt.'
     echo
 
     # 01 Script testen
-    echo "$(date) Funktionstest begonnen" > "$stvlog"
+    echo "$(date) Funktionstest begonnen" > "$stv_log"
 
     versioncheck
     if [[ $check_version == "true" ]]; then
@@ -727,7 +861,7 @@ funktionstest() {
         echo "[i] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
     fi
 
-    if [ ! -f "$stvlog" ]; then
+    if [ ! -f "$stv_log" ]; then
         echo "[-] Keine Schreibrechte im Skriptverzeichnis vorhanden"
         echo "    Verzeichnis $DIR prüfen"
         exit 1
@@ -741,7 +875,10 @@ funktionstest() {
     echo
     stv_login
     if [[ $login_return -ne 0 ]]; then
-        echo "[✓] Login mit UserID $stv_user erfolgreich"
+        SECONDS=0 
+        if [[ $stv_cookie_login == false ]]; then
+            echo "[✓] Login mit UserID $stv_user erfolgreich"
+        fi
     else
         echo "[-] Fehler beim Login mit UserID $stv_user!"
         echo "    Bitte in $(basename "$stv_cred") Username und Passwort prüfen,"
@@ -755,21 +892,23 @@ funktionstest() {
         exit 1
     fi
         
-    # 03 gebuchtes Paket, freie Channels, Senderliste
-    paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=7' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
-    paket=$(sed 's/.*SNAME":"\([^"]*\).*/\1/' <<<"$paket_return")
-    
-    rec_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=1' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stvcookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
+    # 03 gebuchtes Paket, freie Channels, Senderliste, Aufnahmen
+    paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=2' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stv_cookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
+    paket_art=$(sed 's/.*SCURRENTARTICLENAME":"\([^"]*\).*/\1/' <<<"$paket_return")
+    paket_bis=$(sed 's/.*DCURRENTARTICLEENDDATE":"\([^ ]*\).*/\1/' <<<"$paket_return")
+    stv_user=$(sed 's/.*SUSERNAME":\([^.]*\).*/\1/' <<<"$paket_return")
+
+    rec_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=1' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --cookie "$stv_cookie" -H 'Cache-Control: max-age=0' -H 'TE: Trailers')
     rec_vor=$(sed 's/.*ISTARTRECORDINGBUFFER":\([0-9]*\).*/\1/' <<<"$rec_return")
     rec_nach=$(sed 's/.*IENDRECORDINGBUFFER":\([0-9]*\).*/\1/' <<<"$rec_return")
     rec_auto=$(sed 's/.*BAUTOADCUTENABLED":\([0-9]*\).*/\1/' <<<"$rec_return")
     if [[ $rec_auto = "1" ]]; then rec_auto="AN" ; else rec_auto="AUS" ; fi
     
-    if [[ $paket != *"Save"* ]]; then
+    if [[ $paket_art != *"Save"* ]]; then
         echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
         echo '    Es kann auch eine allgemeine Störung vorliegen'
         fkt_stoerung_info
-        log "Fehler bei Paketname: '$paket'"
+        log "Fehler bei Paketname: '$paket_return'"
         exit 1
     fi
 
@@ -785,8 +924,16 @@ funktionstest() {
         exit 1
     fi
 
-    echo "[i] Paket '$paket' mit $ch_max Channels davon $ch_use benutzt"
+    prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=2&sSortOrder=StartDateASC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
+    prog_zukunft=$(sed 's/.*ITOTALENTRIES\":\([0-9]*\).*/\1/'<<< "$prog_return")
+
+    prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=1&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
+    prog_vorhanden=$(sed 's/.*ITOTALENTRIES\":\([0-9]*\).*/\1/'<<< "$prog_return")
+
+    echo "[i] Paket '$paket_art', Laufzeit bis zum $paket_bis"
+    echo "    $ch_max Channels enthalten, davon aktuell $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
+    echo "    Sendungen aufgenommen $prog_vorhanden, Sendungen programmiert $prog_zukunft"
     echo
     echo "[i] Eingestellte Pufferzeiten und Aufnahmeoptionen"
     printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
@@ -863,21 +1010,19 @@ funktionstest() {
     fi
 
     # 07 ausloggen
+    if [[ $stv_cookie_login == false ]]; then
+        echo
+        stv_logout
+        echo "[✓] Logout durchgeführt"
+    fi
+
     echo
-    stv_logout
-    echo "[✓] Logout durchgeführt"
+    echo "[i] Prüfe auf von Usern gemeldete Störungen"
+    fkt_stoerung_info
 
     # Status ausgeben
-    echo
     echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     log "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
-    if [[ SECONDS -gt fkt_dauer ]]; then
-        echo "[-] Der Funktionstest hat länger als die erwarteten $fkt_dauer Sekunden benötigt!"
-    else
-        echo "[✓] Laufzeit des Funktionstests liegt im erwarteten Bereich"
-    fi
-    echo
-    fkt_stoerung_info
     exit 0
 }
 
@@ -927,9 +1072,9 @@ banner() {
 
 #### Hauptroutine ####
 
-    cmd=$1    
- 
-    if [[ ! -f "$stvlog" ||  $cmd == "--test" ||  $cmd == "-t" ]]; then
+    cmd=$1
+
+    if [[ $(log_delete "$log_max") -eq 0 ||  $cmd == "--test" ||  $cmd == "-t" ]]; then
         read -p 'Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
         if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
             funktionstest
@@ -938,7 +1083,7 @@ banner() {
         fi
     fi
 
-    echo "Beginn: $(date)" > "$stvlog"
+    echo "Beginn: $(date)" > "$stv_log"
 
     if [[ $cmd == "-?" || $cmd == "--help" ]]; then
         log "Hilfetext mit $cmd aufgerufen"
@@ -988,30 +1133,22 @@ banner() {
                 else    
                     echo "Es wurden $ch_angelegt Channels dauerhaft angelegt."
                 fi
-                
-                if [ ! -f "$stvprgsend" ]; then
-                    echo '0' >"$stvprgsend" # keine Liste vorhanden?
-                fi
-                pro_vor=$( grep -o "[0-9][0-9]*" "$stvprgsend" )
-                
-                prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stvcookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=2&sSortOrder=StartDateASC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
-                temp_te=$(grep -o "IENTRIESPERPAGE.*ITOTALPAGES"<<< "$prog_return" | grep -o '"ITOTALENTRIES":[0-9]*') ; pro_nach=${temp_te#*:}
-                echo "$pro_nach" >"$stvprgsend"
-                
-                pro_delta=$((pro_nach-pro_vor))
-                echo "Programmierte Sendungen beim letzten Lauf: $pro_vor aktuell: $pro_nach Delta: $pro_delta"
-                log "Programmierte Sendungen beim letzten Lauf: $pro_vor aktuell: $pro_nach Delta: $pro_delta"
             else
                 echo "Es wurden keine neuen Channels angelegt."	
             fi
 
+            prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=2&sSortOrder=StartDateASC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
+            prog_zukunft=$(sed 's/.*ITOTALENTRIES\":\([0-9]*\).*/\1/'<<< "$prog_return")
+            echo "Aktuell sind  $prog_zukunft Sendungen zur Aufnahme programmiert"
+            log "Programmierte Sendungen Stand $(date '+%m%d+%H%M'): $prog_zukunft"
+
             if [[ $err_flag = true ]]; then
                 echo "Achtung! Es sind nicht behebbare Fehler bei der Channelanlage aufgetreten."
-                echo "Details siehe Logdatei $stvlog"
+                echo "Details siehe Logdatei $stv_log"
                 echo
                 echo "------"
                 echo
-                grep "^:" "$stvlog"   # nur schwerwiegende Fehler anzeigen
+                grep "^:" "$stv_log"   # nur schwerwiegende Fehler anzeigen
                 channelinfo_set "FEHLER+$err_ges"
             else 
                 channelinfo_set OK
