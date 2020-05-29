@@ -18,7 +18,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
-  * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#wechsel-zwischen-den-loginoptionen), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+  * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#erstes-login-und-manuelles-login), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
   * 2020-05-25 [Logindaten werden nicht mehr im Skript](README-ext.md#username-und-passwort),
 [Auslauf des XXL Upgrades](https://github.com/einstweilen/stv-catchall/issues/3),
 [Channeltitel](README-ext.md#aufbau-der-channeltitel),
