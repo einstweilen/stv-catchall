@@ -11,16 +11,9 @@ Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter An
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
-  * 2020-05-25 [geänderter Login, Auslauf des XXL Upgrades, Channeltitel, Fehlerbehandlung](#2020-05-25)
+  * 2020-05-25 geänderter Login ([mehr …](README-ext.md#username-und-passwort)), Auslauf des XXL Upgrades ([mehr …](https://github.com/einstweilen/stv-catchall/issues/3)), Channeltitel ([mehr …](README-ext.md#aufbau-der-channeltitel)), Fehlerbehandlung ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
   * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
-  * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
-
-#### 2020-05-25
-1. Logindaten werden nicht mehr im Skript gespeichert ([mehr …](README-ext.md#username-und-passwort))
-2. Angelegte Senderchannels beginnen nicht mehr mit '_ ' sondern mit 'zz ' ([mehr …](README-ext.md#aufbau-der-channeltitel))
-3. EDIT 2020-05-26 **Mit dem Löschen noch warten!** siehe ([mehr …](https://github.com/einstweilen/stv-catchall/issues/3)) ~~Mit Ablauf des kostenlosen XXL-Upgrades müssen die alten XXL-Channel mit der Option -c manuell gelöscht werden~~ 
-4. Erneute Anlegeversuche im Fehlerfall ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
