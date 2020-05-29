@@ -9,6 +9,9 @@
   * [Funktionsweise](#funktionsweise)
   * [Einrichten und Starten](#einrichten-und-starten)
     + [Username und Passwort](#username-und-passwort)
+        + [Erstes Login und manuelles Login](#erstes-login-und-manuelles-login)
+        + [Automatisches Login](#automatisches-login)
+        + [Wechsel zwischen den Loginoptionen](#wechsel-zwischen-den-loginoptionen)
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Aufbau der Channeltitel](#aufbau-der-channeltitel)
@@ -81,29 +84,62 @@ Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslast
 	
 ## Einrichten und Starten
 ### Username und Passwort
-Die notwendigen Accountdaten, der SaveTV Username und das Passwort, werden beim Skriptstart abgefragt und auf Wunsch für eine automatische Skriptausführung gespeichert. Die zugehörige Datei wird vom Skript angelegt.
-
-Nach der Eingabe von Username und Passwort loggt sich das Skript mit diesen Daten bei SaveTV ein und nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Login angeboten.
-
-    ./stvcatchall.sh
-
-Die Userdaten werden autioatisch aus `stv_autologin.txt` eingelesen bzw. falls keine Daten hinterlegt sind abgefragt.
+#### Erstes Login und manuelles Login 
+Die Accountdaten, der Save.TV Username und das Passwort, werden beim Skriptstart abgefragt und auf Wunsch für eine automatische Skriptausführung gespeichert.
 
     ./stvcatchall.sh
     [i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben
         Save.TV Username: 612612
         Save.TV Passwort: R2D2C3PO
     [✓] Login bei SaveTV als User 612612 war erfolgreich!
-        Die Zugangsdaten zum automatischen Login speichern (J/N)? : j
-    [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
+Nach der Eingabe von Username und Passwort loggt sich das Skript mit diesen Daten bei Save.TV ein, sind die eingegeben Daten nicht korrekt, kann die Eingabe direkt wiederholt werden.
 
-Sind die gespeicherten Daten nicht korrekt wird eine Fehlermeldung ausgegeben
+    [-] Login mit diesen Userdaten nicht möglich
+        Username und Passwort prüfen und Eingabe wiederholen
+    [i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben
+        Save.TV Username: 
+Nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Login angeboten.
+
+Das Speichern in der Username-Passwort-Datei `stv_autologin.txt` ist robutser, bei der Cookiedatei kann dafür niemand die Userdaten so leicht auslesen, da nur die SessionID gespeichert wird.
+
+        Die Zugangsdaten können zum automatischen Login gespeichert werden
+	    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? :
+	
+#### Option 'D' Speicherung in Datei 
+    [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
+	
+#### Option 'C' Speicherung in persistenten Cookie
+    [✓] Auto-Login im Save.TV Account aktiviert
+    [i] Das Cookie 'stv_cookie.txt' bleibt dauerhaft gespeichert
+ 
+bei Problemen mit der Cookie-Option, bitte Feedback in [#4 Persistentes Login-Cookie kann ungültig werden](https://github.com/einstweilen/stv-catchall/issues/4) posten.
+### Automatisches Login
+Ist die Datei `stv_autologin.txt` oder `stv_cookie.txt` vorhanden, erfolgt das Login automatisch.
+
+    ./stvcatchall.sh
+    [✓] Login bei SaveTV als User 612612 war erfolgreich!
+bzw.
+
+    [✓] Cookie ist gültig und wird verwendet
+    
+### Wechsel zwischen den Loginoptionen
+Das Skript erkennt die zuverwendene Loginoption Datei/Cookie/manuell anhand des Vorhandenseins der Dateien `stv_cookie.txt` bzw. `stv_autologin.txt`. Für den Wechsel zu einer anderen Option, diese Dateien im Skriptverzeichnis löschen, beim nächsten Skriptstart erscheint dann der initiale Auswahldialog (siehe [Erstes Login und manuelles Login](#erstes-login-und-manuelles-login)). Am besten startet man hierfür das Skript mit der Funktionstestoption `-t`.
+
+#### Login Fehler
+Sind die gespeicherten Daten nicht mehr korrekt, wird eine entsprechende Fehlermeldung ausgegeben bzw. um die Eingabe neuer Daten gebeten.
 
     [-] Fehler beim Login mit UserID 612612!
         Bitte in 'stv_autologin' Username und Passwort prüfen
     
         Aktueller Inhalt von stv_autologin:
-        612612 FalschesPasswort
+        612612 FalschesPasswort	
+		
+Bei einem abgelaufenen Cookie wird automatisch die Eingabe von Username und Passwort angeboten, um ein neues Cookie zu erhalten oder optional auf die Speicherung der Zugangsdaten in einer Datei zu wechseln. 
+
+    [-] Cookie ist vorhanden, aber nicht mehr gültig
+    [i] alternative Loginmethoden werden versucht
+    
+Bei einem Überlast 500er Serverfehler beim Login, wird das Skript direkt beendet.
 
 ### Sender von der automatischen Aufnahme ausschließen
 Standardmäßig wird die Aufnahme **aller** Sendungen **aller** Sender programmiert. 
@@ -161,14 +197,14 @@ Der Infochannel zeigt Statusinformationen zum letzten Skriptlauf und wird im Web
 Beispielhafte Channelliste mit automatisch vom Skript und vom XXL-User manuell angelegten Channels 
 
 	_ Upgrade auf XXL aktiv So 0524 1320
-	Hamsterikebana (manuell angelegter Stichwortchannel)
-	Tatort (manuell angelegter Serienchannel)
+	Hamsterikebana  (z.B. manuell angelegter Stichwortchannel)
+	Tatort          (z.B. manuell angelegter Serienchannel)
 	(...)
 	zz 3sat - Abend
 	zz 3sat - Nachmittag
-	zz 3sat - Nacht
-	zz 3sat - Vormittag
 	(...)
+	zz zdfinfo - Nacht
+	zz zdfinfo - Vormittag
 
 #### Aufbau des Infochannels
 
@@ -191,9 +227,7 @@ Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht,
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
 ### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
-Save.TV hat das kostenlose XXL-Upgrade wie angekündigt auslaufen lassen. Bei einem XL-User werden die verfügbaren Channels wieder mit '20' angegeben.
-
-Allerdings sind die während des XXL-Upgrades bereits darüberhinaus angelegten Channels weiterhin vorhanden.
+Das kostenlose XXL Upgrade ist auch nach dem 26.05. noch aktiv, es werden 200 Channels im XL-Paket angezeigt.
 
 Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
 
@@ -225,9 +259,11 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Schreibrechte im Skriptverzeichnis
     
     [✓] gespeicherte Logindaten in 'stv_autologin' vorhanden
-    [✓] Login mit UserID 0815 erfolgreich
-    [i] Paket 'Save.TV XL 24 Monate' mit 20 Channels davon 1 benutzt
+    [✓] Login mit UserID 612612 erfolgreich
+    [i] Paket 'Save.TV XL 24 Monate', Laufzeit bis zum 2020-12-31
+        20 Channels enthalten, davon aktuell 10 benutzt
         Channelanlegemodus 'auto' wird verwendet
+        Sendungen aufgenommen 136674, Sendungen programmiert 9662
 
     [i] Eingestelle Pufferzeiten und Aufnahmeoptionen
         Vorlaufzeit: 5 Min.   Nachlaufzeit: 20 Min. Auto-Schnittlisten: AN
@@ -245,8 +281,12 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     
     [✓] Logout durchgeführt
   
-    [i] Funktionstest wurde in 6 Sekunden abgeschlossen
-    [✓] Laufzeit des Funktionstest liegt im erwarteten Bereich   
+    [i] Prüfe auf von Usern gemeldete Störungen
+        Auf AlleStörungen.de wurden in den letzten 24 Std. 74 Störungen gemeldet,
+        letzte Meldung um 2020-01-07 15:46:38. Letzte Stunde gab es keine Störungen.
+        Stand: 2020-01-07 18:46:38 <https://AlleStörungen.de/stoerung/save-tv/>
+	
+    [i] Funktionstest wurde in 9 Sekunden abgeschlossen
 
 #### Beispielausgabe des Funktionstests mit Loginfehler
     [-] Neue Skriptversion '2020-01-07' ist verfügbar, Update wird empfohlen
@@ -288,16 +328,18 @@ Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel
 
 ### Fehler während der Skriptausführung
 #### im Direktmodus
-Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei `stv_ca.log` an.
+Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei an.
+
+Die Logdatei hat das Format `stv_ca_TAG_UHRZEIT.log z.B. stv_ca_0529_2050.log`, es werden die Logs der letzten sieben (sechs alte Logs plus dem aktuellen) Skriptausführungen aufgehoben, konfigurierbar durch `log_max`.
 
 Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=9`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
     Es sind 6 Fehler aufgetreten, das Skript wird beendet.
     AlleStörungen.de meldet in der letzten Stunde 14 Störungen 
 
-Meistens treten Fehler auf, wenn die SaveTV Server im Moment überlastet sind. Bei einem erneuten Skriptlauf werden diese Channels wieder ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft.
+Meistens treten Fehler auf, wenn die SaveTV Server im Moment der Channelanlage überlastet sind. Bei einem späteren Anlegeversuch werden diese Channels ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft. Zusätzlich werden am Ende der Skriptsusführung einstellbar häufige Versuche der erneuten Channelanlage durchgeführt ([mehr ](#wiederholung-der-channelanlage)).
 
-Die konkrete Serverfehlermeldung ist in der Logdatei `stv_ca.log` enthalten.
+Die konkrete Serverfehlermeldung ist in der Logdatei `stv_ca_TAG_UHRZEIT.log` enthalten.
 Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang markiert.
 
     : *** Fehler *** bei 2 arte Nachmittag
@@ -379,9 +421,9 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
     
     Channels + anlegen  - löschen  ✓ Sender programmiert  F_ehler&Anzahl
     Sender : ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓ 
-
+    
     144 Channels wurden angelegt und wieder gelöscht.
-    Programmierte Sendungen beim letzten Lauf: 10182 aktuell: 10231 Delta: 49
+    Aktuell sind 10243 Sendungen zur Aufnahme programmiert.
 
     Bearbeitungszeit 474 Sekunden
 
