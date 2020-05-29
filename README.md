@@ -8,13 +8,6 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.  
 
-[Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
-
-**Neueste Änderungen**
-  * 2020-05-25 geänderter Login ([mehr …](README-ext.md#username-und-passwort)), Auslauf des XXL Upgrades ([mehr …](https://github.com/einstweilen/stv-catchall/issues/3)), Channeltitel ([mehr …](README-ext.md#aufbau-der-channeltitel)), Fehlerbehandlung ([mehr ...](README-ext.md#wiederholung-der-channelanlage))
-  * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade
-  * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
-
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](README-ext.md#einmaliger-download))
@@ -23,6 +16,16 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 4. *Optional* Die Datei `stv_skip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
+
+**Neueste Änderungen**
+  * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#wechsel-zwischen-den-loginoptionen), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+  * 2020-05-25 [Logindaten werden nicht mehr im Skript](README-ext.md#username-und-passwort),
+[Auslauf des XXL Upgrades](https://github.com/einstweilen/stv-catchall/issues/3),
+[Channeltitel](README-ext.md#aufbau-der-channeltitel),
+[Fehlerbehandlung](README-ext.md#wiederholung-der-channelanlage)
+  * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade bis 26.05.
+  * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
+  * 2020-01-30 [Funktionstest](README-ext.md#funktionstest) Störungsausgabe Textausgabe korrigiert
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
@@ -48,14 +51,17 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     Sender : ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓✓✓✓✓ ✓ 
 
     144 Channels wurden angelegt und wieder gelöscht.
-    Programmierte Sendungen beim letzten Lauf: 10182 aktuell: 10231 Delta: 49
+    Aktuell sind 10243 Sendungen zur Aufnahme programmiert.
 
     Bearbeitungszeit 474 Sekunden
 ## Table of contents
   * [Hintergrund](README-ext.md#hintergrund)
   * [Funktionsweise](README-ext.md#funktionsweise)
   * [Einrichten und Starten](README-ext.md#einrichten-und-starten)
-    + [Username und Passwort hinterlegen](README-ext.md#username-und-passwort)
+    + [Username und Passwort](#username-und-passwort)
+      + [Erstes Login und manuelles Login](README-ext.md#erstes-login-und-manuelles-login)
+      + [Automatisches Login](README-ext.md#automatisches-login)
+      + [Wechsel zwischen den Loginoptionen](README-ext.md#wechsel-zwischen-den-loginoptionen)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
     + [Hinweis zum Ende das kostenlosen XXL Upgrades](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)   
