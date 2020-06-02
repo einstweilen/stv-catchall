@@ -103,16 +103,19 @@ Nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Logi
 Das Speichern in der Username-Passwort-Datei `stv_autologin.txt` ist robutser, bei der Cookiedatei kann dafür niemand die Userdaten so leicht auslesen, da nur die SessionID gespeichert wird.
 
         Die Zugangsdaten können zum automatischen Login gespeichert werden
-	    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? :
+	    Speicherung lokal in D_atei oder N_icht speichern? (D/N)? :
 	
 #### Option 'D' Speicherung in Datei 
     [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
 	
 #### Option 'C' Speicherung in persistenten Cookie
+Die Option 'C' wird **nicht angezeigt**. Die Speichtung im Cookie funktioniert aktuell nicht zuverlässig.
+Wer die Option trotzdem verwendet, möge bitte sein Feedback in [#4 Persistentes Login-Cookie kann ungültig werden](https://github.com/einstweilen/stv-catchall/issues/4) posten.
+
     [✓] Auto-Login im Save.TV Account aktiviert
     [i] Das Cookie 'stv_cookie.txt' bleibt dauerhaft gespeichert
+    [i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten
  
-bei Problemen mit der Cookie-Option, bitte Feedback in [#4 Persistentes Login-Cookie kann ungültig werden](https://github.com/einstweilen/stv-catchall/issues/4) posten.
 ### Automatisches Login
 Ist die Datei `stv_autologin.txt` oder `stv_cookie.txt` vorhanden, erfolgt das Login automatisch.
 
