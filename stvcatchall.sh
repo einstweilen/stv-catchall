@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200529'  # Scriptversion
+version_ist='20200602'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -79,18 +79,25 @@ urlencode() {
 #### STV Webserver Login
 stv_login() {
 
-    stv_login_cookie
+    stv_login_cred
 
-    if [ "$login_return" -eq 0 ]; then
-        stv_login_cred
-    else
+    if $eingeloggt; then
         return
+    else
+        stv_login_cookie
     fi
 
-    while [ "$login_return" -eq 0 ]; do
+    while ! $eingeloggt && [ $ausfuehrung == "manual" ] ; do
         stv_login_manual
-   done
+    done
+
+    if ! $eingeloggt; then
+        log ": keine gültige Loginoption für Cron Betrieb vorhanden"
+        log ": das Skript im Terminal starten und Option auswählen"
+    fi
+
 }
+
 
 #### Login mit gespeichertem Cookie
 stv_login_cookie() {
@@ -99,6 +106,7 @@ stv_login_cookie() {
 
         if [[ $cmd == "-t" ]]; then
             echo "[✓] Cookie '$(basename "$stv_cookie")' ist vorhanden"
+            echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
         fi
         log "Logindaten aus $(basename "$stv_cookie") werden verwendet"
 
@@ -110,30 +118,32 @@ stv_login_cookie() {
             echo "[-] Login wegen Serverfehler nicht möglich"
             echo
             echo "[i] Skript wird abgebrochen"
-            log ': Login wegen Serverfehler nicht möglich, Skriptabbruch'
+            log ': Login wegen Serverfehlers nicht möglich, Skriptabbruch'
             log "$paket_return"
             exit 1
         fi
 
         if grep -q "^[0-9]\{6,7\}$" <<<"$stv_user" ; then
-            login_return=1
+            eingeloggt=true
             if [[ $cmd == "-t" ]]; then
                 echo "[✓] Cookie für User $stv_user ist gültig und wird verwendet"
             fi
             log "Cookie für User $stv_user ist gültig und wird verwendet"
         else
-            login_return=0
+            eingeloggt=false
             stv_cookie_login=false
             echo "[-] Cookie ist vorhanden, aber nicht mehr gültig"
+            echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
             echo "[i] alternative Loginmethoden werden versucht"
             log ': Cookie ungültig, UserID Test nicht erfolgreich'
             log "$(cat "$stv_cookie")"
             log "paket_return: $paket_return"
             log "paket_return EOF"
+            rm -f "$stv_cookie"
         fi
 
     else
-        login_return=0
+        eingeloggt=false
         log "Keine Cookiedatei '$(basename "$stv_cookie")' vorhanden"
     fi
 }
@@ -145,31 +155,31 @@ stv_login_cred() {
         unset IFS
         if [[ $cmd == "-t" ]]; then
             echo "[✓] gespeicherte Logindaten in '$(basename "$stv_cred")' vorhanden"
-            log "Logindaten aus $(basename "$stv_cred") werden verwendet"
-        fi 
+        fi
+        log "Logindaten aus $(basename "$stv_cred") für User $stv_user werden verwendet"
+
         userpass="sUsername=$stv_user&sPassword=$stv_pass"
         login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
         
         if [ "$login_return" -ne 0 ]; then
-            login_return=1
+            eingeloggt=true
             log "gespeicherte Zugangsdaten sind gültig"
-            # if [[ $cmd == "-t" ]]; then
-            #    echo "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
-            # fi
         else
-            login_return=0
+            eingeloggt=false
             echo "[-] Gespeicherte Userdaten sind vorhanden, aber ungültig"
             echo "[i] Manuelles Login ist notwendig"
             log ': Userdaten in '$(basename "$stv_cred")' sind ungültig'
-            log "$(cat "$stv_cred")"
+            log "$(basename "$stv_cred"): $(cat "$stv_cred")"
+            log "Serverantwort"
             log "$login_return"
         fi
     else
-    log "Keine Zugangsdatendatei '$(basename "$stv_cred")' vorhanden"
+        eingeloggt=false
+        log "Keine Zugangsdatendatei '$(basename "$stv_cred")' vorhanden"
     fi
 }
 
-### Login mit Eingabe der Zugangsdaten
+### Manuelles Login mit Eingabe der Zugangsdaten
 stv_login_manual() {
     rm -f "$stv_cookie"
     rm -f "$stv_cred"
@@ -182,9 +192,11 @@ stv_login_manual() {
     login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' -H 'Host: www.save.tv' -H 'User-Agent: Mozilla/5.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/stv/s/obj/user/usShowlogin.cfm' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
 
     if [ "$login_return" -ne 0 ]; then
+        eingeloggt=true
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
-        read -p '    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? : ' login_opt
+#       read -p '    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? : ' login_opt # beta
+        read -p '    Speicherung lokal in D_atei oder N_icht speichern? (D/N)? : ' login_opt    # beta
         case $login_opt in
             [cC]  )
                 cookie_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitAutoLogin.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Origin: https://www.save.tv' -H 'DNT: 1' -H 'Connection: keep-alive' --cookie "$stv_cookie" --cookie-jar "$stv_cookie" -H 'TE: Trailers' --data-raw 'IsAutoLogin=64&Messages=')
@@ -192,11 +204,14 @@ stv_login_manual() {
                     stv_cookie_login=true
                     echo "[✓] Auto-Login im Save.TV Account aktiviert"
                     echo "[i] Das Cookie '$(basename "$stv_cookie")' bleibt dauerhaft gespeichert"
+                    echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
                     rm -f "$stv_cred"
                 else
                     stv_cookie_login=false
+                    eingeloggt=false
                     echo "[-] Auto-Login konnte nicht aktiviert werden"
                     echo "    erneut versuchen oder andere Option wählen"
+                    echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
                     log ": Auto-Login konnte nicht aktiviert werden"
                     log "$cookie_return"
                     exit 1
@@ -217,6 +232,7 @@ stv_login_manual() {
             echo
             echo "[i] Skript wird abgebrochen"
             log ': Manuelles Login wegen Serverfehler nicht möglich, Skriptabbruch'
+            log "Serverantwort"
             log "$login_return"
             exit 1
         fi
@@ -874,7 +890,8 @@ funktionstest() {
     # 02 login
     echo
     stv_login
-    if [[ $login_return -ne 0 ]]; then
+
+    if $eingeloggt; then
         SECONDS=0 
         if [[ $stv_cookie_login == false ]]; then
             echo "[✓] Login mit UserID $stv_user erfolgreich"
@@ -917,7 +934,7 @@ funktionstest() {
         echo "[-] Anzahl verfügbarer Channels konnte nicht ermittelt werden."
         echo "    Wahrscheinlichste Ursache ist ein Serverproblem"
         echo
-        echo '[i] Prüfe auf Störungsmeldungen anderer User'
+        echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
         log "Fehler beim Holen der Channelliste, die wahrscheinlichste"
         log "Ursache ist ein Timeoutfehler"
@@ -952,9 +969,11 @@ funktionstest() {
         mv "$send_list.old" "$send_list" 2> /dev/null
         echo "[-] Aktuelle Senderliste konnte nicht geholt werden"
         echo
-        echo '[i] Prüfe auf Störungsmeldungen anderer User'
+        echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
         exit 1
+    else
+        rm -f "$send_list.old"
     fi
 
 
@@ -988,7 +1007,7 @@ funktionstest() {
     else
         echo "[-] Testchannel konnte nicht angelegt werden"
         echo
-        echo '[i] Prüfe auf Störungsmeldungen anderer User'
+        echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
         exit 1
     fi
@@ -1004,7 +1023,7 @@ funktionstest() {
     else
         echo "[-] Testchannel konnte nicht gelöscht werden"
         echo
-        echo '[i] Prüfe auf Störungsmeldungen anderer User'
+        echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
         exit 1
     fi
@@ -1017,7 +1036,7 @@ funktionstest() {
     fi
 
     echo
-    echo "[i] Prüfe auf von Usern gemeldete Störungen"
+    echo "[i] Prüfe auf von anderen Usern gemeldete Störungen"
     fkt_stoerung_info
 
     # Status ausgeben
@@ -1074,14 +1093,23 @@ banner() {
 
     cmd=$1
 
-    if [[ $(log_delete "$log_max") -eq 0 ||  $cmd == "--test" ||  $cmd == "-t" ]]; then
-        read -p 'Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
-        if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
-            funktionstest
-        else
-            exit 0
-        fi
+    if [ -t 1 ]; then
+        ausfuehrung="manual"    # Skript wurde direkt im Terminal aufgerufen
+    else
+        ausfuehrung="auto"      # im Cron aufgerufen
     fi
+
+    if [ $ausfuehrung == "manual" ]; then
+        if [[ $(log_delete "$log_max") -eq 0 ||  $cmd == "--test" ||  $cmd == "-t" ]]; then
+            read -p 'Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
+            if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
+                funktionstest
+            else
+                exit 0
+            fi
+        fi
+    fi 
+
 
     echo "Beginn: $(date)" > "$stv_log"
 
@@ -1091,14 +1119,13 @@ banner() {
         exit 0
     fi
 
-    clear
-    banner
+    clear; banner
 
     # Einloggen und Sessioncookie holen
     stv_login
     
     # Login erfolgreich?
-    if [[ $login_return -ne 0 ]]; then
+    if $eingeloggt; then
         if [[ $cmd == "--cleanup" ||  $cmd == "-c" ]]; then # Bereinigen mit Sicherheitsabfrage
             cleanup_modus=manuell
             sender_bereinigen
