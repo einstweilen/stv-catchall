@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200602'  # Scriptversion
+version_ist='20200604'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -310,8 +310,42 @@ channelanz_check() {
         ch_nec=4   # 4 temporäre Channels für die vier Timeslots je Sender
     else    
         ch_nec=$(( sender_anz * 4 ))  # Sender mal die vier Timeslots je Sender
-    fi 
+    fi
 
+    # falls zu wenige Channels, prüfen ob anzulegnde Channels bereits vorhanden sind
+    ch_dup=0        # doppelte Channels
+    if [[ ch_fre -lt ch_nec ]]; then
+        log ": benötigt $ch_nec freie Channels, bereits $ch_use von $ch_max Channels belegt"
+        log ": Prüfe auf vorhandene Duplikate"
+        for ((sender=0; sender<sender_anz; sender++)); do
+            sendername=${sender_name[$sender]}
+            channel_all="${ch_nn[*]}"   # alle Channelnamen
+            for timeframe in 1 2 3 4; do
+                if [[ $channel_all == *"$ca_ch_pre$sendername - ${tageszeit[$timeframe]}"* ]]; then
+                    log "OK Channel vorhanden: $sendername - ${tageszeit[$timeframe]}"
+                    ((ch_dup++))
+                fi
+            done
+        done
+        log ": $ch_dup Duplikate gefunden"
+    fi
+}
+
+
+#### Infotext zu verfügbaren Channels ausgeben
+channelanz_info() {
+    if [[ ch_dup -eq ch_nec ]]; then
+        echo "[i] Es müssen keine zusätzlichen Channels angelegt werden,"
+        echo "    alle $ch_nec anzulegenden Channels sind bereits vorhanden."
+        channelinfo_set "OK+nur+Dups"
+        log "OK alle $ch_nec anzulegenden Channels sind bereits vorhanden"
+        echo
+        echo "Bearbeitungszeit $SECONDS Sekunden"
+        log "Ende: $(date)"
+        exit 0
+    fi
+
+    ch_nec=$((ch_nec-ch_dup))           # Duplikate rausrechnen
     if [[ ch_fre -lt ch_nec ]]; then
         echo "Das Skript benötigt $ch_nec freie Channels zur Programmierung."
         echo "Aktuell sind bereits $ch_use von $ch_max Channels des Pakets belegt"
@@ -323,6 +357,8 @@ channelanz_check() {
         if [[ ch_fre -ne 0 ]]; then
             channelinfo_set "zuwenige+freie+Channels"
         fi
+        echo "Bearbeitungszeit $SECONDS Sekunden"
+        log "Ende: $(date)"
         exit 1
     fi
 
@@ -347,7 +383,7 @@ channelanz_check() {
     else
         echo "Es werden $ch_nec zusätzliche Channels angelegt, die Channels bleiben erhalten."
     fi
-    echo 
+    echo   
 }
 
 
@@ -379,7 +415,8 @@ channel_liste() {
         
         # Rohdaten ins Format ChannelID|Channelname bringen
         for ((i=0;i<${#ch_rw[*]}; i++)); do        
-                ch_in[i]=$(sed 's/CHANNELID..\([^\.]*\).*SNAME...\([^\"]*\).*/\1|\2/g' <<< "${ch_rw[i]}")
+                ch_in[i]=$(sed 's/CHANNELID..\([^\.]*\).*SNAME...\([^\"]*\).*/\1|\2/g' <<< "${ch_rw[i]}") # id|name
+                ch_nn[i]=$(sed 's/[0-9\|]*//' <<< "${ch_in[i]}") # nur name
         done
         
         # sortieren ch_sid nach ChannelID
@@ -441,7 +478,6 @@ senderchannel_anlegen() {
         if [[ $ch_ok = true ]]; then
             ((ch_angelegt++))
             ((ch_sender++))
-        else
             ((err_cha++))
             ((err_ges++))
             err_senderid[err_ges]=$senderid
@@ -1142,6 +1178,7 @@ banner() {
             channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
             ch_start=$ch_use    # Anzahl der belegten Channels bei Skriptstart
             channelanz_check    # prüfen ob freie Channels ausreichen
+            channelanz_info     # Infotext zu verfügbaren Channels ausgeben
             channels_anlegen
 
             if [[ err_cha -gt 0 ]]; then
