@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200604'  # Scriptversion
+version_ist='20200605'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -115,7 +115,7 @@ stv_login_cookie() {
         stv_user=$(sed 's/.*SUSERNAME":\([^.]*\).*/\1/' <<<"$paket_return")
 
         if grep -q "Server Error" <<< "$paket_return"; then
-            echo "[-] Login wegen Serverfehler nicht möglich"
+            echo "[!] Login wegen Serverfehler nicht möglich"
             echo
             echo "[i] Skript wird abgebrochen"
             log ': Login wegen Serverfehlers nicht möglich, Skriptabbruch'
@@ -132,7 +132,7 @@ stv_login_cookie() {
         else
             eingeloggt=false
             stv_cookie_login=false
-            echo "[-] Cookie ist vorhanden, aber nicht mehr gültig"
+            echo "[!] Cookie ist vorhanden, aber nicht mehr gültig"
             echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
             echo "[i] alternative Loginmethoden werden versucht"
             log ': Cookie ungültig, UserID Test nicht erfolgreich'
@@ -166,7 +166,7 @@ stv_login_cred() {
             log "gespeicherte Zugangsdaten sind gültig"
         else
             eingeloggt=false
-            echo "[-] Gespeicherte Userdaten sind vorhanden, aber ungültig"
+            echo "[!] Gespeicherte Userdaten sind vorhanden, aber ungültig"
             echo "[i] Manuelles Login ist notwendig"
             log ': Userdaten in '$(basename "$stv_cred")' sind ungültig'
             log "$(basename "$stv_cred"): $(cat "$stv_cred")"
@@ -209,7 +209,7 @@ stv_login_manual() {
                 else
                     stv_cookie_login=false
                     eingeloggt=false
-                    echo "[-] Auto-Login konnte nicht aktiviert werden"
+                    echo "[!] Auto-Login konnte nicht aktiviert werden"
                     echo "    erneut versuchen oder andere Option wählen"
                     echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
                     log ": Auto-Login konnte nicht aktiviert werden"
@@ -228,7 +228,7 @@ stv_login_manual() {
         esac
     else
         if grep -q "Server Error" <<< "$login_return"; then
-            echo "[-] Manuelles Login wegen Serverfehler nicht möglich"
+            echo "[!] Manuelles Login wegen Serverfehler nicht möglich"
             echo
             echo "[i] Skript wird abgebrochen"
             log ': Manuelles Login wegen Serverfehler nicht möglich, Skriptabbruch'
@@ -236,7 +236,7 @@ stv_login_manual() {
             log "$login_return"
             exit 1
         fi
-        echo "[-] Login mit diesen Userdaten nicht möglich"
+        echo "[!] Login mit diesen Userdaten nicht möglich"
         echo "    Username und Passwort prüfen und Eingabe wiederholen"
         echo
     fi    
@@ -317,15 +317,20 @@ channelanz_check() {
     if [[ ch_fre -lt ch_nec ]]; then
         log ": benötigt $ch_nec freie Channels, bereits $ch_use von $ch_max Channels belegt"
         log ": Prüfe auf vorhandene Duplikate"
+        ch_acc_all="${ch_nn[*]}"   # alle im Account vorhandenen Channelnamen
         for ((sender=0; sender<sender_anz; sender++)); do
             sendername=${sender_name[$sender]}
-            channel_all="${ch_nn[*]}"   # alle Channelnamen
+            ch_dup_sender=0
             for timeframe in 1 2 3 4; do
-                if [[ $channel_all == *"$ca_ch_pre$sendername - ${tageszeit[$timeframe]}"* ]]; then
+                if [[ $ch_acc_all == *"$ca_ch_pre$sendername - ${tageszeit[$timeframe]}"* ]]; then
                     log "OK Channel vorhanden: $sendername - ${tageszeit[$timeframe]}"
-                    ((ch_dup++))
+                    ((ch_dup++))        # Channel für Sender und Timeslot vorhanden 
+                    ((ch_dup_sender++)) # Timeslot für diesen Sender vorhanden
                 fi
             done
+            if [[ ch_dup_sender -eq 4 ]]; then
+                sender_id[$sender]=999  # alle Timeslots vorhanden, 999 = Sender skippen
+            fi
         done
         log ": $ch_dup Duplikate gefunden"
     fi
@@ -334,8 +339,12 @@ channelanz_check() {
 
 #### Infotext zu verfügbaren Channels ausgeben
 channelanz_info() {
+    echo "Aufnahme aller Sendungen der nächsten 7 Tage für folgende $sender_anz Sender einrichten:"
+    sender_info         # Sendernamen anzeigen          
+    echo
+
     if [[ ch_dup -eq ch_nec ]]; then
-        echo "[i] Es müssen keine zusätzlichen Channels angelegt werden,"
+        echo "[✓] Es müssen keine zusätzlichen Channels angelegt werden,"
         echo "    alle $ch_nec anzulegenden Channels sind bereits vorhanden."
         channelinfo_set "OK+nur+Dups"
         log "OK alle $ch_nec anzulegenden Channels sind bereits vorhanden"
@@ -347,11 +356,11 @@ channelanz_info() {
 
     ch_nec=$((ch_nec-ch_dup))           # Duplikate rausrechnen
     if [[ ch_fre -lt ch_nec ]]; then
-        echo "Das Skript benötigt $ch_nec freie Channels zur Programmierung."
-        echo "Aktuell sind bereits $ch_use von $ch_max Channels des Pakets belegt"
-        echo "Bitte manuell unter 'www.save.tv/Meine Channels' mindestens $((ch_nec - ch_fre)) Channels löschen"
-        echo "und das Skript anschließend erneut starten."
-        echo "Alle Channels lassen sich auch mit der Option -c des Skripts löschen."
+        echo "[!] Das Skript benötigt $ch_nec freie Channels zur Programmierung."
+        echo "    Aktuell sind bereits $ch_use von $ch_max Channels des Pakets belegt"
+        echo "    Manuell unter 'www.save.tv/Meine Channels' mindestens $((ch_nec - ch_fre)) Channels löschen"
+        echo "    und das Skript anschließend erneut starten."
+        echo "    Alle Channels lassen sich auch mit der Option -c des Skripts löschen."
         log ": benötigt $ch_nec freie Channels, bereits $ch_use von $ch_max Channels belegt"
         log ": mindestens $((ch_nec - ch_fre)) Channels löschen"
         if [[ ch_fre -ne 0 ]]; then
@@ -361,27 +370,24 @@ channelanz_info() {
         log "Ende: $(date)"
         exit 1
     fi
-
-    echo "Aufnahme aller Sendungen der nächsten 7 Tage für folgende $sender_anz Sender einrichten:"
-    sender_info         # Sendernamen anzeigen          
-    echo                
+                
     if [[ ch_use -gt 0 ]]; then
-        echo "Es sind $ch_use manuell angelegte Channels vorhanden, diese blieben erhalten."
+        echo "[i] Es sind $ch_use bereits angelegte Channels vorhanden, diese blieben erhalten."
     fi
 
     if [[ $channels_behalten = false ]]; then
-        echo "Es werden temporär $ch_nec Channels angelegt."
+        echo "    Es werden temporär $ch_nec Channels angelegt."
         if [[ ch_max -eq stv_ch_basis ]]; then
             echo
-            echo "HINWEIS: Sie können mit Ihrem Basispaket nur 50 Stunden aufnehmen!"
-            read -p 'Skript trotzdem ausführen (J/N)? : ' basis_check
+            echo "[!] HINWEIS: Sie können mit Ihrem Basispaket nur 50 Stunden aufnehmen!"
+            read -p '    Skript trotzdem ausführen (J/N)? : ' basis_check
             if [[ $basis_check == "N" || $basis_check == "n" ]]; then
                 log "wg. Basis-Paket manuell beendet"
                 exit 0
             fi
         fi
     else
-        echo "Es werden $ch_nec zusätzliche Channels angelegt, die Channels bleiben erhalten."
+        echo "    Es werden $ch_nec zusätzliche Channels angelegt, die Channels bleiben erhalten."
     fi
     echo   
 }
@@ -430,8 +436,8 @@ channels_anlegen() {
     sender_bearbeitet=0
     ch_angelegt=0   # Counter für insgesamt angelegte Channel
 
-    echo "Channels + anlegen  - löschen  ✓ Sender programmiert  F_ehler&Anzahl"
-    echo -ne "Sender :"
+    echo "Channels: + anlegen  - löschen  F_ehler&Anzahl   Sender: ✓ angelegt  D Duplikat"
+    echo -ne "Sender  :"
 
     for ((sender=0; sender<sender_anz; sender++)); do	
         echo -ne "."
@@ -445,16 +451,20 @@ channels_anlegen() {
             else
                 echo -ne "\b+"
             fi
-            senderchannel_anlegen "$senderid" "$sendername"
-            if [[ $channels_behalten = false ]]; then
-                echo -ne "\b-"
-                channels_loeschen
-            fi
-            if [[ $err_cha -eq 0 ]]; then
-                echo -ne "\b✓ \b"       # keine Fehler aufgetreten
+            if [[ senderid -ne 999 ]]; then
+                senderchannel_anlegen "$senderid" "$sendername"
+                if [[ $channels_behalten = false ]]; then
+                    echo -ne "\b-"
+                    channels_loeschen
+                fi
+                if [[ $err_cha -eq 0 ]]; then
+                    echo -ne "\b✓ \b"       # keine Fehler aufgetreten
+                else
+                    echo -ne "\bF$err_cha"  # Fehler ist aufgetreten
+                    err_flag=true           # Fehlerinfo bei Skriptende ausgeben
+                fi
             else
-                echo -ne "\bF$err_cha"  # Fehler ist aufgetreten
-                err_flag=true           # Fehlerinfo bei Skriptende ausgeben
+                echo -ne "\bD \b"           # Duplikat, nichts anzulegen
             fi
         else
             log ": Fehler: Sender $sender ohne ID in Senderliste gefunden!"
@@ -478,6 +488,7 @@ senderchannel_anlegen() {
         if [[ $ch_ok = true ]]; then
             ((ch_angelegt++))
             ((ch_sender++))
+        else
             ((err_cha++))
             ((err_ges++))
             err_senderid[err_ges]=$senderid
@@ -699,21 +710,21 @@ sender_bereinigen() {
         done
 
         if [[ $cleanup_check == "J" ]]; then
-            echo "Für diese ${#skip_name[@]} Sender werden die vorhandenen Programmierungen und"
-            echo "aufgenommenen Sendungen endgültig gelöscht"
+            echo "[i] Für diese ${#skip_name[@]} Sender werden die vorhandenen Programmierungen und"
+            echo "    aufgenommenen Sendungen endgültig gelöscht"
             
             log 'Bereinigung im Batchmodus'
         else        
-            echo "Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
-            echo "aufgenommenen Sendungen *endgültig* gelöscht werden?"
+            echo "[i] Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
+            echo "    die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?"
             echo 
-            read -p 'Alles bereinigen (J/N)? : ' cleanup_check
+            read -p '    Alles bereinigen (J/N)? : ' cleanup_check
         fi
         SECONDS=0 
         echo
         
         if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
-            echo "Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste"
+            echo "[i] Lösche die Programmierungen und Aufnahmen der Sender der Skipliste"
             # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
             list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data '')
             
@@ -729,7 +740,7 @@ sender_bereinigen() {
                     log "$sendername hat $totalentries zu löschende Einträge auf $totalpages Seiten" 
                 
                     if [[ totalpages -gt 0 ]]; then
-                        echo -n "'$sendername' hat $totalentries Einträge, beginne Löschung : "
+                        echo -n "[i] '$sendername' hat $totalentries Einträge, beginne Löschung : "
                         del_ids_tot=$((del_ids_tot + totalentries))  
                         for ((page=1; page<=totalpages; page++)); do
                             list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
@@ -749,21 +760,21 @@ sender_bereinigen() {
                         echo -n '✓'
                         echo
                     else
-                        echo "'$sendername' muß nicht gesäubert werden"   
+                        echo "[✓] '$sendername' muß nicht gesäubert werden"   
                     fi
                 fi
             done
             if [[ $del_ids_err = true ]]; then
-                echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
+                echo "[!] Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
                 echo
             fi
             if [[ del_ids_tot -gt 0 ]]; then
-                echo "Es wurden insgesamt $del_ids_tot Aufnahmen und Programmierungen gelöscht."
+                echo "[i] Es wurden insgesamt $del_ids_tot Aufnahmen und Programmierungen gelöscht."
             else
-                echo "Es sind keine Aufnahmen und Programmierungen vorhanden."
+                echo "[i] Es sind keine Aufnahmen und Programmierungen vorhanden."
             fi
         else
-            echo "[i] Bereinigung abgebrochen, es wurde nichts gelöscht."
+            echo "[!] Bereinigung abgebrochen, es wurde nichts gelöscht."
         fi
     else
         echo "[i] Die Skipliste '$(basename "$send_skip")' ist leer, Bereinigung übersprungen."
@@ -789,25 +800,25 @@ channelrestechecken() {
     ca_ch_anzxxl=$(grep -o "[0-9]*|${ca_ch_prexxl}[^ ]" <<< "${ch_in[*]}" | wc -l | xargs) # XXLTEMP
     ca_ch_anz=$((ca_ch_anz + ca_ch_anzxxl)) # XXLTEMP - aktuell noch alten Prefix _ mit berücksichtgen
     if [[ $ca_ch_anz -gt 0 ]]; then
-        echo "Es sind $ca_ch_anz vom STV CatchAll Skript angelegte Channels vorhanden,"
-        echo "beim Channellöschen bleiben bereits erfolgte *Aufnahmen erhalten*."
+        echo "[i] Es sind $ca_ch_anz vom STV CatchAll Skript angelegte Channels vorhanden,"
+        echo "    beim Channellöschen bleiben bereits erfolgte *Aufnahmen erhalten*."
         echo
-        echo "Hinweis: Die Option 'L' zeigt eine Liste der gefundenen STV Channels an."
-        read -p "Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
+        echo "    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an."
+        read -p "    Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
         if [[ $ch_cleanup_check == "L" || $ch_cleanup_check == "l" ]]; then
             echo
             # echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre'" # XXLTEMP
-            echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre' '$ca_ch_prexxl'" # XXLTEMP
+            echo "[i] Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre' '$ca_ch_prexxl'" # XXLTEMP
             for ch_test in "${ch_in[@]}"; do
                 grep -o "[0-9]*|${ca_ch_pre}[^|]*" <<< "$ch_test"
                 grep -o "[0-9]*|${ca_ch_prexxl}[^|]*" <<< "$ch_test"   # XXLTEMP
             done
-            read -p "Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+            read -p "    Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
         fi
         if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
             channel_cleanup
         else
-            echo "Bereinigung abgebrochen, es wurden keine Channels gelöscht."
+            echo "[!] Bereinigung abgebrochen, es wurden keine Channels gelöscht."
         fi
     else
         echo '[i] Es sind keine von STV CatchAll angelegte Channels vorhanden.'
@@ -818,12 +829,12 @@ channelrestechecken() {
 #### Abbruch wegen zuvieler Fehler
 abbrechen() {
     echo
-    echo "    Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
+    echo "[!] Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
     log  ": Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
     echo "    Liste der aufgetretene Fehler:"
     sed '/^: /,$!d ; s/^: /    /' stv_ca.log
     fkt_stoerung_info
-    echo "    In der letzten Stunde wurden $stoer_as_std Störungen auf AlleStörungen.de gemeldet"
+    echo "[i] In der letzten Stunde wurden $stoer_as_std Störungen auf AlleStörungen.de gemeldet"
     echo "    Stand: $stoer_as_akt <https://AlleStörungen.de/stoerung/save-tv/>"
     log  ": AlleStörungen.de meldet in der letzten Stunde $stoer_as_std Meldungen"
     channelinfo_set "ABGREBROCHEN+FEHLER+$err_ges"
@@ -904,7 +915,7 @@ funktionstest() {
     if [[ $check_version == "true" ]]; then
         echo "[✓] Automatische Versionsüberprüfung ist AN"
     else
-        echo "[-] Automatische Versionsüberprüfung ist AUS"
+        echo "[!] Automatische Versionsüberprüfung ist AUS"
     fi
 
     if [[ $version_aktuell == "true" ]]; then
@@ -914,14 +925,14 @@ funktionstest() {
     fi
 
     if [ ! -f "$stv_log" ]; then
-        echo "[-] Keine Schreibrechte im Skriptverzeichnis vorhanden"
+        echo "[!] Keine Schreibrechte im Skriptverzeichnis vorhanden"
         echo "    Verzeichnis $DIR prüfen"
         exit 1
     else
         echo "[✓] Schreibrechte im Skriptverzeichnis OK"
     fi
     
-    command -v curl >/dev/null 2>&1 || { echo >&2 "[-] 'curl' wird benötigt, ist aber nicht installiert"; exit 1; }
+    command -v curl >/dev/null 2>&1 || { echo >&2 "[!] 'curl' wird benötigt, ist aber nicht installiert"; exit 1; }
 
     # 02 login
     echo
@@ -933,7 +944,7 @@ funktionstest() {
             echo "[✓] Login mit UserID $stv_user erfolgreich"
         fi
     else
-        echo "[-] Fehler beim Login mit UserID $stv_user!"
+        echo "[!] Fehler beim Login mit UserID $stv_user!"
         echo "    Bitte in $(basename "$stv_cred") Username und Passwort prüfen,"
         echo '    und danach den Funktionstest mit --test erneut starten.'
         echo
@@ -958,7 +969,7 @@ funktionstest() {
     if [[ $rec_auto = "1" ]]; then rec_auto="AN" ; else rec_auto="AUS" ; fi
     
     if [[ $paket_art != *"Save"* ]]; then
-        echo "[-] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
+        echo "[!] Gebuchtes Save.TV Paket konnte nicht ermittelt werden."
         echo '    Es kann auch eine allgemeine Störung vorliegen'
         fkt_stoerung_info
         log "Fehler bei Paketname: '$paket_return'"
@@ -967,7 +978,7 @@ funktionstest() {
 
     channel_liste
     if [[ $server_prob = true ]]; then
-        echo "[-] Anzahl verfügbarer Channels konnte nicht ermittelt werden."
+        echo "[!] Anzahl verfügbarer Channels konnte nicht ermittelt werden."
         echo "    Wahrscheinlichste Ursache ist ein Serverproblem"
         echo
         echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
@@ -1003,7 +1014,7 @@ funktionstest() {
     senderliste_holen
     if [ $err_senderliste = true ]; then
         mv "$send_list.old" "$send_list" 2> /dev/null
-        echo "[-] Aktuelle Senderliste konnte nicht geholt werden"
+        echo "[!] Aktuelle Senderliste konnte nicht geholt werden"
         echo
         echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
@@ -1025,7 +1036,7 @@ funktionstest() {
 
     
     if [[ skipindex -eq 0 ]]; then
-        echo "[-] Keine nicht aufzunehmenden Sender in '$(basename "$send_skip")' vorhanden,"
+        echo "[!] Keine nicht aufzunehmenden Sender in '$(basename "$send_skip")' vorhanden,"
         echo "    alle $sender_anz aktuell bei Save.TV verfügbaren Sender werden aufgenommen."
     else
         echo "[i] Aktuell sind $sender_alle Sender bei Save.TV verfügbar."
@@ -1041,7 +1052,7 @@ funktionstest() {
     if [[ $ch_ok = true ]]; then
         echo "[✓] Testchannel erfolgreich angelegt"
     else
-        echo "[-] Testchannel konnte nicht angelegt werden"
+        echo "[!] Testchannel konnte nicht angelegt werden"
         echo
         echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
@@ -1057,7 +1068,7 @@ funktionstest() {
     if [[ $ch_ok = true ]]; then
         echo "[✓] Testchannel erfolgreich gelöscht"
     else
-        echo "[-] Testchannel konnte nicht gelöscht werden"
+        echo "[!] Testchannel konnte nicht gelöscht werden"
         echo
         echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
         fkt_stoerung_info
@@ -1182,37 +1193,38 @@ banner() {
             channels_anlegen
 
             if [[ err_cha -gt 0 ]]; then
-                echo "Bei der Channelanlage sind $err_cha Fehler aufgetreten"
+                echo "[!] Bei der Channelanlage sind $err_cha Fehler aufgetreten"
                 if [[ $vers_max -ne 0 ]]; then
                     iterum $vers_max $vers_sleep    #    Fehlerhafte Channels erneut versuchen
                 else
-                    echo "Wiederholung der Channelanlage ist deaktiviert"
+                    echo "[i] Wiederholung der Channelanlage ist deaktiviert"
                 fi
             fi
 
             if [[ $ch_angelegt -ne 0 ]]; then
                 echo
                 if [[ $channels_behalten = false ]]; then
-                    echo "Alle temporär angelegte Channels wurden wieder gelöscht."
+                    echo "[✓] Alle temporär angelegte Channels wurden wieder gelöscht."
                 else    
-                    echo "Es wurden $ch_angelegt Channels dauerhaft angelegt."
+                    echo "[✓] Es wurden $ch_angelegt Channels dauerhaft angelegt."
                 fi
             else
-                echo "Es wurden keine neuen Channels angelegt."	
+                echo "[i] Es wurden keine neuen Channels angelegt."	
             fi
 
             prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=2&sSortOrder=StartDateASC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
             prog_zukunft=$(sed 's/.*ITOTALENTRIES\":\([0-9]*\).*/\1/'<<< "$prog_return")
-            echo "Aktuell sind  $prog_zukunft Sendungen zur Aufnahme programmiert"
-            log "Programmierte Sendungen Stand $(date '+%m%d+%H%M'): $prog_zukunft"
+            echo "[i] Aktuell sind $prog_zukunft Sendungen zur Aufnahme programmiert"
+            log "Programmierte Sendungen Stand $(date '+%m%d %H%M'): $prog_zukunft"
 
             if [[ $err_flag = true ]]; then
-                echo "Achtung! Es sind nicht behebbare Fehler bei der Channelanlage aufgetreten."
-                echo "Details siehe Logdatei $stv_log"
+                echo "[!] Es sind nicht behebbare Fehler bei der Channelanlage aufgetreten."
+                echo "    Details siehe Logdatei $stv_log"
                 echo
-                echo "------"
+                echo "    --- $(basename "$stv_log") ---"
                 echo
                 grep "^:" "$stv_log"   # nur schwerwiegende Fehler anzeigen
+                echo "    ------"
                 channelinfo_set "FEHLER+$err_ges"
             else 
                 channelinfo_set OK
@@ -1220,7 +1232,7 @@ banner() {
         fi
         stv_logout
     else
-        echo "[-] Fehler beim Login mit UserID $stv_user!"
+        echo "[!] Fehler beim Login mit UserID $stv_user!"
         echo "    Bitte in '$(basename "$stv_cred")' Username und Passwort prüfen"
         echo
         echo "    Aktueller Inhalt von $(basename "$stv_cred"):"
