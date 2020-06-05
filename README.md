@@ -18,6 +18,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-06-05 [Duplikatsprüfung bei ausreichenden Channels, Fehlerzählbugfix, Optik](#2020-06-05)
   * 2020-06-04 Fehlersituation "nicht genügend Channels" [durch Duplikatsprüfung verbessert](#2020-06-04)
   * 2020-06-02 Cookie Option 'versteckt', bleibt zum Testen auswählbar, wird aber nicht aktiv angeboten
   * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#erstes-login-und-manuelles-login), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
@@ -28,6 +29,20 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * 2020-03-27 Zusatzüberprüfung auf kostenloses XXL Upgrade bis 26.05.
   * 2020-03-15 [Fehlerauswertung mittels EXIT Codes](README-ext.md#im-batchmodus) dokumentiert
   
+#### 2020-06-05
+Wenn ein Sender z.B. weil er vorher auf der Skipliste war hinzukommt, im Beispiel _35 Bestandssender plus ein neuer_, wird die Duplikatsprüfung auch bei den alten Einzelsendern vor der Anlage durchgeführt, diese Sender werden mit einem `D`markiert. Das verkürzt die Ausführungszeit, da vorher Duplikate erst anhand der Serverfehlermeldung erkannt wurden.
+
+    [i] Es sind 140 bereits angelegte Channels vorhanden, diese blieben erhalten.
+    Es werden 4 zusätzliche Channels angelegt, die Channels bleiben erhalten.
+
+    Channels: + anlegen  - löschen  F_ehler&Anzahl   Sender: ✓ angelegt  D Duplikat
+    Sender : DDDDD DDD✓D DDDDD DDDDD DDDDD DDDDD DDDDD D 
+    [✓] Es wurden 4 Channels dauerhaft angelegt.
+
+Zusätzlich wurde ein beim letzten Update verlorengegangenes `else` wieder eingefügt, wodurch korrekt angelegte Channels nicht mehr gleichzeitig als richtig und falsch gezählt werden. 
+
+Das Erscheinungsbild vereinheitlicht durch vorangestellte Icons `[✓] OK` , `[!] Fehler` , `[i] Information`
+
 #### 2020-06-04
 Beim XXL Paket und bei den upgegradeten Paketen, wurde der Fehler "Das Skript benötigt 140 _(<=Beispiel bei 35 Sendern)_ freie Channels zur Programmierung. Aktuell sind bereits 140 von 200 Channels des Pakets belegt." ausgegeben, weil die immergleichen Channels jedesmal aufs Neue angelegt werden sollten.
 
