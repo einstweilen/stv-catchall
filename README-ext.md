@@ -435,14 +435,22 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
 ### Reste aufräumen Hintergrund
 Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets abgelaufen ist.
 
+Zu sehen mit dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS. Bei einem Vollprogrammsender können so 4000 und mehr Einträge zu löschen sein.
+
 Wer seinen Account bereits vorher säubern will, kann die entsprechenden Sender und Sendungen manuell löschen oder die *Reste aufräumen* Funktion von stv-catchall verwenden.
 
 ### Reste aufräumen Funktionsweise
-Die Funktion prüft, ob für die Sender der Skipliste, die bei der Aufnahme übersprungen werden, (siehe auch [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)) aufgenommene Sendungen oder vorgenommene Programmierungen vorliegen und löscht diese.
+Die Funktion prüft, ob für die Sender der Skipliste, die bei der Aufnahme übersprungen werden, (siehe auch [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)) Channels, aufgenommene Sendungen oder programmierte Aufnahmen vorliegen und löscht diese.
 
 Beim Start der Aufräumenfunktion werden alle Sender der Skipliste aufgelistet und das Aufräumen muß mit "j" oder "J" bestätigt werden.
 
-**Hinweis**: Die Löschung der aufgenommenen Sendungen kann **nicht rückgängig** gemacht werden. 
+**Hinweis**: Die Löschung der aufgenommenen Sendungen kann **nicht rückgängig** gemacht werden.
+
+Das Skript löscht dann zuerst eventuell noch existierende Senderchannels mit der Option "Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv". Entgegen der Aussage das Systems bleiben trotzdem Aufnahmen und Programmierungen übrig, diese werden dann einzeln Postion für Position gelöscht.
+
+Das entspricht dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS und Klicken der . Bei einem Vollprogrammsender können so 4.000 und mehr Einträge zu löschen sein. Typische 'Reste' bewegen sich zwischen 200 und 400 Einträgen.
+
+Einmal gelöschte Einträge bleiben gelöscht, jedoch tauchen manchmal noch 7 bis 14 Tage lang, trotz gelöschtem Channel und Einzellöschung immer wieder neue Sendungen auf, die man dann manuell löschen muß. Falls die einen stören sollten, gibt es um das Löschen zu automatisieren, die `--cleanupauto` Option, Deatils siehe im übernächsten Absatz. 
 
 ### Reste aufräumen einmalig starten
 Um die *Reste aufräumen* Funktion auszuführen, muß das Skript mit dem Parameter `--cleanup` oder `-c` aufgerufen werden
@@ -468,24 +476,24 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 	SPORT 1             DMAX                Eurosport           Disney Channel     
 	RiC                 TLC                 Fix und Foxi                
                                                                                
-	Sollen für diese 11 Sender die vorhandenen Programmierungen und
-	aufgenommenen Sendungen endgültig gelöscht werden?
-
-	Alles bereinigen (J/N)? : j
-
-	Lösche alle Programmierungen und Aufnahmen der Sender der Skipliste
-	'KiKA' hat 415 Einträge, beginne Löschung : ............✓
-	'MTV' hat 114 Einträge, beginne Löschung : ....✓
-	'Health TV' hat 383 Einträge, beginne Löschung : ...........✓
-	'Folx TV' hat 146 Einträge, beginne Löschung : .....✓
-	'SPORT 1' hat 281 Einträge, beginne Löschung : .........✓
-	'DMAX' hat 237 Einträge, beginne Löschung : .......✓
-	'Eurosport' hat 127 Einträge, beginne Löschung : ....✓
-	'Disney Channel' hat 316 Einträge, beginne Löschung : ..........✓
-	'RiC' hat 159 Einträge, beginne Löschung : .....✓
-	'TLC' hat 274 Einträge, beginne Löschung : ........✓
-	'Fix und Foxi' muß nicht gesäubert werden
-	Alle Aufnahmen und Programmierungen wurden gelöscht.
+	[i] Sollen für diese 11 Sender die vorhandenen Channels, Programmierungen
+	    und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?
+	[?] Alles bereinigen (J/N)? : j
+	
+	[i] Lösche die Programmierungen und Aufnahmen der Sender der Skipliste
+	[✓] 'KiKA'           4 Channels gelöscht    
+	[i] 'KiKA'           lösche 412 Einträge        ............✓
+	[i] 'MTV'            lösche 114 Einträge        ....✓
+	[i] 'Health TV'      lösche 383 Einträge        ...........✓
+	    'Folx TV'        muß nicht gesäubert werden
+	[i] 'SPORT 1'        lösche 281 Einträge        .........✓
+	[i] 'DMAX'           lösche 237 Einträge        .......✓
+	[i] 'Eurosport'      lösche 127 Einträge        ....✓
+	[i] 'Disney Channel' lösche 316 Einträge        ..........✓
+	[i] 'RiC'            lösche 159 Einträge        .....✓
+	    'TLC'            muß nicht gesäubert werden
+	    'Fix und Foxi'   muß nicht gesäubert werden
+	[i] Es wurden insgesamt 2029 Aufnahmen und Programmierungen gelöscht.
 
 	Bearbeitungszeit 178 Sekunden
 	
@@ -508,14 +516,14 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 
 	         Prüfe die Channelliste auf von STV CatchAll angelegte Channels
 	
-	Es sind 5 vom STV CatchAll Skript angelegte Channels vorhanden,
-	beim Channellöschen bleiben bereits erfolgte Aufnahmen erhalten.
+	[i] Es sind 5 vom STV CatchAll Skript angelegte Channels vorhanden,
+	    beim Channellöschen bleiben bereits erfolgte Aufnahmen erhalten.
 	
-	Hinweis: Die Option 'L' zeigt eine Liste der gefundenen STV Channels an
+	    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an
 	
-	Diese 5 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
-	Lösche 5 Channels : .....✓
-	Es wurden 5 Channels gelöscht.
+	    Diese 5 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
+	    Lösche 5 Channels : .....✓
+	    Es wurden 5 Channels gelöscht.
 
 	Bearbeitungszeit 208 Sekunden
 	
