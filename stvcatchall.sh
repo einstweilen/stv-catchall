@@ -2,7 +2,7 @@
 # https://git hub.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20200605'  # Scriptversion
+version_ist='20200606'  # Scriptversion
 
 #### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -196,7 +196,7 @@ stv_login_manual() {
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
 #       read -p '    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? : ' login_opt # beta
-        read -p '    Speicherung lokal in D_atei oder N_icht speichern? (D/N)? : ' login_opt    # beta
+        read -p '[?] Speicherung lokal in D_atei oder N_icht speichern? (D/N)? : ' login_opt    # beta
         case $login_opt in
             [cC]  )
                 cookie_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitAutoLogin.cfm' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/user/config/AccountEinstellungen.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'X-Requested-With: XMLHttpRequest' -H 'Origin: https://www.save.tv' -H 'DNT: 1' -H 'Connection: keep-alive' --cookie "$stv_cookie" --cookie-jar "$stv_cookie" -H 'TE: Trailers' --data-raw 'IsAutoLogin=64&Messages=')
@@ -366,7 +366,7 @@ channelanz_info() {
         if [[ ch_fre -ne 0 ]]; then
             channelinfo_set "zuwenige+freie+Channels"
         fi
-        echo "Bearbeitungszeit $SECONDS Sekunden"
+        echo "[i] Bearbeitungszeit $SECONDS Sekunden"
         log "Ende: $(date)"
         exit 1
     fi
@@ -464,7 +464,7 @@ channels_anlegen() {
                     err_flag=true           # Fehlerinfo bei Skriptende ausgeben
                 fi
             else
-                echo -ne "\bD \b"           # Duplikat, nichts anzulegen
+                echo -ne "\bD \b"           # ID 999 Duplikat, nichts anzulegen
             fi
         else
             log ": Fehler: Sender $sender ohne ID in Senderliste gefunden!"
@@ -544,7 +544,7 @@ iterum() {          #AnzahlVersuche #Pause
     err_vorher=$err_ges
 
     for (( versuch=1; versuch<=iter_max; versuch++ )); do
-        echo "Versuch $versuch von $iter_max, noch $err_ges Channels anzulegen"
+        echo "[i] Versuch $versuch von $iter_max, noch $err_ges Channels anzulegen"
         for (( err_akt=1; err_akt<=err_ges; err_akt++ )); do
             if [[ ${err_senderid[err_akt]} -ne 0 ]]; then   # SenderID 0 'nicht mehr versuchen'
                 senderid=${err_senderid[err_akt]}
@@ -555,15 +555,15 @@ iterum() {          #AnzahlVersuche #Pause
                 if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
                     ((err_ges--)); ((err_fix++))
                     err_senderid[err_akt]=0         # Flag 'nicht mehr versuchen'
-                    echo "✓ Erfolgreich angelegt: '$sendername' '${tageszeit[$timeframe]}'"
+                    echo " ✓  Erfolgreich angelegt: '$sendername' '${tageszeit[$timeframe]}'"
                     log "Im $versuch. Versuch: + '$sendername' '${tageszeit[$timeframe]}'"
                 else
                     if grep -q "mit gleichem Zeitraum und gleichen Kategoriebedingungen angelegt" <<< "$channel_return"; then
-                        echo "✓ Channel war doppelt : '$sendername' '${tageszeit[$timeframe]}'" 
+                        echo " ✓  Channel war doppelt : '$sendername' '${tageszeit[$timeframe]}'" 
                         err_senderid[err_akt]=0     # Flag 'nicht mehr versuchen'
                         ((err_fix++))
                     else
-                        echo "- Fehler bei          :'$sendername' '${tageszeit[$timeframe]}'" 
+                        echo " !  Fehler bei          :'$sendername' '${tageszeit[$timeframe]}'" 
                     fi
                 fi
             fi
@@ -571,16 +571,16 @@ iterum() {          #AnzahlVersuche #Pause
         if [[ $err_fix -eq $err_vorher ]]; then
             break   # alle Fehler gefixt, kein weiterer Durchlauf notwendig
         fi
-        echo "Warte $iter_sleep Sekunden bis zum nächsten Durchlauf"
+        echo "    Warte $iter_sleep Sekunden bis zum nächsten Durchlauf"
         sleep "$iter_sleep"   # Pause zwischen Durchläufen
     done
 
     if [[ $err_fix -eq $err_vorher ]]; then
-        echo "Alle $err_vorher Channels konnten erfolgreich angelegt werden."
+        echo "[✓] Alle $err_vorher Channels konnten erfolgreich angelegt werden."
         log "Alle $err_vorher Channels angelegt"
         err_flag=false
     else
-        echo "Es konnten $err_fix von $err_ges Channels angelegt werden."
+        echo "[i] Es konnten $err_fix von $err_ges Channels angelegt werden."
         log "$err_fix von $err_ges Channels angelegt."
     fi
     echo
@@ -646,13 +646,33 @@ channelinfo_del() {
 }
 
 
+# löscht alle Channels eines Sendernamens
+channel_name_del() {
+    sendername="$1"
+    IFS=$'\n' ch_name_id=($(grep -o "[0-9]*|$ca_ch_pre$sendername - [A-Za-z]*" <<< "${ch_in[*]}")); unset IFS
+    if [[ ${#ch_name_id[*]} -gt 0 ]]; then
+        ch_name_id_del=0
+        for (( cni=0; cni<=${#ch_name_id[@]}; cni++)); do
+            delete_return=$(curl -s "https://www.save.tv/STV/M/obj/channels/deleteChannel.cfm?channelId=${ch_name_id[cni]%|*}&deleteProgrammedRecords=1&deleteReadyRecords=1" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/channels/MeineChannels.cfm' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie")
+            if [[ "$delete_return" == *"Channel und ausgewählte Aufnahmen gelöscht"* ]]; then
+                log "Channel ${ch_name_id[cni]} gelöscht"
+                ((ch_name_id_del++))
+            else
+                log "Channel ${ch_name_id[cni]} konnte nicht gelöscht werden"
+            fi
+        done
+        printf "[✓] %-16s %-29s\n" "'$sendername'" "$ch_name_id_del Channels gelöscht"
+    fi
+    channel_liste   # aktualisierte Channelliste holen
+}
+
 #### Vom Skript angelegte Channels löschen 
 channel_cleanup() {
     if [[ $ch_use -gt 0 ]]; then
         err_flag=false      # Fehler beim Löschen
         ch_del=0            # Anzahl gelöschter Channels
         # ch_use_vor=$ch_use
-        echo -n "Lösche $ca_ch_anz Channels : "  
+        echo -n "    Lösche $ca_ch_anz Channels : "  
         for ch_test in "${ch_in[@]}"; do
             if [[ $ch_test == *[0-9]"|$ca_ch_pre"* ]] || [[ $ch_test == *[0-9]"|$ca_ch_prexxl"* ]]; then # XXLTEMP
                 stvchinfo=$(grep -o "^[0-9]*" <<< "$ch_test")
@@ -673,12 +693,12 @@ channel_cleanup() {
         done
         echo -n '✓'
         echo
-        echo "Es wurden $ch_del Channels gelöscht."
+        echo "[✓] Es wurden $ch_del Channels gelöscht."
         if [[ $err_flag = true ]]; then
-            echo "Hinweis: Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
+            echo "[!] Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
         fi   
     else
-        echo "Es sind keine Channels vorhanden."
+        echo "[i] Es sind keine Channels vorhanden."
     fi
 }
 
@@ -710,29 +730,31 @@ sender_bereinigen() {
         done
 
         if [[ $cleanup_check == "J" ]]; then
-            echo "[i] Für diese ${#skip_name[@]} Sender werden die vorhandenen Programmierungen und"
-            echo "    aufgenommenen Sendungen endgültig gelöscht"
-            
+            echo "[i] Für diese ${#skip_name[@]} Sender werden die vorhandenen Channels, Programmierungen"
+            echo "    und aufgenommenen Sendungen endgültig gelöscht"
             log 'Bereinigung im Batchmodus'
         else        
-            echo "[i] Sollen für diese ${#skip_name[@]} Sender die vorhandenen Programmierungen und"
-            echo "    die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?"
-            echo 
-            read -p '    Alles bereinigen (J/N)? : ' cleanup_check
+            echo
+            echo "[i] Sollen für diese ${#skip_name[@]} Sender die vorhandenen Channels, Programmierungen"
+            echo "    und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?"
+            read -p '[?] Alles bereinigen (J/N)? : ' cleanup_check
         fi
         SECONDS=0 
-        echo
-        
+        echo 
         if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
-            echo "[i] Lösche die Programmierungen und Aufnahmen der Sender der Skipliste"
+            echo "[i] Lösche die Channels, Programmierungen und Aufnahmen der Sender der Skipliste"
+            channel_liste
             # Webinterface umschalten auf ungruppierte Darstellung wg. einzelner TelecastIds
             list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data '')
-            
-            del_ids_tot=0       # Gesamtsumme der TelecastIds
+
+            del_ids_tot=0       # Gesamtanzahl der TelecastIds
             del_ids_err=false   # Flag für mgl. Fehler
-            for (( i=0; i<=${#skip_name[@]}; i++)); do
-                sendername=${skip_name[i]}
-                senderid=${skip_id[i]}
+
+            for (( skip=0; skip<=${#skip_name[@]}; skip++)); do
+                sendername=${skip_name[skip]}
+                senderid=${skip_id[skip]}
+                channel_name_del "$sendername"      # Channels für Sender löschen
+
                 if [[ senderid -gt 0 ]]; then     
                     list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
                     temp_te=$(grep -o "IENTRIESPERPAGE.*ITOTALPAGES"<<< "$list_return" | grep -o '"ITOTALENTRIES":[0-9]*'); totalentries=${temp_te#*:}
@@ -740,7 +762,7 @@ sender_bereinigen() {
                     log "$sendername hat $totalentries zu löschende Einträge auf $totalpages Seiten" 
                 
                     if [[ totalpages -gt 0 ]]; then
-                        echo -n "[i] '$sendername' hat $totalentries Einträge, beginne Löschung : "
+                        printf "[i] %-16s %-29s" "'$sendername'" "lösche $totalentries Einträge"
                         del_ids_tot=$((del_ids_tot + totalentries))  
                         for ((page=1; page<=totalpages; page++)); do
                             list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" -H 'User-Agent: Mozilla/5.0' -H 'Accept: */*' -H 'Accept-Language: de' --compressed -H 'Referer: https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm?bLoadLast=true' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
@@ -760,10 +782,12 @@ sender_bereinigen() {
                         echo -n '✓'
                         echo
                     else
-                        echo "[✓] '$sendername' muß nicht gesäubert werden"   
+                        printf "    %-16s %-50s\n" "'$sendername'" "muß nicht gesäubert werden"  
                     fi
                 fi
             done
+
+            channel_liste   # aktualisierte Channelliste holen
             if [[ $del_ids_err = true ]]; then
                 echo "[!] Beim Löschen sind Fehler aufgetreten, Details siehe Logfile $(basename ''"$stv_log"'')!"
                 echo
@@ -804,7 +828,7 @@ channelrestechecken() {
         echo "    beim Channellöschen bleiben bereits erfolgte *Aufnahmen erhalten*."
         echo
         echo "    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an."
-        read -p "    Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
+        read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
         if [[ $ch_cleanup_check == "L" || $ch_cleanup_check == "l" ]]; then
             echo
             # echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre'" # XXLTEMP
@@ -813,7 +837,7 @@ channelrestechecken() {
                 grep -o "[0-9]*|${ca_ch_pre}[^|]*" <<< "$ch_test"
                 grep -o "[0-9]*|${ca_ch_prexxl}[^|]*" <<< "$ch_test"   # XXLTEMP
             done
-            read -p "    Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+            read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
         fi
         if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
             channel_cleanup
@@ -831,7 +855,7 @@ abbrechen() {
     echo
     echo "[!] Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
     log  ": Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
-    echo "    Liste der aufgetretene Fehler:"
+    echo "    Liste der aufgetretenen Fehler:"
     sed '/^: /,$!d ; s/^: /    /' stv_ca.log
     fkt_stoerung_info
     echo "[i] In der letzten Stunde wurden $stoer_as_std Störungen auf AlleStörungen.de gemeldet"
@@ -1148,7 +1172,7 @@ banner() {
 
     if [ $ausfuehrung == "manual" ]; then
         if [[ $(log_delete "$log_max") -eq 0 ||  $cmd == "--test" ||  $cmd == "-t" ]]; then
-            read -p 'Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
+            read -p '[?] Soll ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
             if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
                 funktionstest
             else
@@ -1242,7 +1266,7 @@ banner() {
         exit 1 
     fi
     echo
-    echo "Bearbeitungszeit $SECONDS Sekunden"
+    echo "[i] Bearbeitungszeit $SECONDS Sekunden"
     log "Ende: $(date)"
 
 if [[ $err_flag = true ]]; then
