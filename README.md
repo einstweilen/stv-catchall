@@ -18,12 +18,18 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-06-08 Channelzählung korrigiert, cURL Aufrufe bereinigt
   * 2020-06-06 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) um Channels erweitert
   * 2020-06-05 [Duplikatsprüfung bei ausreichenden Channels, Fehlerzählbugfix, Optik](#2020-06-05)
   * 2020-06-04 Fehlersituation "nicht genügend Channels" [durch Duplikatsprüfung verbessert](#2020-06-04)
   * 2020-06-02 Cookie Option 'versteckt', bleibt zum Testen auswählbar, wird aber nicht aktiv angeboten
   * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#erstes-login-und-manuelles-login), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
   
+#### 2020-06-08
+Alte ToDos erledigt
+* die in `channel_liste()` ermittelte Channelanzahl korrigiert, Löschungen wurden nicht berücksichtigt
+* cURL Aufrufe bereinigt, unnötige Header entfernt, sind jetzt kürzer und übersichtlicher
+
 #### 2020-06-06
 Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt für die Sender der Skipliste **zusätzlich** zu den alten Sendungen und Programmierungen noch eventuell vorhandene Senderchannels.
 
@@ -35,26 +41,6 @@ Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4ume
     [✓] 'KiKA'           4 Channels gelöscht         
     [i] 'KiKA'           lösche 412 Einträge        ............✓
         'MTV'            muß nicht gesäubert werden
-
-#### 2020-06-05
-Wenn ein Sender z.B. weil er vorher auf der Skipliste war hinzukommt, im Beispiel _35 Bestandssender plus ein neuer_, wird die Duplikatsprüfung auch bei den alten Einzelsendern vor der Anlage durchgeführt, diese Sender werden mit einem `D`markiert. Das verkürzt die Ausführungszeit, da vorher Duplikate erst anhand der Serverfehlermeldung erkannt wurden.
-
-    [i] Es sind 140 bereits angelegte Channels vorhanden, diese blieben erhalten.
-    Es werden 4 zusätzliche Channels angelegt, die Channels bleiben erhalten.
-
-    Channels: + anlegen  - löschen  F_ehler&Anzahl   Sender: ✓ angelegt  D Duplikat
-    Sender : DDDDD DDD✓D DDDDD DDDDD DDDDD DDDDD DDDDD D 
-    [✓] Es wurden 4 Channels dauerhaft angelegt.
-
-Zusätzlich wurde ein beim letzten Update verlorengegangenes `else` wieder eingefügt, wodurch korrekt angelegte Channels nicht mehr gleichzeitig als richtig und falsch gezählt werden. 
-
-Das Erscheinungsbild vereinheitlicht durch vorangestellte Icons `[✓] OK` , `[!] Fehler` , `[i] Information`
-
-#### 2020-06-04
-Beim XXL Paket und bei den upgegradeten Paketen, wurde der Fehler "Das Skript benötigt 140 _(<=Beispiel bei 35 Sendern)_ freie Channels zur Programmierung. Aktuell sind bereits 140 von 200 Channels des Pakets belegt." ausgegeben, weil die immergleichen Channels jedesmal aufs Neue angelegt werden sollten.
-
-Jetzt wird vor Ausgabe der Fehlermeldung geprüft, ob sich unter den anzulegenden Channels Duplikate vorhandener Channels befinden und ein entsprechender Hinweis im Infochannel "_ OK nur Dups" ausgegeben.
-Sollten nicht nur Duplikate vorhanden sein, werden die Dups von der Anzahl der benötigten Channels abgezogen und erst wenn dann noch nicht genügend freie Channels vorhanden sind, das Skript mit einem Hinweistext abgebrochen.
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
