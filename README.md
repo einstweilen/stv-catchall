@@ -18,13 +18,18 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-06-17 XL Paket wurde von SaveTV wieder auf 20 Channels reduziert [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
   * 2020-06-08 Channelzählung korrigiert, cURL Aufrufe bereinigt
   * 2020-06-06 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) um Channels erweitert
   * 2020-06-05 [Duplikatsprüfung bei ausreichenden Channels, Fehlerzählbugfix, Optik](#2020-06-05)
   * 2020-06-04 Fehlersituation "nicht genügend Channels" [durch Duplikatsprüfung verbessert](#2020-06-04)
   * 2020-06-02 Cookie Option 'versteckt', bleibt zum Testen auswählbar, wird aber nicht aktiv angeboten
-  * 2020-05-29 [zusätzliche Loginoption 'Cookie'](README-ext.md#erstes-login-und-manuelles-login), [Funktionstest](README-ext.md#beispielausgabe-des-funktionstests) Vertragslaufzeit und Aufnahmestatus, [7-Tage-Log](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
   
+#### 2020-06-17
+Seitens SaveTV wurde bei den XL Paketen heute Nacht die Anzahl der nutzbaren Channels **von 200 wieder auf 20 reduziert**. Aktuell sind bereits angelegte Channels **weiterhin vorhanden** und wurden nicht bis auf 20 gelöscht.
+
+Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
+
 #### 2020-06-08
 Alte ToDos erledigt
 * die in `channel_liste()` ermittelte Channelanzahl korrigiert, Löschungen wurden nicht berücksichtigt
@@ -33,14 +38,7 @@ Alte ToDos erledigt
 #### 2020-06-06
 Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt für die Sender der Skipliste **zusätzlich** zu den alten Sendungen und Programmierungen noch eventuell vorhandene Senderchannels.
 
-    [i] Sollen für diese 11 Sender die vorhandenen Channels, Programmierungen
-        und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?
-    [?] Alles bereinigen (J/N)? : j
 
-    [i] Lösche die Channels, Programmierungen und Aufnahmen der Sender der Skipliste
-    [✓] 'KiKA'           4 Channels gelöscht         
-    [i] 'KiKA'           lösche 412 Einträge        ............✓
-        'MTV'            muß nicht gesäubert werden
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
