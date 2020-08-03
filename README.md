@@ -8,6 +8,11 @@ Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion]
 
 Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.  
 
+## Warum gibt es aktuell keine Skript-Updates?
+Save.TV hat die in der Coronazeit gewährten 200 Channels für XL-Kunden wieder auf 20 reduziert. Wer sich mit dem Skript bereits alle Channels angelegt hatte, hat 'seine zusätzlichen' Channels behalten. Zum Testen kann ich keine neuen Channels hinzufügen oder löschen ohne zuerst komplett alle Channels zu löschen.
+
+Das Skript *sollte* fehlerfrei für Neuuser funktionieren. Wer trotzdem einen Fehler findet, bitte unbedingt [ein neues Issue](https://github.com/einstweilen/stv-catchall/issues/) anlegen, ich überlege mir dann etwas.
+
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](README-ext.md#einmaliger-download))
