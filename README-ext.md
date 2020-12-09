@@ -41,6 +41,10 @@
     + [Channels aufräumen Hintergrund](#channels-aufr%C3%A4umen-hintergrund)
     + [Channels aufräumen Funktionsweise und Aufruf](#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
     + [Beispielausgabe der Zusatzfunktion Channels aufräumen](#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen)
+  * [Zusatzfunktion Zombieaufnahmen löschen](#zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
+    + [Zombieaufnahmen löschen Hintergrund](#zombieaufnahmen-l%C3%B6schen-hintergrund)
+    + [Zombieaufnahmen löschen Funktionsweise und Aufruf](#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
+    + [Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen](#beispielausgabe-der-zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
     + [Einmaliger Download](#einmaliger-download)
     + [Per Git installieren](#per-git-installieren)
@@ -100,7 +104,7 @@ Nach der Eingabe von Username und Passwort loggt sich das Skript mit diesen Date
         Save.TV Username: 
 Nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Login angeboten.
 
-Das Speichern in der Username-Passwort-Datei `stv_autologin.txt` ist robutser, bei der Cookiedatei kann dafür niemand die Userdaten so leicht auslesen, da nur die SessionID gespeichert wird.
+Das Speichern in der Username-Passwort-Datei `stv_autologin.txt` ist robuster, bei der Cookiedatei kann dafür niemand die Userdaten so leicht auslesen, da nur die SessionID gespeichert wird.
 
         Die Zugangsdaten können zum automatischen Login gespeichert werden
 	    Speicherung lokal in D_atei oder N_icht speichern? (D/N)? :
@@ -180,12 +184,12 @@ Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh
 
 
 ### Angelegte Channels behalten `auto`, `immer`, `nie`
-Durch den Parameter `anlege_modus` in `Zeile 10` wird gesteuert, wie mit den durch das Skript angelegten Channels verfahren wird. Normalerweise wird man die voreingestellte Option `auto` verwenden, kann sie aber auch überschreiben.
+Durch den Parameter `anlege_modus` wird gesteuert, wie mit den durch das Skript angelegten Channels verfahren wird. Normalerweise wird man die voreingestellte Option `auto` verwenden, kann sie aber auch überschreiben.
 
 ***Defaulteinstellung `anlege_modus=auto`***  
 Bei dem **Basis** und **XL** Paket werden die Channels nach dem Anlegen **wieder gelöscht**,  
 beim **XXL** Paket bleiben die Channels **erhalten**.  
-Sollten beim Start nicht genügend ungenutzte Channels vorhanden sein, wird geprüft, ob die neu anzulegenden Channels bereist vorhanden sind und ein entsprechender Hinweis im Infochannel "_ OK nur Dups" ausgegeben, anderenfalls bricht das Skript mit einem Hinweistext ab.
+Sollten beim Start nicht genügend ungenutzte Channels vorhanden sein, wird geprüft, ob die neu anzulegenden Channels bereits vorhanden sind und ein entsprechender Hinweis im Infochannel "_ OK nur Dups" ausgegeben, anderenfalls bricht das Skript mit einem Hinweistext ab.
 
 ***`anlege_modus=immer`***  
 Vom Skript angelegte Channels bleiben immer erhalten. Das Skript prüft vor dem Start, ob noch genügend ungenutzte Channels vorhanden sind und wechselt bei Bedarf zurück in den `auto` Modus. Ein Hinweistext wird ausgeben.
@@ -370,7 +374,7 @@ Eine fehlerhafte Ausführung ist dann nur am veralteten Datum des Statuschannels
 #### Wiederholung der Channelanlage
 Die häufigsten Fehler treten durch eine momentane Überlastung des Webservers auf.
 
-Die bei der Channelanlage aufgetretenen Fehler werden gezählt und wenn die Gesamtfehlerzahl beim Channelanlegen unter dem Maximalwert von 9 Fehlern bleibt (konfigurierbar durch `err_max`) werden im Asnchluß bis zu 3 (konfigurierbar durch `vers_max`) weitere Versuche unternommen, die Channels anzulegen. Dabei wird zwischen den einzelnen Durchläufen jeweils eine Pause von 10 Minuten (konfigurierbar durch `vers_sleep`) eingelegt.
+Die bei der Channelanlage aufgetretenen Fehler werden gezählt und wenn die Gesamtfehlerzahl beim Channelanlegen unter dem Maximalwert von 9 Fehlern bleibt (konfigurierbar durch `err_max`) werden im Anschluß bis zu 3 (konfigurierbar durch `vers_max`) weitere Versuche unternommen, die Channels anzulegen. Dabei wird zwischen den einzelnen Durchläufen jeweils eine Pause von 10 Minuten (konfigurierbar durch `vers_sleep`) eingelegt.
 
 Wird `vers_max=0` gesetzt, wird keine Wiederholung der Channelanlage durchgeführt.
 
@@ -446,7 +450,7 @@ Beim Start der Aufräumenfunktion werden alle Sender der Skipliste aufgelistet u
 
 **Hinweis**: Die Löschung der aufgenommenen Sendungen kann **nicht rückgängig** gemacht werden.
 
-Das Skript löscht dann zuerst eventuell noch existierende Senderchannels mit der Option "Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv". Entgegen der Aussage das Systems bleiben trotzdem Aufnahmen und Programmierungen übrig, diese werden dann einzeln Postion für Position gelöscht.
+Das Skript löscht dann zuerst eventuell noch existierende Senderchannels mit der Option "Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv". Entgegen der Aussage das Systems bleiben trotzdem Aufnahmen und Programmierungen übrig, diese werden dann einzeln Position für Position gelöscht.
 
 Das entspricht dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS und Klicken der . Bei einem Vollprogrammsender können so 4.000 und mehr Einträge zu löschen sein. Typische 'Reste' bewegen sich zwischen 200 und 400 Einträgen.
 
@@ -526,7 +530,49 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 	    Es wurden 5 Channels gelöscht.
 
 	Bearbeitungszeit 208 Sekunden
+
+## Zusatzfunktion Zombieaufnahmen löschen
+### Zombieaufnahmen löschen Hintergrund
+Es handelt sich um einen Save.TV Fehler, nicht um einen Fehler des Skripts.
+
+Wenn man das Videoarchiv ohne Filter aufruft (Link: ['Mein Videoarchiv' Übersicht (nur eingeloggt sichtbar)](https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm)) erhält man eine von neu zu alt soriterte Liste aller seiner Aufnahmen. Manchmal befinden sich an den obersten Positionen aber Aufnahmen, die älter als die nachfolgenden sind.
+
+Der Grund ist, dass die Sortierung nicht anhand des sichtbaren Aufnahmedatums sondern anhand des internen DSTARTDATE erfolgt. Bei den vermeintlich falsch einsortierten Aufnahmen liegt das DSTARTDATE in der Zukunft, wodurch sie dauerhaft ganz oben gelistet werden. Besonders häufig tritt das bei Aufnahmen vom Sender WELT auf, dort können drei oder mehr solcher Aufnahmen pro Woche auftreten, die dann die komplette erste Seite einnehmen können. 
+
+Man kann diese Aufnahmen zwar manuell löschen, doch gibt es Fälle, in denen die gelöschte Aufnahmen am nächsten Tag wieder als 'neu' in der Aufnahmeliste erscheinen - daher die Bezeichung "Zombies".
+
+![STV Beispiel für falsche zeitliche Sortierung Screenshot](img-fuer-readme/zombieaufnahme01.jpg)
+
+### Zombieaufnahmen löschen Funktionsweise und Aktivierung
+Bei der Zombiebereinigung werden die 35 aktuellsten Aufnahmen im Videoarchiv, das entspricht der ersten Übersichtsseite, überprüft, ob ihr DSTARTDATE in der Zukunft liegt und falls dabei Aufnahmen gefunden werden, werden diese bei gesetztem `check_zombies` Flag (siehe unten) automatisch gelöscht.
+
+Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh --cleanup` wird nach dem Reste- und Channelaufräumen, eine Überprüfung auf Zombies angeboten. Eventuell gefundene Aufnahmen werden aufgelistet und können nach einer Nachfrage direkt gelöscht werden.
+
+Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren muß das Flags `check_zombies` von defaultmäßig `false` auf `true` geändert werden.
+
+Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahemn können **nicht** wiederhergestellt werden.
+
+### Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen
+Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen) danach folgt:
+
+	         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen
 	
+            2020-12-03 18:20:00 Brisant
+            2020-11-29 10:30:00 Aufgedeckt - Rätsel der Geschichte
+            2020-12-07 16:15:00 Sport
+            2020-12-07 15:15:00 Sport
+            2020-12-01 16:15:00 Sport
+            2020-11-30 16:15:00 Sport
+            2020-11-30 15:15:00 Sport
+            2020-11-29 15:15:00 Sport
+            2020-12-05 14:35:00 WELT-Spezial
+            2020-12-08 16:15:00 Sport
+            2020-12-05 15:05:00 Sport
+	    [?] Diese 11 Aufnahmen löschen (J/N)? : j
+	    [✓] alle 11 Aufnahmen wurden gelöscht
+	
+	    [i] Bearbeitungszeit 18 Sekunden
+
 ## Installation auf einem Raspberry Pi mit täglicher Ausführung
 
 ### Einmaliger Download
