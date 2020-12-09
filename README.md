@@ -6,12 +6,7 @@
 
 Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle Sendungen aller bei Save.TV [verfügbaren Sender](https://hilfe.save.tv/Knowledgebase/50080/Senderliste) 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket. Beim XXL Paket spart man sich das manuelle Channelanlegen.
 
-Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.  
-
-## Warum gibt es aktuell keine Skript-Updates?
-Save.TV hat die in der Coronazeit gewährten 200 Channels für XL-Kunden wieder auf 20 reduziert. Wer sich mit dem Skript bereits alle Channels angelegt hatte, hat 'seine zusätzlichen' Channels behalten. Zum Testen kann ich keine neuen Channels hinzufügen oder löschen ohne zuerst komplett alle Channels zu löschen.
-
-Das Skript *sollte* fehlerfrei für Neuuser funktionieren. Wer trotzdem einen Fehler findet, bitte unbedingt [ein neues Issue](https://github.com/einstweilen/stv-catchall/issues/) anlegen, ich überlege mir dann etwas.
+Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
@@ -23,6 +18,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-12-09 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-zombieaufnahmen-l%C3%B6schen) um Zombiebereinigung erweitert
   * 2020-06-17 XL Paket wurde von SaveTV wieder auf 20 Channels reduziert [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
   * 2020-06-08 Channelzählung korrigiert, cURL Aufrufe bereinigt
   * 2020-06-06 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) um Channels erweitert
@@ -30,6 +26,9 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * 2020-06-04 Fehlersituation "nicht genügend Channels" [durch Duplikatsprüfung verbessert](#2020-06-04)
   * 2020-06-02 Cookie Option 'versteckt', bleibt zum Testen auswählbar, wird aber nicht aktiv angeboten
   
+#### 2020-12-09
+Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt auch Zombies (falsch einsortierte Aufnahmen) optional kann das auch automatisch erfolgen.
+
 #### 2020-06-17
 Seitens SaveTV wurde bei den XL Paketen heute Nacht die Anzahl der nutzbaren Channels **von 200 wieder auf 20 reduziert**. Aktuell sind bereits angelegte Channels **weiterhin vorhanden** und wurden nicht bis auf 20 gelöscht.
 
@@ -39,10 +38,6 @@ Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github
 Alte ToDos erledigt
 * die in `channel_liste()` ermittelte Channelanzahl korrigiert, Löschungen wurden nicht berücksichtigt
 * cURL Aufrufe bereinigt, unnötige Header entfernt, sind jetzt kürzer und übersichtlicher
-
-#### 2020-06-06
-Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt für die Sender der Skipliste **zusätzlich** zu den alten Sendungen und Programmierungen noch eventuell vorhandene Senderchannels.
-
 
 
 ### Beispielausgabe CatchAll Programmierung
@@ -108,6 +103,11 @@ Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4ume
     + [Channels aufräumen Hintergrund](README-ext.md#channels-aufr%C3%A4umen-hintergrund)
     + [Channels aufräumen Funktionsweise und Aufruf](README-ext.md#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
     + [Beispielausgabe der Zusatzfunktion Channels aufräumen](README-ext.md#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen)
+  * [Zusatzfunktion Zombieaufnahmen löschen](README-ext.md#zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
+    + [Zombieaufnahmen löschen Hintergrund](README-ext.md#zombieaufnahmen-l%C3%B6schen-hintergrund)
+    + [Zombieaufnahmen löschen Funktionsweise und Aufruf](README-ext.md#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
+    + [Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen](README-ext.md#beispielausgabe-der-zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
+    
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](README-ext.md#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
     + [Einmaliger Download](README-ext.md#einmaliger-download)
     + [Per Git installieren](README-ext.md#per-git-installieren)
