@@ -18,27 +18,26 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-12-10 Fix Logdatei, verbessertes Channelhandling, Login per Cookie entfernt, ReadMe angepaßt
   * 2020-12-09 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-zombieaufnahmen-l%C3%B6schen) um Zombiebereinigung erweitert
   * 2020-06-17 XL Paket wurde von SaveTV wieder auf 20 Channels reduziert [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
   * 2020-06-08 Channelzählung korrigiert, cURL Aufrufe bereinigt
   * 2020-06-06 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) um Channels erweitert
   * 2020-06-05 [Duplikatsprüfung bei ausreichenden Channels, Fehlerzählbugfix, Optik](#2020-06-05)
-  * 2020-06-04 Fehlersituation "nicht genügend Channels" [durch Duplikatsprüfung verbessert](#2020-06-04)
-  * 2020-06-02 Cookie Option 'versteckt', bleibt zum Testen auswählbar, wird aber nicht aktiv angeboten
   
+#### 2020-12-10
+  * der Link `stv_ca.log` auf die aktuellste Logdatei wurde bei der Ausführung per Cron im Homeverzeichnis statt im Scriptverzeichnis angelegt, das ist korrigiert
+  * der Logout wurde zweimal durchgeführt, das ist korrigiert
+  * die verwirrenden negativen Channel-Verfügbarkeitsanzeigen bei Usern mit temporärem XXL Upgrade wurden entfernt. Im Funktionstest wurde hierzu zusätzlich eine Erklärung ergänzt
+  * die Zombieaufnahmen löschen Funktion schreibt gefundene Dateien ins Log
+  * die bereits im Juni 'versteckte' Option das Login per Cookie durchführen zu können, wurde komplett entfernt, da es nicht stabil funktionierte 
+
 #### 2020-12-09
 Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt auch Zombies (falsch einsortierte Aufnahmen) optional kann das auch automatisch erfolgen.
 
 #### 2020-06-17
 Seitens SaveTV wurde bei den XL Paketen heute Nacht die Anzahl der nutzbaren Channels **von 200 wieder auf 20 reduziert**. Aktuell sind bereits angelegte Channels **weiterhin vorhanden** und wurden nicht bis auf 20 gelöscht.
-
 Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
-
-#### 2020-06-08
-Alte ToDos erledigt
-* die in `channel_liste()` ermittelte Channelanzahl korrigiert, Löschungen wurden nicht berücksichtigt
-* cURL Aufrufe bereinigt, unnötige Header entfernt, sind jetzt kürzer und übersichtlicher
-
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
