@@ -2,17 +2,17 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20201209'  # Scriptversion
+version_ist='20201210'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
+cd "$DIR"                           # ins Scriptverzeichnis wechseln
+
 send_list="$DIR/stv_sender.txt"     # Liste aller Save.TV Sender
 send_skip="$DIR/stv_skip.txt"       # Liste der zu überspringenden Sender
 stv_log="$DIR/stv_ca_$(date '+%m%d_%H%M').log"  # Ausführungs- und Fehlerlog
 stv_cred="$DIR/stv_autologin"       # gespeicherte Zugangsdaten
 stv_cookie="$DIR/stv_cookie.txt"    # Session Cookie
-
-stv_cookie_login=false              # Permanentes Cookie verwenden (true|false)
 
 log_max=6                           # Anzahl zubehaltender Logdateien i.d.R. eine Woche
 err_flag=false                      # Flag für Bearbeitungsfehler (true|false)
@@ -40,6 +40,7 @@ ca_ch_pre="zz "                     # Prefix-Kennung für vom Skript erstellte C
 ca_ch_prexxl="_ "                   # alte Prefix-Kennung XXL Channels XXLTEMP
 ca_in_pre="_  "                     # Prefix-Kennung für vom Skript erstellten Infotext
 ca_in_preurl="_++"                  # dito URLencoded *zwei* Leerzeichen (alphabetisch vor den anderen Channels)
+
 
 ### Logging 
 log() {
@@ -88,10 +89,6 @@ stv_login() {
 
     stv_login_cred          # Accountdaten gespeichert?
 
-    if ! $eingeloggt; then
-        stv_login_cookie    # Cookie vorhanden und gültig?
-    fi
-
     while ! $eingeloggt && [ $ausfuehrung == "manual" ] ; do
         stv_login_manual    # Accountdaten manuell eingeben
     done
@@ -102,55 +99,6 @@ stv_login() {
     fi
 }
 
-
-### Login mit gespeichertem Cookie
-stv_login_cookie() {
-    if [ -f "$stv_cookie" ]; then
-        stv_cookie_login=true
-
-        if [[ $cmd == "-t" ]]; then
-            echo "[✓] Cookie '$(basename "$stv_cookie")' ist vorhanden"
-            echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
-        fi
-        log "Logindaten aus $(basename "$stv_cookie") werden verwendet"
-
-        # um Cookiegültigkeit zu testen, stv_user ID von Accountseite holen
-        paket_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/JSON/userConfigApi.cfm?iFunction=2' --cookie "$stv_cookie")
-        stv_user=$(sed 's/.*SUSERNAME":\([^.]*\).*/\1/' <<<"$paket_return")
-
-        if grep -q "Server Error" <<< "$paket_return"; then
-            echo "[!] Login wegen Serverfehler nicht möglich"
-            echo
-            echo "[i] Skript wird abgebrochen"
-            log ': Login wegen Serverfehlers nicht möglich, Skriptabbruch'
-            log "$paket_return"
-            exit 1
-        fi
-
-        if grep -q "^[0-9]\{6,7\}$" <<<"$stv_user" ; then
-            eingeloggt=true
-            if [[ $cmd == "-t" ]]; then
-                echo "[✓] Cookie für User $stv_user ist gültig und wird verwendet"
-            fi
-            log "Cookie für User $stv_user ist gültig und wird verwendet"
-        else
-            eingeloggt=false
-            stv_cookie_login=false
-            echo "[!] Cookie ist vorhanden, aber nicht mehr gültig"
-            echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
-            echo "[i] alternative Loginmethoden werden versucht"
-            log ': Cookie ungültig, UserID Test nicht erfolgreich'
-            log "$(cat "$stv_cookie")"
-            log "paket_return: $paket_return"
-            log "paket_return EOF"
-            rm -f "$stv_cookie"
-        fi
-
-    else
-        eingeloggt=false
-        log "Keine Cookiedatei '$(basename "$stv_cookie")' vorhanden"
-    fi
-}
 
 ### Login mit gespeicherten Zugangsdaten
 stv_login_cred() {
@@ -197,31 +145,11 @@ stv_login_manual() {
     if [ "$login_return" -ne 0 ]; then
         eingeloggt=true
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
+        echo
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
-#       read -p '    Speicherung als C_ookie, in D_atei oder N_icht speichern? (C/D/N)? : ' login_opt # beta
-        read -p '[?] Speicherung lokal in D_atei oder N_icht speichern? (D/N)? : ' login_opt    # beta
+        read -p '[?] Zugangsdaten speichern? (J/N)? : ' login_opt
         case $login_opt in
-            [cC]  )
-                cookie_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitAutoLogin.cfm' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'Origin: https://www.save.tv' --cookie "$stv_cookie" --cookie-jar "$stv_cookie" --data-raw 'IsAutoLogin=64&Messages=')
-                if grep -q "Die Änderung war erfolgreich" <<< "$cookie_return"; then
-                    stv_cookie_login=true
-                    echo "[✓] Auto-Login im Save.TV Account aktiviert"
-                    echo "[i] Das Cookie '$(basename "$stv_cookie")' bleibt dauerhaft gespeichert"
-                    echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
-                    rm -f "$stv_cred"
-                else
-                    stv_cookie_login=false
-                    eingeloggt=false
-                    echo "[!] Auto-Login konnte nicht aktiviert werden"
-                    echo "    erneut versuchen oder andere Option wählen"
-                    echo "[i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten" # beta
-                    log ": Auto-Login konnte nicht aktiviert werden"
-                    log "$cookie_return"
-                    exit 1
-                fi
-                ;;
-            [dD]  )
-                stv_cookie_login=false
+            [jJ]  )
                 echo "$stv_user $stv_pass" >"$stv_cred"
                 echo "[i] Zugangsdaten wurden in '$(basename "$stv_cred")' gespeichert"
                 ;;
@@ -249,18 +177,16 @@ stv_login_manual() {
 ### STV Webserver Logout
 stv_logout() {
             if [ $ausfuehrung == "auto" ]; then
-                if [ $check_zombies = true ]; then
+                if [ $check_zombies == true ]; then
                     log "automatischer Zombiecheck ist aktiv"
                     zombie_check
                 fi
             fi
-            if [[ $stv_cookie_login == true ]]; then
-                log "Login mit Cookie aktiv, Session Cookie behalten"
-            else
-                curl -s 'https://www.save.tv/STV/M/obj/user/usLogout.cfm' --cookie "$stv_cookie"  >/dev/null 2>&1
-                rm -f "$stv_cookie"
-                log "Session Cookie gelöscht"
-            fi
+
+            curl -s 'https://www.save.tv/STV/M/obj/user/usLogout.cfm' --cookie "$stv_cookie"  >/dev/null 2>&1
+            rm -f "$stv_cookie"
+            log "Session Cookie gelöscht"
+            eingeloggt=false
 }
 
 
@@ -387,7 +313,6 @@ channelanz_info() {
     fi
 
     if [[ $channels_behalten = false ]]; then
-        echo "    Es werden temporär $ch_nec Channels angelegt."
         if [[ ch_max -eq stv_ch_basis ]]; then
             echo
             echo "[!] HINWEIS: Sie können mit Ihrem Basispaket nur 50 Stunden aufnehmen!"
@@ -401,7 +326,7 @@ channelanz_info() {
     else
         echo "    Es werden $ch_nec zusätzliche Channels angelegt, die Channels bleiben erhalten."
     fi
-    echo   
+    echo
 }
 
 
@@ -874,7 +799,7 @@ zombie_check() {
         echo '         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen'
         echo
     fi
-    log "Prüfe Videoarchiv auf Zombie Aufnahemen"
+    log "Prüfe Videoarchiv auf Zombie Aufnahmen"
     prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=0&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=1&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2020-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
     IFS=$'\n'
         prog_dstart=($(grep -o 'DSTARTDATE"[^ ]*' <<<"$prog_return" | grep -o '"20.*'))
@@ -893,9 +818,10 @@ zombie_check() {
                 ((zom_anz++))
                 zom_ids="$zom_ids${prog_id[i]} "
                 echo "    ${prog_start[i]} ${prog_title[i]}"
+                 log "${prog_id[i]} ${prog_dstart[i]} ${prog_start[i]} ${prog_title[i]}"
             fi
         done
-        
+
         if [[ $zom_anz -gt 0 ]]; then
             log "$zom_anz Zombies gefunden"
             if [ $ausfuehrung == "manual" ]; then
@@ -1057,9 +983,7 @@ funktionstest() {
 
     if $eingeloggt; then
         SECONDS=0 
-        if [[ $stv_cookie_login == false ]]; then
-            echo "[✓] Login mit UserID $stv_user erfolgreich"
-        fi
+        echo "[✓] Login mit UserID $stv_user erfolgreich"
     else
         echo "[!] Fehler beim Login mit UserID $stv_user!"
         echo "    Bitte in $(basename "$stv_cred") Username und Passwort prüfen,"
@@ -1110,7 +1034,7 @@ funktionstest() {
     prog_vorhanden=$(sed 's/.*ITOTALENTRIES\":\([0-9]*\).*/\1/'<<< "$prog_return")
 
     echo
-    echo "[i] Paket '$paket_art', Laufzeit bis zum $paket_bis"
+    echo "[i] Paket '$paket_art' mit Laufzeit bis zum $paket_bis"
     echo "    $ch_max Channels enthalten, davon aktuell $ch_use benutzt"
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
     echo "    Sendungen aufgenommen: $prog_vorhanden  Sendungen programmiert: $prog_zukunft"
@@ -1118,13 +1042,6 @@ funktionstest() {
     echo "[i] Eingestellte Pufferzeiten und Aufnahmeoptionen"
     printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
     echo
-    if [[ ch_fre -eq 0 ]]; then
-        echo '    Für den Test wird ein freier Channel benötigt.'
-        echo '    Mindestens einen Channel manuell löschen'
-        echo '    und danach den Funktionstest mit --test erneut starten.'
-        stv_logout
-        exit 1
-    fi
 
     # alte Senderliste sichern, neue holen
     mv "$send_list" "$send_list.old" 2> /dev/null
@@ -1137,7 +1054,6 @@ funktionstest() {
     else
         rm -f "$send_list.old"
     fi
-
 
     skipindex=0
     while read line; do
@@ -1164,41 +1080,51 @@ funktionstest() {
     echo 
 
     # 04 channel anlegen
-    fkt_ch_anlegen
-    if [[ $ch_ok = true ]]; then
-        echo "[✓] Testchannel erfolgreich angelegt"
-    else
-        echo "[!] Testchannel konnte NICHT angelegt werden"
-        echo "    Details siehe Logdatei $stv_log"
-        echo
-        fkt_error_exit
+    if [[ ch_fre -eq 0 ]]; then
+        echo '[!] Für den Test wird ein freier Channel benötigt.'
+        echo '    Falls die Channelanlage getestet werden soll, mindestens einen Channel'
+        echo '    manuell löschen und danach den Funktionstest mit --test erneut starten.'
+    fi
+    if [[ ch_fre -lt 0 ]]; then
+        echo '[!] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar sind!'
+        echo '    Diese können z.B. beim temporären XXL Upgrade 05/2020 angelegt worden sein,'
+        echo '    sie sollten nur bei dringendem Bedarf gelöscht werden, da eine Neuanlage'
+        echo '    nur im Rahmen des gebuchten Pakets möglich ist.'
+        echo 
+        echo '[i] Der Channeltest und der täglichen Infochannel werden übersprungen!'
     fi
 
-    # 05 channelliste lesen
-    channel_liste
-    echo "[✓] Channelliste eingelesen"
-    
-    # 06 channel löschen
-    fkt_ch_delete
-    if [[ $ch_ok = true ]]; then
-        echo "[✓] Testchannel erfolgreich gelöscht"
-    else
-        echo "[!] Testchannel konnte NICHT gelöscht werden"
-        echo "    Details siehe Logdatei $stv_log"
-        echo
-        fkt_error_exit
+    if [[ ch_fre -gt 0 ]]; then
+        fkt_ch_anlegen
+        if [[ $ch_ok = true ]]; then
+            echo "[✓] Testchannel erfolgreich angelegt"
+        else
+            echo "[!] Testchannel konnte NICHT angelegt werden"
+            echo "    Details siehe Logdatei $stv_log"
+            echo
+            fkt_error_exit
+        fi
+
+        # 05 channelliste lesen
+        channel_liste
+        echo "[✓] aktualisierte Channelliste eingelesen"
+        
+        # 06 channel löschen
+        fkt_ch_delete
+        if [[ $ch_ok = true ]]; then
+            echo "[✓] Testchannel erfolgreich gelöscht"
+        else
+            echo "[!] Testchannel konnte NICHT gelöscht werden"
+            echo "    Details siehe Logdatei $stv_log"
+            echo
+            fkt_error_exit
+        fi
     fi
 
     # 07 ausloggen
-    if [[ $stv_cookie_login == false ]]; then
-        echo
-        stv_logout
-        echo "[✓] Logout durchgeführt"
-    else
-        echo
-        echo "[i] Login mit Cookie aktiv, Sessioncookie bleibt erhalten"
-    fi
-
+    echo
+    stv_logout
+    echo "[✓] Logout durchgeführt"
     echo
     echo "[i] Prüfe auf von anderen Usern gemeldete Störungen"
     fkt_stoerung_info
@@ -1366,11 +1292,14 @@ banner() {
     echo
     echo "[i] Bearbeitungszeit $SECONDS Sekunden"
     log "Ende: $(date)"
-
-if [[ $err_flag = true ]]; then
-    stv_logout
-    exit 2
-else 
-    stv_logout
     exit 0
-fi
+
+    if ! $eingeloggt; then
+        if [[ $err_flag = true ]]; then
+            stv_logout
+            exit 2
+        else 
+            stv_logout
+            exit 0
+        fi
+    fi
