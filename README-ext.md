@@ -104,33 +104,22 @@ Nach der Eingabe von Username und Passwort loggt sich das Skript mit diesen Date
         Save.TV Username: 
 Nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Login angeboten.
 
-Das Speichern in der Username-Passwort-Datei `stv_autologin.txt` ist robuster, bei der Cookiedatei kann dafür niemand die Userdaten so leicht auslesen, da nur die SessionID gespeichert wird.
-
         Die Zugangsdaten können zum automatischen Login gespeichert werden
-	    Speicherung lokal in D_atei oder N_icht speichern? (D/N)? :
+	    Zugangsdaten speichern? (J/N)? :
 	
-#### Option 'D' Speicherung in Datei 
+#### Option 'J' Speicherung in Datei 
     [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
 	
-#### BETA Option 'C' Speicherung in persistenten Cookie
-Die Option 'C' wird **nicht angezeigt**. Die Speicherung im Cookie funktioniert aktuell nicht zuverlässig.
-Wer die Option trotzdem verwendet, möge bitte sein Feedback in [#4 Persistentes Login-Cookie kann ungültig werden](https://github.com/einstweilen/stv-catchall/issues/4) posten.
 
-    [✓] Auto-Login im Save.TV Account aktiviert
-    [i] Das Cookie 'stv_cookie.txt' bleibt dauerhaft gespeichert
-    [i] BETA! Bitte Erfahrungen in GitHub > Issues > #4 posten
- 
 ### Automatisches Login
-Ist die Datei `stv_autologin.txt` oder `stv_cookie.txt` vorhanden, erfolgt das Login automatisch.
+Ist die Datei `stv_autologin` vorhanden erfolgt das Login automatisch.
 
     ./stvcatchall.sh
     [✓] Login bei SaveTV als User 612612 war erfolgreich!
-bzw.
 
-    [✓] Cookie ist gültig und wird verwendet
     
 ### Wechsel zwischen den Loginoptionen
-Das Skript erkennt die zuverwendene Loginoption Datei/Cookie/manuell anhand des Vorhandenseins der Dateien `stv_cookie.txt` bzw. `stv_autologin.txt`. Für den Wechsel zu einer anderen Option, diese Dateien im Skriptverzeichnis löschen, beim nächsten Skriptstart erscheint dann der initiale Auswahldialog (siehe [Erstes Login und manuelles Login](#erstes-login-und-manuelles-login)). Am besten startet man hierfür das Skript mit der Funktionstestoption `-t`.
+Das Skript erkennt die zuverwendene Loginoption Datei/manuell anhand des Vorhandenseins der Datei `stv_autologin`. Für den Wechsel zum manuellen Login diese Dateien im Skriptverzeichnis löschen, beim nächsten Skriptstart erscheint dann der initiale Auswahldialog (siehe [Erstes Login und manuelles Login](#erstes-login-und-manuelles-login)). Am besten startet man hierfür das Skript mit der Funktionstestoption `-t`.
 
 #### Login Fehler
 Sind die gespeicherten Daten nicht mehr korrekt, wird eine entsprechende Fehlermeldung ausgegeben bzw. um die Eingabe neuer Daten gebeten.
@@ -140,12 +129,7 @@ Sind die gespeicherten Daten nicht mehr korrekt, wird eine entsprechende Fehlerm
     
         Aktueller Inhalt von stv_autologin:
         612612 FalschesPasswort	
-		
-Bei einem abgelaufenen Cookie wird automatisch die Eingabe von Username und Passwort angeboten, um ein neues Cookie zu erhalten oder optional auf die Speicherung der Zugangsdaten in einer Datei zu wechseln. 
-
-    [-] Cookie ist vorhanden, aber nicht mehr gültig
-    [i] alternative Loginmethoden werden versucht
-    
+		    
 Bei einem Überlast 500er Serverfehler beim Login, wird das Skript direkt beendet.
 
 ### Sender von der automatischen Aufnahme ausschließen
@@ -176,7 +160,7 @@ Wenn man fertig ist, speichert man diese geänderte Datei unter dem Namen `stv_s
 Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr ...](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
 
     [i] Aktuell sind 46 Sender bei Save.TV verfügbar.    
-    [i] Die Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet:
+    [i] Die Liste der ausgeschlossenen Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
         Folx TV               SPORT 1               DMAX               
         Eurosport             Disney Channel        RiC                
@@ -215,18 +199,17 @@ Beispielhafte Channelliste mit automatisch vom Skript und vom XXL-User manuell a
 
 #### Aufbau des Infochannels
 
-	_  OK Mi 0731 2258 Neue Version	bedeutet
+	_  OK Mi 0731 2258 Neue Version	>>> Bedeutung
 	_				Underscore am Anfang = von CatchAll angelegt
-	OK / FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
-	OK nur Dups                     alle anzulgenden Channel waren bereits vorhanden
-	Mi 0731				Datum Wochentag Monat Tag
-	2258				Uhrzeit Stunde Minute
+	OK oder FEHLER			fehlerfrei bzw. Fehler sind aufgetreten
+	OK nur Dups                     alle anzulegenden Channels waren bereits vorhanden
+	Mi 0731	2258 			Datum (Wochentag Monat Tag) Uhrzeit (Stunde Minute)					
 	Neue Version			(optional) eine neuere Skriptversion ist verfügbar
 	
 #### Aufbau der Senderchannels
 Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht, beim XXL Paket soriteren sie sich ans Ende der Channelliste.
 
-	zz 3sat - Abend                 bedeutet
+	zz 3sat - Abend                 >>> Bedeutung
 	zz				zz sortiert die Catchall Channel nach hinten
 	3sat				Sendername
 	Abend				Timeslot (Vormittag,Nachmittag,Abend,Nacht)
@@ -235,9 +218,9 @@ Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht,
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
 ### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
-Das kostenlose XXL Upgrade ist auch nach dem 26.05. noch aktiv, es werden 200 Channels im XL-Paket angezeigt.
+Die zusätzlichen XXL Channels sind auch nach dem 26.05. noch aktiv, wenn sie **vor** dem 17. Juni angelegt wurden. Die Channels lassen sich löschen, aber nicht wieder neu anlegen.
 
-Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
+Die Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
 
 ### Besonderheit beim Basis Paket
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
@@ -309,6 +292,12 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen.
         In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
         gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
+
+#### Beispielausgabe bei noch vorhandenen XXL Channels im XL Paket
+    [!] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar sind!
+        Diese können z.B. beim temporären XXL Upgrade 05/2020 angelegt worden sein,
+        sie sollten nur bei dringendem Bedarf gelöscht werden, da eine Neuanlage
+        nur im Rahmen des gebuchten Pakets möglich ist.
 
 #### Beispielausgabe bei langer Laufzeit des Funktionstests
     [-] Der Funktionstest hat länger als die erwarteten 10 Sekunden benötigt!
@@ -550,7 +539,11 @@ Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh --
 
 Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren muß das Flags `check_zombies` von defaultmäßig `false` auf `true` geändert werden.
 
-Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahemn können **nicht** wiederhergestellt werden.
+Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahmen können **nicht** wiederhergestellt werden.
+
+Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahmedatum und Titel im Log protokolliert.
+`Prüfe Videoarchiv auf Zombie Aufnahmen`
+`17997070 2020-11-24 2020-11-10 16:15:00 Sport`
 
 ### Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen
 Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen) danach folgt:
