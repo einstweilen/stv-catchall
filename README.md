@@ -18,13 +18,16 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+  * 2020-12-16 Fix Zombiebereinigung, Bereinigungen zusammengefaßt
   * 2020-12-10 Fix Logdatei, verbessertes Channelhandling, Login per Cookie entfernt, ReadMe angepaßt
-  * 2020-12-09 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-zombieaufnahmen-l%C3%B6schen) um Zombiebereinigung erweitert
+  * 2020-12-09 Bereinigungsfunktion um Zombiebereinigung erweitert
   * 2020-06-17 XL Paket wurde von SaveTV wieder auf 20 Channels reduziert [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
-  * 2020-06-08 Channelzählung korrigiert, cURL Aufrufe bereinigt
-  * 2020-06-06 [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) um Channels erweitert
-  * 2020-06-05 [Duplikatsprüfung bei ausreichenden Channels, Fehlerzählbugfix, Optik](#2020-06-05)
   
+#### 2020-12-16
+  * für die Zombiebereinigung auf ungruppierte Sortierung der Übersichtsseite umgestellt
+  * Dokumentation und Ausgabe der Bereinigungsfunktionen überarbeitet
+  * Hinweis und Sicherheitsabfrage vor dem Channellöschen bei temporären XXL Upgrades ergänzt
+
 #### 2020-12-10
   * der Link `stv_ca.log` auf die aktuellste Logdatei wurde bei der Ausführung per Cron im Homeverzeichnis statt im Scriptverzeichnis angelegt, das ist korrigiert
   * der Logout wurde zweimal durchgeführt, das ist korrigiert
@@ -33,7 +36,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * die bereits im Juni 'versteckte' Option das Login per Cookie durchführen zu können, wurde komplett entfernt, da es nicht stabil funktionierte 
 
 #### 2020-12-09
-Die [Reste aufräumen Funktion](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen) `./stvcatchall.sh -c` löscht jetzt auch Zombies (falsch einsortierte Aufnahmen) optional kann das auch automatisch erfolgen.
+Die [Bereinigungsfunktion](README-ext.md#modul-zombieaufnahmen-l%C3%B6schen) `./stvcatchall.sh -c` löscht jetzt auch Zombies (falsch einsortierte Aufnahmen) optional kann das auch automatisch erfolgen.
 
 #### 2020-06-17
 Seitens SaveTV wurde bei den XL Paketen heute Nacht die Anzahl der nutzbaren Channels **von 200 wieder auf 20 reduziert**. Aktuell sind bereits angelegte Channels **weiterhin vorhanden** und wurden nicht bis auf 20 gelöscht.
@@ -71,9 +74,6 @@ Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github
   * [Funktionsweise](README-ext.md#funktionsweise)
   * [Einrichten und Starten](README-ext.md#einrichten-und-starten)
     + [Username und Passwort](#username-und-passwort)
-      + [Erstes Login und manuelles Login](README-ext.md#erstes-login-und-manuelles-login)
-      + [Automatisches Login](README-ext.md#automatisches-login)
-      + [Wechsel zwischen den Loginoptionen](README-ext.md#wechsel-zwischen-den-loginoptionen)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
     + [Hinweis zum Ende das kostenlosen XXL Upgrades](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)   
@@ -81,32 +81,16 @@ Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github
     + [Besonderheit beim Basis Paket](README-ext.md#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
     + [Funktionstest](README-ext.md#funktionstest)
-        + [Funktionstest aufrufen](README-ext.md#funktionstest-aufrufen)
-    	+ [Beispielausgabe des Funktionstests](README-ext.md#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](README-ext.md#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehlerausgabe](README-ext.md#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
-        + [im Direktmodus](README-ext.md#im-direktmodus)
-    	+ [im Batchmodus](README-ext.md#im-batchmodus)
-        + [Wiederholung der Channelanlage](#wiederholung-der-channelanlage)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](README-ext.md#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](README-ext.md#hinweis-zur-verwendung-unter-termux)
     + [Beispielausgabe CatchAll Programmierung](README-ext.md#beispielausgabe-catchall-programmierung)
-  * [Zusatzfunktion Reste aufräumen](README-ext.md#zusatzfunktion-reste-aufr%C3%A4umen)
-    + [Reste aufräumen Hintergrund](README-ext.md#reste-aufr%C3%A4umen-hintergrund)
-    + [Reste aufräumen Funktionsweise](README-ext.md#reste-aufr%C3%A4umen-funktionsweise)
-    + [Reste aufräumen einmalig starten](README-ext.md#reste-aufr%C3%A4umen-einmalig-starten)
-    + [Reste aufräumen starten und anschließend Catchall Channel anlegen](README-ext.md#reste-aufr%C3%A4umen-starten-und-anschlie%C3%9Fend-catchall-channel-anlegen)
-    + [Beispielausgabe Reste aufräumen](README-ext.md#beispielausgabe-reste-aufr%C3%A4umen)
-  * [Zusatzfunktion Channels aufräumen](README-ext.md#zusatzfunktion-channels-aufr%C3%A4umen)
-    + [Channels aufräumen Hintergrund](README-ext.md#channels-aufr%C3%A4umen-hintergrund)
-    + [Channels aufräumen Funktionsweise und Aufruf](README-ext.md#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
-    + [Beispielausgabe der Zusatzfunktion Channels aufräumen](README-ext.md#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen)
-  * [Zusatzfunktion Zombieaufnahmen löschen](README-ext.md#zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
-    + [Zombieaufnahmen löschen Hintergrund](README-ext.md#zombieaufnahmen-l%C3%B6schen-hintergrund)
-    + [Zombieaufnahmen löschen Funktionsweise und Aufruf](README-ext.md#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
-    + [Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen](README-ext.md#beispielausgabe-der-zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
-    
+  * [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen)
+    + [Modul Reste aufräumen](README-ext.md#modul-reste-aufr%C3%A4umen)
+    + [Modul Channels aufräumen](README-ext.md#modul-channels-aufr%C3%A4umen)
+    + [Modul Zombieaufnahmen löschen](README-ext.md#modul-zombieaufnahmen-l%C3%B6schen)
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](README-ext.md#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
     + [Einmaliger Download](README-ext.md#einmaliger-download)
     + [Per Git installieren](README-ext.md#per-git-installieren)
