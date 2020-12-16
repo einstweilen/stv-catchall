@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20201210'  # Scriptversion
+version_ist='20201216'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -643,10 +643,27 @@ channel_cleanup() {
 }
 
 
-### Aufnahme- und Programmierungsreste löschen
+### Skipliste, Channelliste, Videoarchiv aufräumen
+inhalte_bereinigen() {
+    cleanup_check=$1    # bei --cleanupauto 'J'
+    echo "                Bereinigung von nicht mehr benötigten Inhalten"
+    echo "    Skipliste   : Channels, Aufnahmen und Programmierungen"
+    echo "    Channelliste: vom Skript angelegte Channels"
+    echo "    Videoarchiv : Aufnahmen mit vordatiertem Timestamp"
+    echo ; echo 
+    sender_bereinigen
+
+# bei manuellem Aufruf zusätzlich Channelaufräumen und Zombieslöschen anbieten
+    if [[ $cleanup_modus == "manuell" ]]; then
+        channelrestechecken
+        zombie_check
+    fi
+}
+
+
+### Skipliste Aufnahmen- und Programmierungsreste löschen
 sender_bereinigen() {
-    cleanup_check=$1
-    echo "        Programmierungen und Aufnahmen der Sender der Skipliste löschen"
+    echo " 1/3  Programmierungen und Aufnahmen der Sender der Skipliste löschen"
     if [ ! -f "$send_skip" ]; then
         touch "$send_skip" # leere Datei anlegen
         log 'Liste der nicht aufzunehmenden Sender war nicht vorhanden, leere Datei wurde angelegt'
@@ -744,12 +761,6 @@ sender_bereinigen() {
     else
         echo "[i] Die Skipliste '$(basename "$send_skip")' ist leer, Bereinigung übersprungen."
     fi
-    
-    # bei manuellem Aufruf Channelaufräumen und Zombieslöschen zusätzlich anbieten
-    if [[ $cleanup_modus == "manuell" ]]; then
-        channelrestechecken
-        zombie_check
-    fi
 }
 
 
@@ -757,7 +768,7 @@ sender_bereinigen() {
 channelrestechecken() {
     echo
     echo
-    echo '         Prüfe die Channelliste auf von STV CatchAll angelegte Channels'
+    echo ' 2/3    Prüfe die Channelliste auf von STV CatchAll angelegte Channels'
     echo
     channel_liste       # Liste vorhandener Channel
     channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
@@ -773,13 +784,22 @@ channelrestechecken() {
         read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
         if [[ $ch_cleanup_check == "L" || $ch_cleanup_check == "l" ]]; then
             echo
-            # echo "Hinweis: Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre'" # XXLTEMP
             echo "[i] Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre' '$ca_ch_prexxl'" # XXLTEMP
             for ch_test in "${ch_in[@]}"; do
                 grep -o "[0-9]*|${ca_ch_pre}[^|]*" <<< "$ch_test"
                 grep -o "[0-9]*|${ca_ch_prexxl}[^|]*" <<< "$ch_test"   # XXLTEMP
             done
             read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+        fi
+
+        # Sicherheitsabfrage wg. XXL Upgradechanneln
+        if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
+            if [[ $ca_ch_anz -gt $ch_max ]]; then
+                echo
+                echo "[!] Achtung, von den $ca_ch_anz Channels sind nur $ch_max in ihrem STV Paket enthalten,"
+                echo "    die übrigen $((ca_ch_anz - ch_max)) Channels können *nicht* neu angelegt werden."
+                read -p "[?] Trotzdem die Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+            fi
         fi
         if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
             channel_cleanup
@@ -796,10 +816,13 @@ zombie_check() {
     if [ $ausfuehrung == "manual" ]; then
         echo
         echo
-        echo '         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen'
+        echo ' 3/3    Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen'
         echo
     fi
     log "Prüfe Videoarchiv auf Zombie Aufnahmen"
+    # Umschalten auf ungruppierte Darstellung der Titel
+    list_return=$(curl -s 'https://www.save.tv/STV/M/obj/user/submit/submitVideoArchiveOptions.cfm?bShowGroupedVideoArchive=false' --cookie "$stv_cookie" --data '')
+
     prog_return=$(curl -s 'https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm' --cookie "$stv_cookie" --data 'iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=0&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=1&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2020-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=0&iTvStationId=0&bHighlightActivation=false&bVideoArchiveGroupOption=0&bShowRepeatitionActivation=false')
     IFS=$'\n'
         prog_dstart=($(grep -o 'DSTARTDATE"[^ ]*' <<<"$prog_return" | grep -o '"20.*'))
@@ -1223,12 +1246,12 @@ banner() {
     if $eingeloggt; then
         if [[ $cmd == "--cleanup" ||  $cmd == "-c" ]]; then # Bereinigen mit Sicherheitsabfrage
             cleanup_modus=manuell
-            sender_bereinigen
+            inhalte_bereinigen
         else
             err_ges=0
             if [[ $cmd == "--cleanupauto" ]]; then          # Bereinigen ohne Sicherheitsabfrage
                 cleanup_modus=auto
-                sender_bereinigen "J"  
+                inhalte_bereinigen "J"  
                 echo
                 echo
             fi
