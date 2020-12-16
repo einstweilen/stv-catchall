@@ -31,20 +31,21 @@
     + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](#hinweis-zur-verwendung-unter-termux)
     + [Beispielausgabe CatchAll Programmierung](#beispielausgabe-catchall-programmierung)
-  * [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen)
-    + [Reste aufräumen Hintergrund](#reste-aufr%C3%A4umen-hintergrund)
-    + [Reste aufräumen Funktionsweise](#reste-aufr%C3%A4umen-funktionsweise)
-    + [Reste aufräumen einmalig starten](#reste-aufr%C3%A4umen-einmalig-starten)
-    + [Reste aufräumen starten und anschließend Catchall Channel anlegen](#reste-aufr%C3%A4umen-starten-und-anschlie%C3%9Fend-catchall-channel-anlegen)
-    + [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen)
-  * [Zusatzfunktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen)
-    + [Channels aufräumen Hintergrund](#channels-aufr%C3%A4umen-hintergrund)
-    + [Channels aufräumen Funktionsweise und Aufruf](#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
-    + [Beispielausgabe der Zusatzfunktion Channels aufräumen](#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen)
-  * [Zusatzfunktion Zombieaufnahmen löschen](#zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
-    + [Zombieaufnahmen löschen Hintergrund](#zombieaufnahmen-l%C3%B6schen-hintergrund)
-    + [Zombieaufnahmen löschen Funktionsweise und Aufruf](#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
-    + [Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen](#beispielausgabe-der-zusatzfunktion-zombieaufnahmen-l%C3%B6schen)
+  * [Bereinigungsfunktionen](#bereinigungsfunktionen)
+    + [Modul Reste aufräumen](#modul-reste-aufr%C3%A4umen)
+      + [Reste aufräumen Hintergrund](#reste-aufr%C3%A4umen-hintergrund)
+      + [Reste aufräumen Funktionsweise](#reste-aufr%C3%A4umen-funktionsweise)
+      + [Reste aufräumen einmalig starten](#reste-aufr%C3%A4umen-einmalig-starten)
+      + [Reste aufräumen starten und anschließend Catchall Channel anlegen](#reste-aufr%C3%A4umen-starten-und-anschlie%C3%9Fend-catchall-channel-anlegen)
+      + [Beispielausgabe der Moduls Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen)
+    + [Modul Channels aufräumen](#modul-channels-aufr%C3%A4umen)
+      + [Channels aufräumen Hintergrund](#channels-aufr%C3%A4umen-hintergrund)
+      + [Channels aufräumen Funktionsweise und Aufruf](#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
+      + [Beispielausgabe des Moduls Channels aufräumen](#beispielausgabe-des-moduls-channels-aufr%C3%A4umen)
+    + [Modul Zombieaufnahmen löschen](#modul-zombieaufnahmen-l%C3%B6schen)
+      + [Zombieaufnahmen löschen Hintergrund](#zombieaufnahmen-l%C3%B6schen-hintergrund)
+      + [Zombieaufnahmen löschen Funktionsweise und Aufruf](#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
+      + [Beispielausgabe des Moduls Zombieaufnahmen löschen](#beispielausgabe-des-moduls-zombieaufnahmen-l%C3%B6schen)
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
     + [Einmaliger Download](#einmaliger-download)
     + [Per Git installieren](#per-git-installieren)
@@ -157,7 +158,7 @@ Wenn man fertig ist, speichert man diese geänderte Datei unter dem Namen `stv_s
 	6|SPORT 1
 	95|TLC
 
-Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr ...](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
+Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr …](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
 
     [i] Aktuell sind 46 Sender bei Save.TV verfügbar.    
     [i] Die Liste der ausgeschlossenen Sender 'stv_skip.txt' beinhaltet:
@@ -424,15 +425,22 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
 
     Bearbeitungszeit 474 Sekunden
 
-## Zusatzfunktion Reste aufräumen
-### Reste aufräumen Hintergrund
+## Bereinigungsfunktionen 
+Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfunktionen aufgerufen. Die Bereinigungsfunktionen bestehen aus drei Modulen, die nacheinander durchlaufen werden. Löschungen finden nur nach vorheriger Bestätigung statt.
+
+* für Sender der **Skipliste** die Channels, Aufnahmen und Programmierungen löschen [mehr …](#modul-reste-aufr%C3%A4umen)
+* alle vom Skript angelegten **Channels** löschen [mehr …](#modul-channels-aufr%C3%A4umen)
+* im **Videoarchiv** Aufnahmen mit vordatiertem Timestamp löschen [mehr …](#modul-zombieaufnahmen-l%C3%B6schen)
+
+### Modul Reste aufräumen
+#### Reste aufräumen Hintergrund
 Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets abgelaufen ist.
 
 Zu sehen mit dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS. Bei einem Vollprogrammsender können so 4000 und mehr Einträge zu löschen sein.
 
 Wer seinen Account bereits vorher säubern will, kann die entsprechenden Sender und Sendungen manuell löschen oder die *Reste aufräumen* Funktion von stv-catchall verwenden.
 
-### Reste aufräumen Funktionsweise
+#### Reste aufräumen Funktionsweise
 Die Funktion prüft, ob für die Sender der Skipliste, die bei der Aufnahme übersprungen werden, (siehe auch [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)) Channels, aufgenommene Sendungen oder programmierte Aufnahmen vorliegen und löscht diese.
 
 Beim Start der Aufräumenfunktion werden alle Sender der Skipliste aufgelistet und das Aufräumen muß mit "j" oder "J" bestätigt werden.
@@ -445,18 +453,18 @@ Das entspricht dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links o
 
 Einmal gelöschte Einträge bleiben gelöscht, jedoch tauchen manchmal noch 7 bis 14 Tage lang, trotz gelöschtem Channel und Einzellöschung immer wieder neue Sendungen auf, die man dann manuell löschen muß. Falls die einen stören sollten, gibt es um das Löschen zu automatisieren, die `--cleanupauto` Option, Deatils siehe im übernächsten Absatz. 
 
-### Reste aufräumen einmalig starten
+#### Reste aufräumen einmalig starten
 Um die *Reste aufräumen* Funktion auszuführen, muß das Skript mit dem Parameter `--cleanup` oder `-c` aufgerufen werden
 
 	./stvcatchall.sh --cleanup
 	
-### Reste aufräumen starten und anschließend Catchall Channel anlegen
+#### Reste aufräumen starten und anschließend Catchall Channel anlegen
 Die Sicherheitsabfrage der *Reste aufräumen* Funktion `Alles bereinigen (J/N)?` wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
 
 	./stvcatchall.sh --cleanupauto
 Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
 
-### Beispielausgabe Reste aufräumen
+#### Beispielausgabe des Moduls Reste aufräumen
                 _______ _______ _    _ _______   _______ _    _
                 |______ |_____|  \  /  |______      |     \  /
                 ______| |     |   \/   |______ .    |      \/ 
@@ -490,11 +498,11 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 
 	Bearbeitungszeit 178 Sekunden
 	
-## Zusatzfunktion Channels aufräumen
-### Channels aufräumen Hintergrund
+### Modul Channels aufräumen
+#### Channels aufräumen Hintergrund
 Wenn man im XXL Paket 188 Channel angelegt hat und CatchAll nicht mehr verwenden möchte oder wenn die Ausführung des Skripts beim Channelanlegen abgebrochen wurde (Ctrl C, Stromausfall ...) bleiben vom Skript angelegte Channels übrig, die von Hand gelöscht werden müssen.
 
-### Channels aufräumen Funktionsweise und Aufruf
+#### Channels aufräumen Funktionsweise und Aufruf
 Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `zz ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
 
         Es sind 4 vom STV CatchAll Skript angelegte Channels vorhanden
@@ -504,8 +512,15 @@ Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Ch
 
 Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion `./stvcatchall.sh --cleanup` erneut aufrufen.
 
-### Beispielausgabe der Zusatzfunktion Channels aufräumen
-Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) danach folgt:
+**Hinweis zu den Channel aus dem temporären XXL Upgrade**
+Wenn man während des XXL-Upgrades 05/2020 mehr Channels angelegt hat, als im gebuchten Paket anthalten sind, erfolgt vor dem Löschen eine zusätzliche Sicherheitsabfrage, da die über das Paket hinausgehenden Channels nicht wieder neu angelegt werden können!
+
+    [!] Achtung, von den 136 Channels sind nur 20 in ihrem STV Paket enthalten,
+        die übrigen 116 Channels können *nicht* neu angelegt werden.
+    [?] Trotzdem die Channels und zugehörigen Programmierungen löschen (J/N)? : j
+
+#### Beispielausgabe des Moduls Channels aufräumen
+Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen) danach folgt:
 
 	         Prüfe die Channelliste auf von STV CatchAll angelegte Channels
 	
@@ -520,8 +535,8 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 
 	Bearbeitungszeit 208 Sekunden
 
-## Zusatzfunktion Zombieaufnahmen löschen
-### Zombieaufnahmen löschen Hintergrund
+### Modul Zombieaufnahmen löschen
+#### Zombieaufnahmen löschen Hintergrund
 Es handelt sich um einen Save.TV Fehler, nicht um einen Fehler des Skripts.
 
 Wenn man das Videoarchiv ohne Filter aufruft (Link: ['Mein Videoarchiv' Übersicht (nur eingeloggt sichtbar)](https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm)) erhält man eine von neu zu alt soriterte Liste aller seiner Aufnahmen. Manchmal befinden sich an den obersten Positionen aber Aufnahmen, die älter als die nachfolgenden sind.
@@ -532,7 +547,7 @@ Man kann diese Aufnahmen zwar manuell löschen, doch gibt es Fälle, in denen di
 
 ![STV Beispiel für falsche zeitliche Sortierung Screenshot](img-fuer-readme/zombieaufnahme01.jpg)
 
-### Zombieaufnahmen löschen Funktionsweise und Aktivierung
+#### Zombieaufnahmen löschen Funktionsweise und Aktivierung
 Bei der Zombiebereinigung werden die 35 aktuellsten Aufnahmen im Videoarchiv, das entspricht der ersten Übersichtsseite, überprüft, ob ihr DSTARTDATE in der Zukunft liegt und falls dabei Aufnahmen gefunden werden, werden diese bei gesetztem `check_zombies` Flag (siehe unten) automatisch gelöscht.
 
 Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh --cleanup` wird nach dem Reste- und Channelaufräumen, eine Überprüfung auf Zombies angeboten. Eventuell gefundene Aufnahmen werden aufgelistet und können nach einer Nachfrage direkt gelöscht werden.
@@ -541,12 +556,13 @@ Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen h
 
 Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahmen können **nicht** wiederhergestellt werden.
 
-Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahmedatum und Titel im Log protokolliert.
-`Prüfe Videoarchiv auf Zombie Aufnahmen`
-`17997070 2020-11-24 2020-11-10 16:15:00 Sport`
+Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahmedatum und Kutztitel im Log protokolliert. Zur nachträglichen Kontrolle kann man anhand der TelecastID auch bei bereits erfolgter Löschung der Aufnahme, die Sendungsdetails einsehen, dazu im Browser die geloggte ID an die URL `https://www.save.tv/STV/M/obj/archive/VideoArchiveDetails.cfm?TelecastId=` anhängen.
 
-### Beispielausgabe der Zusatzfunktion Zombieaufnahmen löschen
-Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-der-zusatzfunktion-channels-aufr%C3%A4umen) danach folgt:
+    Prüfe Videoarchiv auf Zombie Aufnahmen
+    17997070 2020-11-24 2020-11-10 16:15:00 Sport
+
+#### Beispielausgabe des Moduls Zombieaufnahmen löschen
+Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-des-moduls-channels-aufr%C3%A4umen) danach folgt:
 
 	         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen
 	
