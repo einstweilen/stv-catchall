@@ -563,6 +563,15 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 	
 	    [i] Bearbeitungszeit 18 Sekunden
 
+**In den Logdateien nach gelöschten Aufnahmen suchen**
+
+    > grep -o '^.*Zombies gefunden' stv_ca_*.log 
+    stv_ca_1217_0517.log:2 Zombies gefunden
+    stv_ca_1218_0517.log:3 Zombies gefunden
+    stv_ca_1220_0517.log:1 Zombies gefunden
+    stv_ca_1221_0517.log:1 Zombies gefunden
+    stv_ca_1222_0517.log:1 Zombies gefunden
+
 ## Installation auf einem Raspberry Pi mit täglicher Ausführung
 
 ### Einmaliger Download
