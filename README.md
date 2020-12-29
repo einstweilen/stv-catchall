@@ -4,13 +4,15 @@
     ===============================================
     ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
 
-Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle Sendungen aller bei Save.TV [verfügbaren Sender](https://hilfe.save.tv/Knowledgebase/50080/Senderliste) 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket. Beim XXL Paket spart man sich das manuelle Channelanlegen.
+Nachbildung der [2016 aus juristischen Gründen eingestellten CatchAll Funktion](https://tv-forum.info/viewtopic.php?f=33&t=619) bei der alle bei Save.TV [verfügbaren Sender](https://hilfe.save.tv/Knowledgebase/50080/Senderliste) 24/7 aufgenommen werden. Dadurch erhält das Save.TV XL Paket die gleiche Funktionalität wie das XXL Paket. Beim XXL Paket spart man sich das manuelle Channelanlegen.
 
-Das Skript ist unverändert auf Raspbian/DietPi, MacOS sowie mit Termux unter Android lauffähig.
+Für die regelmäßige Ausführung kann das Skript auf einem Raspberry Pi (Zero) installiert werden. Als reines BASH Skript läuft es unverändert unter Raspbian/DietPi, MacOS, Termux (Android).
+
+Fehler und Anregungen bitte unter [Issues](https://github.com/einstweilen/stv-catchall/issues) posten.
 
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
-1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden, benötigte Hilfsdateien werden automatisch erstellt ([mehr …](README-ext.md#einmaliger-download))
+1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden ([mehr …](README-ext.md#einmaliger-download))
 2. das Skript manuell oder regelmäßig per Cron ausführen ([mehr …](README-ext.md#t%C3%A4gliche-ausf%C3%BChrung-einrichten))
 3. *Optional* Bei Save.TV die Einstellung der [Aufnahmeoptionen prüfen](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
 4. *Optional* Die Datei `stv_skip.txt` anpassen, um einzelne Sender von der Programmierung auszunehmen ([mehr …](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
@@ -18,10 +20,8 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
-  * 2020-12-16 Fix Zombiebereinigung, Bereinigungen zusammengefaßt
-  * 2020-12-10 Fix Logdatei, verbessertes Channelhandling, Login per Cookie entfernt, ReadMe angepaßt
-  * 2020-12-09 Bereinigungsfunktion um Zombiebereinigung erweitert
-  * 2020-06-17 XL Paket wurde von SaveTV wieder auf 20 Channels reduziert [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
+#### 2020-12-29
+  * Ausgabe der Sendernamen für zulöschende Aufnahmen ergänzt, im ReadMe Ausgaben angepaßt 
   
 #### 2020-12-16
   * für die Zombiebereinigung auf ungruppierte Sortierung der Übersichtsseite umgestellt
@@ -92,8 +92,4 @@ Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github
     + [Modul Channels aufräumen](README-ext.md#modul-channels-aufr%C3%A4umen)
     + [Modul Zombieaufnahmen löschen](README-ext.md#modul-zombieaufnahmen-l%C3%B6schen)
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](README-ext.md#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
-    + [Einmaliger Download](README-ext.md#einmaliger-download)
-    + [Per Git installieren](README-ext.md#per-git-installieren)
-    + [Dateirechte setzen](README-ext.md#dateirechte-setzen)
-    + [Tägliche Ausführung einrichten](README-ext.md#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
   * [Hilfefunktion](README-ext.md#hilfefunktion)
