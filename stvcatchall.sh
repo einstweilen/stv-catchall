@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20201216'  # Scriptversion
+version_ist='20201229'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -44,7 +44,7 @@ ca_in_preurl="_++"                  # dito URLencoded *zwei* Leerzeichen (alphab
 
 ### Logging 
 log() {
-    echo "$*" >> "$stv_log"
+    echo "$*" | tr -d '"' >> "$stv_log"
 }
 
 ### Logdatei anlegen, Link stv_ca.log zur aktuellesten 
@@ -828,6 +828,7 @@ zombie_check() {
         prog_dstart=($(grep -o 'DSTARTDATE"[^ ]*' <<<"$prog_return" | grep -o '"20.*'))
         prog_id=($(grep -o 'TelecastId=[0-9]*' <<<"$prog_return" | grep -o '[0-9]*$'))
         prog_start=($(grep -o 'DSTARTDATEBUFFER[^,]*' <<<"$prog_return" | grep -o '20[^"]*'))
+        prog_send=($(grep -o 'STVSTATIONNAME":"[^"][^"]*' <<<"$prog_return" | sed 's/STVSTATIONNAME":"//'))        
         prog_title=($(grep -o 'STITLE":"[^"][^"]*' <<<"$prog_return" | sed 's/STITLE":"//'))
     unset IFS
 
@@ -840,8 +841,12 @@ zombie_check() {
             if [[ ${prog_dstart[i]} > $heute ]]; then # Aufnahme aus der Zukunft
                 ((zom_anz++))
                 zom_ids="$zom_ids${prog_id[i]} "
-                echo "    ${prog_start[i]} ${prog_title[i]}"
-                 log "${prog_id[i]} ${prog_dstart[i]} ${prog_start[i]} ${prog_title[i]}"
+                if [[ zom_anz -eq 1 ]]; then
+                    echo "    Aufzeichnungsbeginn Sender Sendung"
+                    log "Telecast DSTARTDATE DSTARTDATEBUFFER    Sender Sendung"
+                fi
+                echo "    ${prog_start[i]} ${prog_send[i]} ${prog_title[i]}"
+                log "${prog_id[i]} ${prog_dstart[i]} ${prog_start[i]} ${prog_send[i]} ${prog_title[i]}"
             fi
         done
 
