@@ -9,6 +9,9 @@
   * [Funktionsweise](#funktionsweise)
   * [Einrichten und Starten](#einrichten-und-starten)
     + [Username und Passwort](#username-und-passwort)
+        + [Erstes Login und manuelles Login](#erstes-login-und-manuelles-login)
+        + [Automatisches Login](#automatisches-login)
+        + [Wechsel zwischen den Loginoptionen](#wechsel-zwischen-den-loginoptionen)
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Aufbau der Channeltitel](#aufbau-der-channeltitel)
@@ -17,16 +20,32 @@
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung)
     + [Funktionstest](#funktionstest)
+        + [Funktionstest aufrufen](#funktionstest-aufrufen)
+    	+ [Beispielausgabe des Funktionstests](#beispielausgabe-des-funktionstests)
     + [Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)
     + [Fehlerausgabe](#fehler-w%C3%A4hrend-der-skriptausf%C3%BChrung)
+        + [im Direktmodus](#im-direktmodus)
+    	+ [im Batchmodus](#im-batchmodus)
+        + [Wiederholung der Channelanlage](#wiederholung-der-channelanlage)
     + [Servicehinweis: Save.TV Aufnahme-Optionen prüfen](#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen)
     + [Tip für Mac-User](#tip-f%C3%BCr-mac-user)
     + [Hinweis zur Verwendung unter Termux](#hinweis-zur-verwendung-unter-termux)
     + [Beispielausgabe CatchAll Programmierung](#beispielausgabe-catchall-programmierung)
   * [Bereinigungsfunktionen](#bereinigungsfunktionen)
     + [Modul Reste aufräumen](#modul-reste-aufr%C3%A4umen)
+      + [Reste aufräumen Hintergrund](#reste-aufr%C3%A4umen-hintergrund)
+      + [Reste aufräumen Funktionsweise](#reste-aufr%C3%A4umen-funktionsweise)
+      + [Reste aufräumen einmalig starten](#reste-aufr%C3%A4umen-einmalig-starten)
+      + [Reste aufräumen starten und anschließend Catchall Channel anlegen](#reste-aufr%C3%A4umen-starten-und-anschlie%C3%9Fend-catchall-channel-anlegen)
+      + [Beispielausgabe der Moduls Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen)
     + [Modul Channels aufräumen](#modul-channels-aufr%C3%A4umen)
+      + [Channels aufräumen Hintergrund](#channels-aufr%C3%A4umen-hintergrund)
+      + [Channels aufräumen Funktionsweise und Aufruf](#channels-aufr%C3%A4umen-funktionsweise-und-aufruf)
+      + [Beispielausgabe des Moduls Channels aufräumen](#beispielausgabe-des-moduls-channels-aufr%C3%A4umen)
     + [Modul Zombieaufnahmen löschen](#modul-zombieaufnahmen-l%C3%B6schen)
+      + [Zombieaufnahmen löschen Hintergrund](#zombieaufnahmen-l%C3%B6schen-hintergrund)
+      + [Zombieaufnahmen löschen Funktionsweise und Aufruf](#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)
+      + [Beispielausgabe des Moduls Zombieaufnahmen löschen](#beispielausgabe-des-moduls-zombieaufnahmen-l%C3%B6schen)
   * [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
     + [Einmaliger Download](#einmaliger-download)
     + [Per Git installieren](#per-git-installieren)
@@ -288,9 +307,11 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         Stand: 2020-01-07 18:46:38 <https://AlleStörungen.de/stoerung/save-tv/>
 
 ### Ausführungsstatus kontrollieren
-Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis die Logdatei `stv_ca.log` geschrieben, die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
+Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis eine Logdatei geschrieben die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
 
-Um den Status des letzten Skriptlaufs von jedem Gerät aus prüfen zu können z.B. der SaveTV Webseite oder der SaveTV App wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status und das Datum der Ausführung enthält, angelegt.
+Die Logdatei hat das Format stv_ca_TAG_UHRZEIT.log z.B. `stv_ca_1229_0517.log`. Die aktuellste Logdatei ist immer unter dem Link `stv_ca.log` abrufbar. Es werden die Logs der letzten sieben (sechs alte Logs plus dem aktuellen) Skriptausführungen aufgehoben, längere oder kürzere Fristen lassen sich im Skript per `log_max` einstellen. 
+
+Der Status des letzten Skriptlaufs läßt sich von jedem Gerät aus prüfen ohne im Log nachsehen, z.B. direkt auf der SaveTV Webseite oder der SaveTV App, dazu wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status und das Datum der Ausführung enthält, angelegt.
 
 Optional: Ist die [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) aktiviert und sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt.
 
@@ -308,8 +329,6 @@ Für diese Statusinformation wird kein Channel "verschwendet", da dieser Channel
 ### Fehler während der Skriptausführung
 #### im Direktmodus
 Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken statt des "✓" für Okay ein "F" ausgegeben und am Ende zeigt das Skript die Logdatei an.
-
-Die Logdatei hat das Format `stv_ca_TAG_UHRZEIT.log z.B. stv_ca_0529_2050.log`, es werden die Logs der letzten sieben (sechs alte Logs plus dem aktuellen) Skriptausführungen aufgehoben, konfigurierbar durch `log_max`.
 
 Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=9`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
@@ -415,7 +434,7 @@ Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfu
 
 ### Modul Reste aufräumen
 #### Reste aufräumen Hintergrund
-Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets abgelaufen ist.
+Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets (30/60/100 Tage) abgelaufen ist.
 
 Zu sehen mit dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS. Bei einem Vollprogrammsender können so 4000 und mehr Einträge zu löschen sein.
 
@@ -428,7 +447,7 @@ Beim Start der Aufräumenfunktion werden alle Sender der Skipliste aufgelistet u
 
 **Hinweis**: Die Löschung der aufgenommenen Sendungen kann **nicht rückgängig** gemacht werden.
 
-Das Skript löscht dann zuerst eventuell noch existierende Senderchannels mit der Option "Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv". Entgegen der Aussage das Systems bleiben trotzdem Aufnahmen und Programmierungen übrig, diese werden dann einzeln Position für Position gelöscht.
+Das Skript löscht dann zuerst eventuell noch existierende Senderchannels mit der Option "Alles löschen – löscht alle Programmierungen und die im Channel enthaltenen Aufnahmen aus dem Archiv". Entgegen der Aussage das Save.TV Systems bleiben trotzdem Aufnahmen und Programmierungen übrig, diese werden dann einzeln Position für Position gelöscht.
 
 Das entspricht dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS und Klicken der . Bei einem Vollprogrammsender können so 4.000 und mehr Einträge zu löschen sein. Typische 'Reste' bewegen sich zwischen 200 und 400 Einträgen.
 
@@ -477,7 +496,6 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 	    'Fix und Foxi'   muß nicht gesäubert werden
 	[i] Es wurden insgesamt 2029 Aufnahmen und Programmierungen gelöscht.
 
-	Bearbeitungszeit 178 Sekunden
 	
 ### Modul Channels aufräumen
 #### Channels aufräumen Hintergrund
@@ -493,8 +511,9 @@ Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Ch
 
 Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion `./stvcatchall.sh --cleanup` erneut aufrufen.
 
-**Hinweis zu den Channel aus dem temporären XXL Upgrade**
-Wenn man während des XXL-Upgrades 05/2020 mehr Channels angelegt hat, als im gebuchten Paket anthalten sind, erfolgt vor dem Löschen eine zusätzliche Sicherheitsabfrage, da die über das Paket hinausgehenden Channels nicht wieder neu angelegt werden können!
+**Hinweis zu den Channels aus dem temporären XXL Upgrade**
+
+Wenn man während des temporären kostenlosen XXL-Upgrades 05/2020 mehr Channels angelegt hat, als im gebuchten Paket anthalten sind, erfolgt vor dem Löschen eine zusätzliche Sicherheitsabfrage, da die über das Paket hinausgehenden Channels nicht wieder neu angelegt werden können!
 
     [!] Achtung, von den 136 Channels sind nur 20 in ihrem STV Paket enthalten,
         die übrigen 116 Channels können *nicht* neu angelegt werden.
@@ -514,15 +533,14 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 	    Lösche 5 Channels : .....✓
 	    Es wurden 5 Channels gelöscht.
 
-	Bearbeitungszeit 208 Sekunden
 
 ### Modul Zombieaufnahmen löschen
 #### Zombieaufnahmen löschen Hintergrund
 Es handelt sich um einen Save.TV Fehler, nicht um einen Fehler des Skripts.
 
-Wenn man das Videoarchiv ohne Filter aufruft (Link: ['Mein Videoarchiv' Übersicht (nur eingeloggt sichtbar)](https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm)) erhält man eine von neu zu alt soriterte Liste aller seiner Aufnahmen. Manchmal befinden sich an den obersten Positionen aber Aufnahmen, die älter als die nachfolgenden sind.
+Wenn man das Videoarchiv ohne Filter aufruft (Link: ['Mein Videoarchiv' Übersicht (nur eingeloggt sichtbar)](https://www.save.tv/STV/M/obj/archive/VideoArchive.cfm)) erhält man eine von neu zu alt sortierte Liste aller vorhandenen Aufnahmen. Manchmal befinden sich an den obersten Positionen aber Aufnahmen, die älter als die nachfolgenden sind.
 
-Der Grund ist, dass die Sortierung nicht anhand des sichtbaren Aufnahmedatums sondern anhand des internen DSTARTDATE erfolgt. Bei den vermeintlich falsch einsortierten Aufnahmen liegt das DSTARTDATE in der Zukunft, wodurch sie dauerhaft ganz oben gelistet werden. Besonders häufig tritt das bei Aufnahmen vom Sender WELT auf, dort können drei oder mehr solcher Aufnahmen pro Woche auftreten, die dann die komplette erste Seite einnehmen können. 
+Der Grund ist, dass die Sortierung nicht anhand des sichtbaren Aufnahmedatums sondern anhand des internen DSTARTDATE erfolgt. Bei den vermeintlich falsch einsortierten Aufnahmen liegt das DSTARTDATE in der Zukunft, wodurch sie dauerhaft ganz oben gelistet werden. Besonders häufig tritt das bei Aufnahmen vom Sender ***WELT*** und der Kategorie ***Sport*** auf, dort können drei oder mehr solcher Aufnahmen pro Woche auftreten, die dann die komplette erste Seite einnehmen können. 
 
 Man kann diese Aufnahmen zwar manuell löschen, doch gibt es Fälle, in denen die gelöschte Aufnahmen am nächsten Tag wieder als 'neu' in der Aufnahmeliste erscheinen - daher die Bezeichung "Zombies".
 
@@ -533,44 +551,37 @@ Bei der Zombiebereinigung werden die 35 aktuellsten Aufnahmen im Videoarchiv, da
 
 Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh --cleanup` wird nach dem Reste- und Channelaufräumen, eine Überprüfung auf Zombies angeboten. Eventuell gefundene Aufnahmen werden aufgelistet und können nach einer Nachfrage direkt gelöscht werden.
 
-Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren muß das Flags `check_zombies` von defaultmäßig `false` auf `true` geändert werden.
+Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren muß im Skript das Flag `check_zombies` von `false` auf `true` geändert werden.
 
 Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahmen können **nicht** wiederhergestellt werden.
 
-Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahmedatum und Kutztitel im Log protokolliert. Zur nachträglichen Kontrolle kann man anhand der TelecastID auch bei bereits erfolgter Löschung der Aufnahme, die Sendungsdetails einsehen, dazu im Browser die geloggte ID an die URL `https://www.save.tv/STV/M/obj/archive/VideoArchiveDetails.cfm?TelecastId=` anhängen.
+Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahmedatum, Sendernamen und Kurztitel im Log protokolliert. Zur nachträglichen Kontrolle kann man anhand der TelecastID auch bei bereits erfolgter Löschung der Aufnahme, die Sendungsdetails einsehen, dazu im Browser die geloggte ID an die URL `https://www.save.tv/STV/M/obj/archive/VideoArchiveDetails.cfm?TelecastId=` anhängen.
 
     Prüfe Videoarchiv auf Zombie Aufnahmen
-    17997070 2020-11-24 2020-11-10 16:15:00 Sport
+    Telecast DSTARTDATE DSTARTDATEBUFFER    Sender Sendung
+    17997070 2020-11-24 2020-11-10 16:15:00 WELT Sport
 
 #### Beispielausgabe des Moduls Zombieaufnahmen löschen
 Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-des-moduls-channels-aufr%C3%A4umen) danach folgt:
 
 	         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen
-	
-            2020-12-03 18:20:00 Brisant
-            2020-11-29 10:30:00 Aufgedeckt - Rätsel der Geschichte
-            2020-12-07 16:15:00 Sport
-            2020-12-07 15:15:00 Sport
-            2020-12-01 16:15:00 Sport
-            2020-11-30 16:15:00 Sport
-            2020-11-30 15:15:00 Sport
-            2020-11-29 15:15:00 Sport
-            2020-12-05 14:35:00 WELT-Spezial
-            2020-12-08 16:15:00 Sport
-            2020-12-05 15:05:00 Sport
+		 
+            Aufzeichnungsbeginn Sender Sendung
+            2020-12-03 18:20:00 Das Erste Brisant
+            2020-11-29 10:30:00 Kabel 1 Aufgedeckt - Rätsel der Geschichte
+            2020-12-07 16:15:00 WELT Sport
+            2020-12-07 15:15:00 WELT Sport
+            2020-12-01 16:15:00 WELT Sport
+            2020-11-30 16:15:00 WELT Sport
+            2020-11-30 15:15:00 WELT Sport
+            2020-11-29 15:15:00 WELT Sport
+            2020-12-05 14:35:00 WELT WELT-Spezial
+            2020-12-08 16:15:00 WELT Sport
+            2020-12-05 15:05:00 WELT Sport
 	    [?] Diese 11 Aufnahmen löschen (J/N)? : j
 	    [✓] alle 11 Aufnahmen wurden gelöscht
 	
 	    [i] Bearbeitungszeit 18 Sekunden
-
-**In den Logdateien nach gelöschten Aufnahmen suchen**
-
-    > grep -o '^.*Zombies gefunden' stv_ca_*.log 
-    stv_ca_1217_0517.log:2 Zombies gefunden
-    stv_ca_1218_0517.log:3 Zombies gefunden
-    stv_ca_1220_0517.log:1 Zombies gefunden
-    stv_ca_1221_0517.log:1 Zombies gefunden
-    stv_ca_1222_0517.log:1 Zombies gefunden
 
 ## Installation auf einem Raspberry Pi mit täglicher Ausführung
 
@@ -578,7 +589,8 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
 Die Datei [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) direkt auf dem Raspberry runterladen.
 
 	wget https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh
-Die Dateien für die Senderliste und die Skipliste der zu überspringenden Sender müssen nicht runtergeladen werden, diese legt das Skript automatisch an.
+
+**Hinweis** Die automatische [Versionsprüfung](#versionsüberprüfung) sollte im Skript aktiviert werden.
 
 ### Per Git installieren
 Statt des einmaligen Downloads kann man auch das komplette stv-catchall Repository auf den Raspberry clonen
