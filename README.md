@@ -10,6 +10,9 @@ Für die regelmäßige Ausführung kann das Skript auf einem Raspberry Pi (Zero)
 
 Fehler und Anregungen bitte unter [Issues](https://github.com/einstweilen/stv-catchall/issues) posten.
 
+## Hinweis 2021-07-17 Skript bricht beim Login mit Fehlermeldung ab 
+Bezüglich des aktuellen Loginfehlers 'Login nicht möglich bzw. ein erfolgreicher Login wird nicht erkannt' bitte [Issue #5](https://github.com/einstweilen/stv-catchall/issues/5) lesen, das auch einen Quickfix beinhaltet.
+
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden ([mehr …](README-ext.md#einmaliger-download))
