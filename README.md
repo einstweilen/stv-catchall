@@ -10,9 +10,6 @@ Für die regelmäßige Ausführung kann das Skript auf einem Raspberry Pi (Zero)
 
 Fehler und Anregungen bitte unter [Issues](https://github.com/einstweilen/stv-catchall/issues) posten.
 
-## Hinweis 2021-07-17 Skript bricht beim Login mit Fehlermeldung ab 
-Bezüglich des aktuellen Loginfehlers 'Login nicht möglich bzw. ein erfolgreicher Login wird nicht erkannt' bitte [Issue #5](https://github.com/einstweilen/stv-catchall/issues/5) lesen, das auch einen Quickfix beinhaltet.
-
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet eine Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden ([mehr …](README-ext.md#einmaliger-download))
@@ -23,6 +20,11 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2021-07-18
+  * FIXED Login an neue STV Maske angepaßt
+  * Versionsüberprüfung ist defaultmäßig AN, da STV zur Zeit häufig an Details 'rumbastelt' [mehr zur Funktionsweise …](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
+  * beim Dateinamen des Logs die Jahreszahl ergänzt, damit es über den Jahreswechsel richtig sortiert wird 
+
 #### 2020-12-29
   * Ausgabe der Sendernamen für zulöschende Aufnahmen ergänzt, im ReadMe Ausgaben angepaßt 
   
@@ -32,18 +34,12 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * Hinweis und Sicherheitsabfrage vor dem Channellöschen bei temporären XXL Upgrades ergänzt
 
 #### 2020-12-10
-  * der Link `stv_ca.log` auf die aktuellste Logdatei wurde bei der Ausführung per Cron im Homeverzeichnis statt im Scriptverzeichnis angelegt, das ist korrigiert
+  * Link `stv_ca.log` auf die aktuellste Logdatei korrigiert
   * der Logout wurde zweimal durchgeführt, das ist korrigiert
-  * die verwirrenden negativen Channel-Verfügbarkeitsanzeigen bei Usern mit temporärem XXL Upgrade wurden entfernt. Im Funktionstest wurde hierzu zusätzlich eine Erklärung ergänzt
+  * im Funktionstest eine Erklärung ergänzt für User mit temporärem XXL Upgrade
   * die Zombieaufnahmen löschen Funktion schreibt gefundene Dateien ins Log
-  * die bereits im Juni 'versteckte' Option das Login per Cookie durchführen zu können, wurde komplett entfernt, da es nicht stabil funktionierte 
+  * Login per Cookie entfernt, da es nicht stabil funktionierte 
 
-#### 2020-12-09
-Die [Bereinigungsfunktion](README-ext.md#modul-zombieaufnahmen-l%C3%B6schen) `./stvcatchall.sh -c` löscht jetzt auch Zombies (falsch einsortierte Aufnahmen) optional kann das auch automatisch erfolgen.
-
-#### 2020-06-17
-Seitens SaveTV wurde bei den XL Paketen heute Nacht die Anzahl der nutzbaren Channels **von 200 wieder auf 20 reduziert**. Aktuell sind bereits angelegte Channels **weiterhin vorhanden** und wurden nicht bis auf 20 gelöscht.
-Die Anleitung/Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
