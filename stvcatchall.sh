@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20201229'  # Scriptversion
+version_ist='20210718'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -10,7 +10,7 @@ cd "$DIR"                           # ins Scriptverzeichnis wechseln
 
 send_list="$DIR/stv_sender.txt"     # Liste aller Save.TV Sender
 send_skip="$DIR/stv_skip.txt"       # Liste der zu überspringenden Sender
-stv_log="$DIR/stv_ca_$(date '+%m%d_%H%M').log"  # Ausführungs- und Fehlerlog
+stv_log="$DIR/stv_ca_$(date '+%y%m%d_%H%M').log"  # Ausführungs- und Fehlerlog
 stv_cred="$DIR/stv_autologin"       # gespeicherte Zugangsdaten
 stv_cookie="$DIR/stv_cookie.txt"    # Session Cookie
 
@@ -22,7 +22,7 @@ err_max=9                           # maximal erlaubte Fehler bis Skriptabbruch
 vers_max=3                          # Anzahl erneuter Versuche für die Channelanlage
 vers_sleep=600                      # Pause in Sekunden zwischen Wdh.Durchläufen
 
-check_version=false                 # immer auf neue Skriptversion prüfen (true|false)
+check_version=true                  # immer auf neue Skriptversion prüfen (true|false)
 
 stv_ch_basis=5                      # Basispaket mit 5 Channeln, nur 50h Aufnahme!
 stv_ch_xl=20                        # XL-Paket mit 20 Channeln
@@ -110,13 +110,12 @@ stv_login_cred() {
         log "Logindaten aus $(basename "$stv_cred") für User $stv_user werden verwendet"
 
         userpass="sUsername=$stv_user&sPassword=$stv_pass"
-        login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
-        
-        if [ "$login_return" -ne 0 ]; then
-            eingeloggt=true
+        login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie")
+        grep -q Login_Succeed <<< "$login_return" && eingeloggt=true || eingeloggt=false
+    
+        if $eingeloggt; then
             log "gespeicherte Zugangsdaten sind gültig"
         else
-            eingeloggt=false
             echo "[!] Gespeicherte Userdaten sind vorhanden, aber ungültig"
             echo "[i] Manuelles Login ist notwendig"
             log ': Userdaten in '$(basename "$stv_cred")' sind ungültig'
@@ -140,10 +139,10 @@ stv_login_manual() {
     stv_pass=$(urlencode "$stv_pass")
 
     userpass="sUsername=$stv_user&sPassword=$stv_pass&bAutoLoginActivate=1"
-    login_return=$(curl -sL 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie" | grep -c -F "user_id\": $stv_user")
-
-    if [ "$login_return" -ne 0 ]; then
-        eingeloggt=true
+    login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie")
+    grep -q Login_Succeed <<< "$login_return" && eingeloggt=true || eingeloggt=false
+    
+    if $eingeloggt; then
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
         echo
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
