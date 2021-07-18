@@ -227,8 +227,9 @@ Die Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einst
 STV Catchall kann zwar mit dem Basis Paket verwendet werden, aber das Einrichten von CatchAll Channels ist nicht sinnvoll, da das Basis Paket nur einen begrenzten Aufnahmespeicher von 50 Stunden bietet.
 
 ### Versionsüberprüfung
-Die automatische Prüfung auf eine neuere Skriptversion findet nur während des Funktionstests statt. Wenn gewünscht kann durch das Ändern des Flags `check_version` von defaultmäßig `false` auf `true` bei jedem Skriptlauf eine Überprüfung auf verfügbare Skriptupdates stattfinden. Dabei wird die Datei `stv-version-check` von Github geladen und mit der lokalen Skriptversion verglichen.
+Die automatische Prüfung bei jedem Skriptlauf kann durch Ändern des Flags `check_version` von defaultmäßig `true` auf `false` deaktiviert werden. Beim Funktionstest `-t` bzw.  `--test` wird immer auf eine neuere Skriptversion hin geprüft.
 
+Bei der Versionsüberprüfung werden keine Daten an den Server gesendet, es wird die Datei `stv-version-check` von GitHub geladen und mit der lokalen Skriptversion verglichen.
 Wird eine neuere Version gefunden, wird "Neue Version" an die Ausführungsinformation des Skripts angehängt - siehe '[Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)'.
 
 ### Funktionstest
