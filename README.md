@@ -20,6 +20,9 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2021-07-22
+  * FIXED Ermittlung der Anzahl der Usermeldungen bei AlleStörungen.de
+
 #### 2021-07-18
   * FIXED Login an neue STV Maske angepaßt
   * Versionsüberprüfung ist defaultmäßig AN, da STV zur Zeit häufig an Details 'rumbastelt' [mehr zur Funktionsweise …](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
@@ -32,14 +35,6 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * für die Zombiebereinigung auf ungruppierte Sortierung der Übersichtsseite umgestellt
   * Dokumentation und Ausgabe der Bereinigungsfunktionen überarbeitet
   * Hinweis und Sicherheitsabfrage vor dem Channellöschen bei temporären XXL Upgrades ergänzt
-
-#### 2020-12-10
-  * Link `stv_ca.log` auf die aktuellste Logdatei korrigiert
-  * der Logout wurde zweimal durchgeführt, das ist korrigiert
-  * im Funktionstest eine Erklärung ergänzt für User mit temporärem XXL Upgrade
-  * die Zombieaufnahmen löschen Funktion schreibt gefundene Dateien ins Log
-  * Login per Cookie entfernt, da es nicht stabil funktionierte 
-
 
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
