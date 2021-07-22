@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20210718'  # Scriptversion
+version_ist='20210722'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -941,10 +941,11 @@ fkt_ch_delete() {
 fkt_stoerung_as() {
     stoer_as=$(curl -sm9 "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
     if [ -n "$stoer_as" ]; then
-        stoer_as_tag=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | tail -96 | awk '{stoer += $3} END{print stoer}')
-        stoer_as_std=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | tail -4 | awk '{stoer += $3} END{print stoer}')
-        stoer_as_let=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | grep -v "y: 0" | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | head -1)
-        stoer_as_akt=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | tail -1 | grep -o "20[^']*" | tr 'T' ' ' | head -1)
+        stoer_as=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | head -96)
+        stoer_as_tag=$(echo "$stoer_as" | awk '{stoer += $3} END{print stoer}')
+        stoer_as_std=$(echo "$stoer_as" | tail -4 | awk '{stoer += $3} END{print stoer}')
+        stoer_as_let=$(echo "$stoer_as" | grep -v "y: 0" | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | sed 's/\+.*$//' | head -1)
+        stoer_as_akt=$(echo "$stoer_as" | tail -1 | grep -o "20[^']*" | tr 'T' ' ' | sed 's/\+.*$//' | head -1)
         if [[ -z "$stoer_as_std" || $stoer_as_std -eq 0 ]]; then stoer_as_std="keine" ; fi
         if [[ -z "$stoer_as_tag" || $stoer_as_tag -eq 0 ]]; then stoer_as_tag="keine" ; fi
         if [[ -z "$stoer_as_akt" ]]; then stoer_as_akt="siehe" ; fi
@@ -963,7 +964,7 @@ fkt_stoerung_info() {
 
 ### Störungsinfo und Logausgabe im Fehlerfall
 fkt_error_exit() {
-    echo '[i] Prüfe auf von anderen Usern gemeldete Störungen'
+    echo '[i] Prüfe auf von anderen Usern gemeldete Störungen (Zeit in UTC)'
     fkt_stoerung_info
     stv_logout
     echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
@@ -1153,7 +1154,7 @@ funktionstest() {
     stv_logout
     echo "[✓] Logout durchgeführt"
     echo
-    echo "[i] Prüfe auf von anderen Usern gemeldete Störungen"
+    echo "[i] Prüfe auf von anderen Usern gemeldete Störungen (Zeit in UTC)"
     fkt_stoerung_info
 
     # Status ausgeben
