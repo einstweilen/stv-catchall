@@ -20,6 +20,9 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2021-10-25
+  * Bedienung der Bereinigungsfunktionen vereinfacht, Abbruchfunktion ergänzt
+  * Dokumentation der Bereinigungsfunktionen überarbeitet
 #### 2021-07-22
   * FIXED Ermittlung der Anzahl der Usermeldungen bei AlleStörungen.de
 
@@ -27,15 +30,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
   * FIXED Login an neue STV Maske angepaßt
   * Versionsüberprüfung ist defaultmäßig AN, da STV zur Zeit häufig an Details 'rumbastelt' [mehr zur Funktionsweise …](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
   * beim Dateinamen des Logs die Jahreszahl ergänzt, damit es über den Jahreswechsel richtig sortiert wird 
-
-#### 2020-12-29
-  * Ausgabe der Sendernamen für zulöschende Aufnahmen ergänzt, im ReadMe Ausgaben angepaßt 
   
-#### 2020-12-16
-  * für die Zombiebereinigung auf ungruppierte Sortierung der Übersichtsseite umgestellt
-  * Dokumentation und Ausgabe der Bereinigungsfunktionen überarbeitet
-  * Hinweis und Sicherheitsabfrage vor dem Channellöschen bei temporären XXL Upgrades ergänzt
-
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
                 |______ |_____|  \  /  |______      |     \  /
@@ -70,7 +65,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
     + [Username und Passwort](#username-und-passwort)
     + [Sender von der automatischen Aufnahme ausschließen](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](README-ext.md#angelegte-channels-behalten-auto-immer-nie)
-    + [Hinweis zum Ende das kostenlosen XXL Upgrades](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)   
+    + [Hinweis zum Ende das kostenlosen XXL Upgrades Mai 2020](README-ext.md#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-26052020)   
     + [Tip: Channels "korrigieren"](README-ext.md#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](README-ext.md#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](README-ext.md#Versions%C3%BCberpr%C3%BCfung)
