@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20210722'  # Scriptversion
+version_ist='20211025'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -146,7 +146,12 @@ stv_login_manual() {
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
         echo
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
-        read -p '[?] Zugangsdaten speichern? (J/N)? : ' login_opt
+        echo -n "[?] Zugangsdaten speichern? (J/N)? : "
+        while ! [[ "JjNn" =~ "$login_opt" ]]; do
+            read -n 1 -s login_opt
+        done
+        echo "$login_opt"
+
         case $login_opt in
             [jJ]  )
                 echo "$stv_user $stv_pass" >"$stv_cred"
@@ -315,7 +320,13 @@ channelanz_info() {
         if [[ ch_max -eq stv_ch_basis ]]; then
             echo
             echo "[!] HINWEIS: Sie können mit Ihrem Basispaket nur 50 Stunden aufnehmen!"
-            read -p '    Skript trotzdem ausführen (J/N)? : ' basis_check
+            echo -n '    Skript trotzdem ausführen (J/N)? : '
+            while ! [[ "JjNn" =~ "$basis_check" ]]; do
+                read -n 1 -s basis_check
+            done
+            echo "$basis_check"
+
+            
             if [[ $basis_check == "N" || $basis_check == "n" ]]; then
                 log "wg. Basis-Paket manuell beendet"
                 stv_logout
@@ -513,7 +524,7 @@ iterum() {          #AnzahlVersuche #Pause
     done
 
     if [[ $err_fix -eq $err_vorher ]]; then
-        echo "[✓] Alle $err_vorher Channels konnten erfolgreich angelegt werden."
+        echo "[✓]  Die $err_vorher Channels konnten erfolgreich angelegt werden."
         log "Alle $err_vorher Channels angelegt"
         err_flag=false
     else
@@ -646,10 +657,11 @@ channel_cleanup() {
 inhalte_bereinigen() {
     cleanup_check=$1    # bei --cleanupauto 'J'
     echo "                Bereinigung von nicht mehr benötigten Inhalten"
-    echo "    Skipliste   : Channels, Aufnahmen und Programmierungen"
-    echo "    Channelliste: vom Skript angelegte Channels"
-    echo "    Videoarchiv : Aufnahmen mit vordatiertem Timestamp"
-    echo ; echo 
+    echo
+    echo "    1. Skipliste   : Channels, Aufnahmen und Programmierungen"
+    echo "    2. Channelliste: vom Skript angelegte Channels löschen"
+    echo "    3. Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen"
+    echo 
     sender_bereinigen
 
 # bei manuellem Aufruf zusätzlich Channelaufräumen und Zombieslöschen anbieten
@@ -662,7 +674,7 @@ inhalte_bereinigen() {
 
 ### Skipliste Aufnahmen- und Programmierungsreste löschen
 sender_bereinigen() {
-    echo " 1/3  Programmierungen und Aufnahmen der Sender der Skipliste löschen"
+    echo "    1/3 Programmierungen und Aufnahmen der Sender der Skipliste löschen"
     if [ ! -f "$send_skip" ]; then
         touch "$send_skip" # leere Datei anlegen
         log 'Liste der nicht aufzunehmenden Sender war nicht vorhanden, leere Datei wurde angelegt'
@@ -681,7 +693,7 @@ sender_bereinigen() {
     if [[ skipindex -gt 0 ]]; then
         unset skip_name_sorted
         IFS=$'\n' skip_name_sorted=($(sort <<<"${skip_name[*]}")); unset IFS
-        echo "Die Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet zur Zeit:"
+        echo "Ihre Liste der nicht aufzunehmenden Sender '$(basename "$send_skip")' beinhaltet zur Zeit:"
         for (( i=0; i<=${#skip_name_sorted[@]}; i=i+4)); do
             printf "%-19s %-19s %-19s %-19s\n" "${skip_name_sorted[i]}" "${skip_name_sorted[i+1]}" "${skip_name_sorted[i+2]}" "${skip_name_sorted[i+3]}"
         done
@@ -690,14 +702,21 @@ sender_bereinigen() {
             echo "[i] Für diese ${#skip_name[@]} Sender werden die vorhandenen Channels, Programmierungen"
             echo "    und aufgenommenen Sendungen endgültig gelöscht"
             log 'Bereinigung im Batchmodus'
-        else        
+        else
             echo
             echo "[i] Sollen für diese ${#skip_name[@]} Sender die vorhandenen Channels, Programmierungen"
             echo "    und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?"
-            read -p '[?] Alles bereinigen (J/N)? : ' cleanup_check
+            echo -n '[?] Alles bereinigen (J_a / N_ein / Q_uit)? : '
+            while ! [[ "JjNnQq" =~ "$cleanup_check" ]]; do
+                read -n 1 -s cleanup_check
+            done
+            echo "$cleanup_check"
         fi
         SECONDS=0 
-        echo 
+        echo
+        if [[ $cleanup_check == "Q" || $cleanup_check == "q" ]]; then
+            bereinigung_abbrechen ; exit 0
+        fi
         if [[ $cleanup_check == "J" || $cleanup_check == "j" ]]; then
             echo "[i] Lösche die Channels, Programmierungen und Aufnahmen der Sender der Skipliste"
             channel_liste
@@ -755,10 +774,10 @@ sender_bereinigen() {
                 echo "[i] Es sind keine Aufnahmen und Programmierungen vorhanden."
             fi
         else
-            echo "[!] Bereinigung abgebrochen, es wurde nichts gelöscht."
+            echo "[!] Skiplistenbereinigung übersprungen, es wurde nichts gelöscht."
         fi
     else
-        echo "[i] Die Skipliste '$(basename "$send_skip")' ist leer, Bereinigung übersprungen."
+        echo "[i] Ihre Skipliste '$(basename "$send_skip")' ist leer, Bereinigung übersprungen."
     fi
 }
 
@@ -767,7 +786,7 @@ sender_bereinigen() {
 channelrestechecken() {
     echo
     echo
-    echo ' 2/3    Prüfe die Channelliste auf von STV CatchAll angelegte Channels'
+    echo '    2/3 Prüfe die Channelliste auf von STV CatchAll angelegte Channels'
     echo
     channel_liste       # Liste vorhandener Channel
     channelinfo_del     # prüfen ob Pseudochannel gelöscht werden muß
@@ -780,7 +799,15 @@ channelrestechecken() {
         echo "    beim Channellöschen bleiben bereits erfolgte Aufnahmen *erhalten*."
         echo
         echo "    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an."
-        read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L)? : " ch_cleanup_check
+        echo -n "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L/Q)? : "
+        while ! [[ "JjNnLlQq" =~ "$ch_cleanup_check" ]]; do
+            read -n 1 -s ch_cleanup_check
+        done
+        echo "$ch_cleanup_check"
+
+        if [[ $ch_cleanup_check == "Q" || $ch_cleanup_check == "q" ]]; then
+            bereinigung_abbrechen ; exit 0
+        fi
         if [[ $ch_cleanup_check == "L" || $ch_cleanup_check == "l" ]]; then
             echo
             echo "[i] Die von STV CatchAll angelegten Channels beginnen immer mit '$ca_ch_pre' '$ca_ch_prexxl'" # XXLTEMP
@@ -788,22 +815,34 @@ channelrestechecken() {
                 grep -o "[0-9]*|${ca_ch_pre}[^|]*" <<< "$ch_test"
                 grep -o "[0-9]*|${ca_ch_prexxl}[^|]*" <<< "$ch_test"   # XXLTEMP
             done
-            read -p "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+            echo -n "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/Q)? : "
+            while ! [[ "JjNnQq" =~ "$ch_cleanup_check" ]]; do
+                read -n 1 -s ch_cleanup_check
+            done
+            echo "$ch_cleanup_check"
         fi
 
         # Sicherheitsabfrage wg. XXL Upgradechanneln
         if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
             if [[ $ca_ch_anz -gt $ch_max ]]; then
+                ch_cleanup_check=""
                 echo
                 echo "[!] Achtung, von den $ca_ch_anz Channels sind nur $ch_max in ihrem STV Paket enthalten,"
                 echo "    die übrigen $((ca_ch_anz - ch_max)) Channels können *nicht* neu angelegt werden."
-                read -p "[?] Trotzdem die Channels und zugehörigen Programmierungen löschen (J/N)? : " ch_cleanup_check
+                echo -n "[?] Trotzdem die Channels und zugehörigen Programmierungen löschen (J/N/Q)? : "
+                while ! [[ "JjNnQq" =~ "$ch_cleanup_check" ]]; do
+                    read -n 1 -s ch_cleanup_check
+                done
+                echo "$ch_cleanup_check"
             fi
+        fi
+        if [[ $ch_cleanup_check == "Q" || $ch_cleanup_check == "q" ]]; then
+            bereinigung_abbrechen ; exit 0
         fi
         if [[ $ch_cleanup_check == "J" || $ch_cleanup_check == "j" ]]; then
             channel_cleanup
         else
-            echo "[!] Bereinigung abgebrochen, es wurden keine Channels gelöscht."
+            echo "[!] Channelbereinigung übersprungen, es wurden keine Channels gelöscht."
         fi
     else
         echo '[i] Es sind keine von STV CatchAll angelegte Channels vorhanden.'
@@ -815,7 +854,7 @@ zombie_check() {
     if [ $ausfuehrung == "manual" ]; then
         echo
         echo
-        echo ' 3/3    Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen'
+        echo '    3/3 Prüfe das Videoarchiv auf chronologisch falsch einsortierte Aufnahmen'
         echo
     fi
     log "Prüfe Videoarchiv auf Zombie Aufnahmen"
@@ -841,7 +880,7 @@ zombie_check() {
                 ((zom_anz++))
                 zom_ids="$zom_ids${prog_id[i]} "
                 if [[ zom_anz -eq 1 ]]; then
-                    echo "    Aufzeichnungsbeginn Sender Sendung"
+                    echo "[i] Aufzeichnungsbeginn Sender Sendung"
                     log "Telecast DSTARTDATE DSTARTDATEBUFFER    Sender Sendung"
                 fi
                 echo "    ${prog_start[i]} ${prog_send[i]} ${prog_title[i]}"
@@ -852,17 +891,23 @@ zombie_check() {
         if [[ $zom_anz -gt 0 ]]; then
             log "$zom_anz Zombies gefunden"
             if [ $ausfuehrung == "manual" ]; then
-                read -p "[?] Diese $zom_anz Aufnahmen löschen (J/N)? : " zom_check
+                echo -n "[?] Diese $zom_anz Aufnahmen löschen (J/N/Q)? : "
+                while ! [[ "JjNnQq" =~ "$zom_check" ]]; do
+                    read -n 1 -s zom_check
+                done
+                echo "$zom_check"
             else
                 zom_check="j"
             fi
-
+            if [[ $zom_check == "Q" || $zom_check == "q" ]]; then
+                bereinigung_abbrechen ; exit 0
+            fi
             if [[ $zom_check == "J" || $zom_check == "j" ]]; then
                 log "Gefundene Zombies: $zom_ids"
                 zom_ids="${zom_ids// /%2C}" # Komma als Trenner
                 delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' --cookie "$stv_cookie" --data "lTelecastID=$zom_ids")
                 if [[ "$delete_return" == *"ok"* ]]; then 
-                    echo "[✓] alle $zom_anz Aufnahmen wurden gelöscht"
+                    echo "[✓] Die $zom_anz Aufnahmen wurden gelöscht"
                     log "OK $zom_anz Zombies gelöscht"
                 else
                     echo "[!] Fehler beim Löschen der $zom_anz Aufnahmen aufgetreten"
@@ -875,7 +920,7 @@ zombie_check() {
                 echo "[!] Zombiebereinigung abgebrochen, es wurde nichts gelöscht."
             fi
         else
-            echo "[✓] keine falsch einsortierten Aufnahmen vorhanden"
+            echo "[✓] keine chronologisch falsch einsortierten Aufnahmen vorhanden"
             log "OK Keine Zombies vorhanden!"
         fi
     else
@@ -883,6 +928,15 @@ zombie_check() {
         log "Fehler im STV Datenformat, siehe prog_return.json"
         echo "$prog_return" >"prog_return.json"
     fi
+}
+
+### Bereinugung mit Quit abgebrochen
+bereinigung_abbrechen() {
+    stv_logout
+    echo
+    echo "Die Bereinigung wurde abgebrochen."
+    log "Bereinigung wurde vom User mit Quit abgebrochen"
+    exit 0
 }
 
 
@@ -1063,12 +1117,23 @@ funktionstest() {
 
     echo
     echo "[i] Paket '$paket_art' mit Laufzeit bis zum $paket_bis"
-    echo "    $ch_max Channels enthalten, davon aktuell $ch_use benutzt"
+    if [[ ch_fre -lt 0 ]]; then
+        echo "    $ch_max Channels enthalten, aber $ch_use benutzt (Hinweis unten beachten!)"
+    else
+        echo "    $ch_max Channels enthalten, davon aktuell $ch_use benutzt"
+    fi
     echo "    Channelanlegemodus '$anlege_modus' wird verwendet"
     echo "    Sendungen aufgenommen: $prog_vorhanden  Sendungen programmiert: $prog_zukunft"
     echo
+    if [[ ch_fre -lt 0 ]]; then
+        echo '[!] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar sind!'
+        echo '    Diese können z.B. beim temporären XXL Upgrade 05/2020 angelegt worden sein,'
+        echo '    sie sollten nur bei dringendem Bedarf gelöscht werden, da eine Neuanlage'
+        echo '    nur im Rahmen des gebuchten Pakets möglich ist.'
+        echo
+    fi
     echo "[i] Eingestellte Pufferzeiten und Aufnahmeoptionen"
-    printf "%-3s %-21s %-21s %-21s\n" "   " "Vorlaufzeit: $rec_vor Min." "Nachlaufzeit: $rec_nach Min." "Auto-Schnittlisten: $rec_auto"
+    echo "    Vorlauf: $rec_vor Minuten   Nachlauf: $rec_nach Minunten   Auto-Schnittlisten: $rec_auto"
     echo
 
     # alte Senderliste sichern, neue holen
@@ -1114,12 +1179,8 @@ funktionstest() {
         echo '    manuell löschen und danach den Funktionstest mit --test erneut starten.'
     fi
     if [[ ch_fre -lt 0 ]]; then
-        echo '[!] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar sind!'
-        echo '    Diese können z.B. beim temporären XXL Upgrade 05/2020 angelegt worden sein,'
-        echo '    sie sollten nur bei dringendem Bedarf gelöscht werden, da eine Neuanlage'
-        echo '    nur im Rahmen des gebuchten Pakets möglich ist.'
-        echo 
-        echo '[i] Der Channeltest und der täglichen Infochannel werden übersprungen!'
+        echo '[i] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar aind.'
+        echo '    Der Channeltest und der tägliche Infochannel werden übersprungen!'
     fi
 
     if [[ ch_fre -gt 0 ]]; then
@@ -1182,9 +1243,9 @@ hilfetext() {
     echo
     echo "-t, --test     Skripteinstellungen und SaveTV Account überprüfen"
     echo
-    echo "-c, --cleanup  'Reste aufräumen' Funktion aufrufen"
+    echo "-c, --cleanup  Skipliste, Channelliste, Videoarchiv interaktiv säubern"
     echo
-    echo "--cleanupauto  'Reste aufräumen' ohne Sicherheitsabfrage ausführen,"
+    echo "--cleanupauto  Skipliste automatisch ohne Sicherheitsabfrage säubern,"
     echo "               anschließend wird die Catchall Channel Einrichtung durchgeführt"
     echo "               ** Gelöschte Aufnahmen können nicht wiederhergestellt werden **"
     echo
@@ -1227,7 +1288,13 @@ banner() {
 
         if [[ log_anz -eq 0 ]]; then
             clear; banner
-            read -p '[?] Soll zuerst ein Funktionstest durchgeführt werden (J/N)? : ' fkt_check
+            echo -n '[?] Soll zuerst ein Funktionstest durchgeführt werden (J/N)? : '
+            while ! [[ "JjNn" =~ "$fkt_check" ]]; do
+                read -n 1 -s fkt_check
+            done
+            echo "$cleanufkt_checkp_check"
+
+
             if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
                 funktionstest
             fi
@@ -1280,7 +1347,7 @@ banner() {
             if [[ $ch_angelegt -ne 0 ]]; then
                 echo
                 if [[ $channels_behalten = false ]]; then
-                    echo "[✓] Alle temporär angelegte Channels wurden wieder gelöscht."
+                    echo "[✓] Die temporär angelegte Channels wurden wieder gelöscht."
                 else    
                     echo "[✓] Es wurden $ch_angelegt Channels dauerhaft angelegt."
                 fi
@@ -1318,7 +1385,7 @@ banner() {
         exit 1 
     fi
     echo
-    echo "[i] Bearbeitungszeit $SECONDS Sekunden"
+    # echo "[i] Bearbeitungszeit $SECONDS Sekunden"
     log "Ende: $(date)"
     exit 0
 
