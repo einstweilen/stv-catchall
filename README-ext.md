@@ -15,7 +15,7 @@
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Aufbau der Channeltitel](#aufbau-der-channeltitel)
-    + [Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.](#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-2605)
+    + [Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.2020](#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-26052020)
     + [Tip: Channels "korrigieren"](#tip-channels-korrigieren)
     + [Besonderheit beim Basis Paket](#besonderheit-beim-basis-paket)
     + [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung)
@@ -218,8 +218,8 @@ Die Senderchannels werden beim XL Paket direkt nach der Anlage wieder gelöscht,
 #### Tip: Channels "korrigieren"
 Hat man aus Versehen zu viele Channels angelegt oder möchte nur alle Channels löschen lassen, kann man die [Zusatzfunktion Reste aufräumen](#zusatzfunktion-reste-aufr%C3%A4umen) verwenden.
 
-### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.
-Die zusätzlichen XXL Channels sind auch nach dem 26.05. noch aktiv, wenn sie **vor** dem 17. Juni angelegt wurden. Die Channels lassen sich löschen, aber nicht wieder neu anlegen.
+### Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.2020
+Die zusätzlichen XXL Channels sind auch nach dem 26.05.2020 noch aktiv, wenn sie **vor** dem 17. Juni 2020 angelegt wurden. Die Channels lassen sich löschen, aber nicht wieder neu anlegen.
 
 Die Empfehlung hierzu ist ausgelagert: [siehe Issue #3](https://github.com/einstweilen/stv-catchall/issues/3)
 
@@ -427,12 +427,15 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
     Bearbeitungszeit 474 Sekunden
 
 ## Bereinigungsfunktionen 
-Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfunktionen aufgerufen. Die Bereinigungsfunktionen bestehen aus drei Modulen, die nacheinander durchlaufen werden. Löschungen finden nur nach vorheriger Bestätigung statt.
+Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfunktionen aufgerufen. Die Bereinigungsfunktionen bestehen aus drei Modulen:
 
 * für Sender der **Skipliste** die Channels, Aufnahmen und Programmierungen löschen [mehr …](#modul-reste-aufr%C3%A4umen)
 * alle vom Skript angelegten **Channels** löschen [mehr …](#modul-channels-aufr%C3%A4umen)
 * im **Videoarchiv** Aufnahmen mit vordatiertem Timestamp löschen [mehr …](#modul-zombieaufnahmen-l%C3%B6schen)
 
+Diese werden nacheinander durchlaufen und der jeweilge Bereich wird auf löschbare Inhalte hin überprüft.
+Die Löschung gefundener Inhalte kann je Bereich mit "N" übersprungen oder das Skript mit "Q" komplett beendet werden.
+ 
 ### Modul Reste aufräumen
 #### Reste aufräumen Hintergrund
 Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets (30/60/100 Tage) abgelaufen ist.
@@ -457,10 +460,10 @@ Einmal gelöschte Einträge bleiben gelöscht, jedoch tauchen manchmal noch 7 bi
 #### Reste aufräumen einmalig starten
 Um die *Reste aufräumen* Funktion auszuführen, muß das Skript mit dem Parameter `--cleanup` oder `-c` aufgerufen werden
 
-	./stvcatchall.sh --cleanup
+	./stvcatchall.sh -c
 	
 #### Reste aufräumen starten und anschließend Catchall Channel anlegen
-Die Sicherheitsabfrage der *Reste aufräumen* Funktion `Alles bereinigen (J/N)?` wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
+Die Sicherheitsabfrage der *Reste aufräumen* Funktion `Alles bereinigen (J/N/Q)?` wird durch Aufruf des Skripts mit dem Parameter `--cleanupauto` übersprungen. Nach dem Aufräumen wird mit der Anlage der Catchall Channels fortgefahren
 
 	./stvcatchall.sh --cleanupauto
 Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
@@ -470,17 +473,24 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
                 |______ |_____|  \  /  |______      |     \  /
                 ______| |     |   \/   |______ .    |      \/ 
                 ===============================================
-                ____ C_a_t_c_h_a_l_l___e_i_n_r_i_c_h_t_e_n ____
-        Programmierungen und Aufnahmen der Sender der Skipliste löschen
+                _____C_a_t_c_h_a_l_l__e_i_n_r_i_c_h_t_e_n_____
 
-	Die Liste der nicht aufzunehmenden Sender 'senderskip.txt' beinhaltet zur Zeit:
+                Bereinigung von nicht mehr benötigten Inhalten
+
+    1. Skipliste   : Channels, Aufnahmen und Programmierungen
+    2. Channelliste: vom Skript angelegte Channels löschen
+    3. Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen
+
+    1/3 Programmierungen und Aufnahmen der Sender der Skipliste löschen
+
+        Ihre Liste der nicht aufzunehmenden Sender 'stv_skip.txt' beinhaltet zur Zeit:
 	KiKA                MTV                 Health TV           Folx TV            
 	SPORT 1             DMAX                Eurosport           Disney Channel     
 	RiC                 TLC                 Fix und Foxi                
                                                                                
 	[i] Sollen für diese 11 Sender die vorhandenen Channels, Programmierungen
 	    und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?
-	[?] Alles bereinigen (J/N)? : j
+	[?] Alles bereinigen (J_a / N_ein / Q_uit)? : j
 	
 	[i] Lösche die Programmierungen und Aufnahmen der Sender der Skipliste
 	[✓] 'KiKA'           4 Channels gelöscht    
@@ -503,14 +513,16 @@ Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das R
 Wenn man im XXL Paket 188 Channel angelegt hat und CatchAll nicht mehr verwenden möchte oder wenn die Ausführung des Skripts beim Channelanlegen abgebrochen wurde (Ctrl C, Stromausfall ...) bleiben vom Skript angelegte Channels übrig, die von Hand gelöscht werden müssen.
 
 #### Channels aufräumen Funktionsweise und Aufruf
-Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh --cleanup` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `zz ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
+Wird die *Reste aufräumen* Funktion im manuellen Modus mit `./stvcatchall.sh -c` aufgerufen, wird anschließend an das Aufräumen der Sender der Skipliste geprüft, ob noch 'alte' vom Skript angelegte Channels vorhanden sind. Das Skript erkennt dabei seine eigenen Channels anhand des `zz ` am Anfang des Channelnamens und fragt, ob diese Channels gelöscht werden sollen.
 
-        Es sind 4 vom STV CatchAll Skript angelegte Channels vorhanden
-	Diese 4 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
+        Es sind 4 vom STV CatchAll Skript angelegte Channels vorhanden,
+	beim Channellöschen bleiben bereits erfolgte Aufnahmen *erhalten*.
+	
+	Diese 4 Channels und zugehörigen Programmierungen löschen (J/N/L/Q)? : j
 
 Um einen ungewollten Datenverlust zu vemeiden, löscht das Skript **nur** die Channels und die zukünftigen Programmierungen, die vorhandenen **Aufnahmen bleiben erhalten**.
 
-Sollen die Aufnahmen auch gelöscht werden, muß man die zu den Channels gehörenden Sender in die Skipliste `stv_skip.txt` eintragen und die *Reste aufräumen* Funktion `./stvcatchall.sh --cleanup` erneut aufrufen.
+**Tip**: Sollen die über den Channel erfolgten Aufnahmen auch gelöscht werden, als erstes die zu den Channels gehörenden **Sender in die Skipliste** `stv_skip.txt` eintragen und dann die *Reste aufräumen* Funktion `./stvcatchall.sh -c` erneut aufrufen.
 
 **Hinweis zu den Channels aus dem temporären XXL Upgrade**
 
@@ -523,16 +535,15 @@ Wenn man während des temporären kostenlosen XXL-Upgrades 05/2020 mehr Channels
 #### Beispielausgabe des Moduls Channels aufräumen
 Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen) danach folgt:
 
-	         Prüfe die Channelliste auf von STV CatchAll angelegte Channels
-	
-	[i] Es sind 5 vom STV CatchAll Skript angelegte Channels vorhanden,
-	    beim Channellöschen bleiben bereits erfolgte Aufnahmen erhalten.
-	
-	    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an
-	
-	    Diese 5 Channels und zugehörigen Programmierungen löschen (J/N/L)? : j
-	    Lösche 5 Channels : .....✓
-	    Es wurden 5 Channels gelöscht.
+        2/3 Prüfe die Channelliste auf von STV CatchAll angelegte Channels
+
+    [i] Es sind 5 vom STV CatchAll Skript angelegte Channels vorhanden,
+        beim Channellöschen bleiben bereits erfolgte Aufnahmen *erhalten*.
+
+        Die Option 'L' zeigt eine Liste der gefundenen STV Channels an.
+    [?] Diese 5 Channels und zugehörigen Programmierungen löschen (J/N/L/Q)? : j
+        Lösche 5 Channels : .....✓
+        Es wurden 5 Channels gelöscht.
 
 
 ### Modul Zombieaufnahmen löschen
@@ -550,9 +561,9 @@ Man kann diese Aufnahmen zwar manuell löschen, doch gibt es Fälle, in denen di
 #### Zombieaufnahmen löschen Funktionsweise und Aktivierung
 Bei der Zombiebereinigung werden die 35 aktuellsten Aufnahmen im Videoarchiv, das entspricht der ersten Übersichtsseite, überprüft, ob ihr DSTARTDATE in der Zukunft liegt und falls dabei Aufnahmen gefunden werden, werden diese bei gesetztem `check_zombies` Flag (siehe unten) automatisch gelöscht.
 
-Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh --cleanup` wird nach dem Reste- und Channelaufräumen, eine Überprüfung auf Zombies angeboten. Eventuell gefundene Aufnahmen werden aufgelistet und können nach einer Nachfrage direkt gelöscht werden.
+Wird die allgemeine Cleanup Funktion im Terminal aufgerufen `./stvcatchall.sh -c` wird nach dem Reste- und Channelaufräumen, eine Überprüfung auf Zombies angeboten. Eventuell gefundene Aufnahmen werden aufgelistet und können nach einer Nachfrage direkt gelöscht werden.
 
-Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren muß im Skript das Flag `check_zombies` von `false` auf `true` geändert werden.
+Da es sich bei der Zombiebereinigung um nicht rückgängigmachbare Löschungen handelt, ist die automatische Prüfung und Löschung der Zombies standardmäßig deaktiviert. Zum Aktivieren des automatischen Löschens muß im Skript das Flag `check_zombies` von `false` auf `true` geändert werden.
 
 Ist die 'Zombieaufnahmen löschen' Funktion mit `true` aktiviert, erfolgt automatisch bei jedem Skriptlauf eine Überprüfung und Löschung eventuell gefundener Zombies. Einmal gelöschte Aufnahmen können **nicht** wiederhergestellt werden.
 
@@ -565,7 +576,7 @@ Jede gelöschte Aufnahme wird mit TelecastID, DSTARTDATE, tatsächlichem Aufnahm
 #### Beispielausgabe des Moduls Zombieaufnahmen löschen
 Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielausgabe-des-moduls-reste-aufr%C3%A4umen) und [Beispielausgabe Channels aufräumen](#beispielausgabe-des-moduls-channels-aufr%C3%A4umen) danach folgt:
 
-	         Prüfe das Videoarchiv auf falsch einsortierte Aufnahmen
+	         3/3 Prüfe das Videoarchiv auf chronologisch falsch einsortierte Aufnahmen
 		 
             Aufzeichnungsbeginn Sender Sendung
             2020-12-03 18:20:00 Das Erste Brisant
@@ -579,7 +590,7 @@ Der erste Teil ist identisch zur [Beispielausgabe Reste aufräumen](#beispielaus
             2020-12-05 14:35:00 WELT WELT-Spezial
             2020-12-08 16:15:00 WELT Sport
             2020-12-05 15:05:00 WELT Sport
-	    [?] Diese 11 Aufnahmen löschen (J/N)? : j
+	    [?] Diese 11 Aufnahmen löschen (J/N/Q)? : j
 	    [✓] alle 11 Aufnahmen wurden gelöscht
 	
 	    [i] Bearbeitungszeit 18 Sekunden
