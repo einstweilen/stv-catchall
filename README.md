@@ -21,7 +21,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 
 **Neueste Änderungen**
 #### 2021-10-25
-  * Bedienung der Bereinigungsfunktionen vereinfacht, Abbruchfunktion ergänzt
+  * Bedienung der [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen) vereinfacht, Abbruchfunktion ergänzt
   * Dokumentation der Bereinigungsfunktionen überarbeitet
 #### 2021-07-22
   * FIXED Ermittlung der Anzahl der Usermeldungen bei AlleStörungen.de
