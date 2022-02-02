@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20211025'  # Scriptversion
+version_ist='20220202'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -658,16 +658,38 @@ inhalte_bereinigen() {
     cleanup_check=$1    # bei --cleanupauto 'J'
     echo "                Bereinigung von nicht mehr benötigten Inhalten"
     echo
-    echo "    1. Skipliste   : Channels, Aufnahmen und Programmierungen"
-    echo "    2. Channelliste: vom Skript angelegte Channels löschen"
-    echo "    3. Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen"
-    echo 
-    sender_bereinigen
-
-# bei manuellem Aufruf zusätzlich Channelaufräumen und Zombieslöschen anbieten
+    echo "    1  Skipliste   : Channels, Aufnahmen und Programmierungen"
+    echo "    2  Channelliste: vom Skript angelegte Channels löschen"
+    echo "    3  Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen"
+    echo
+    echo -n '[?] Bereinigungsmodul wählen (1 / 2 / 3 / A_lle 1-3 / Q_uit)? : '
     if [[ $cleanup_modus == "manuell" ]]; then
-        channelrestechecken
-        zombie_check
+        while ! [[ "123AaQq" =~ "$ch_cleanup_check" ]]; do
+            read -n 1 -s ch_cleanup_check
+        done
+        echo "$ch_cleanup_check"
+        echo
+        if [[ $ch_cleanup_check == "Q" || $ch_cleanup_check == "q" ]]; then
+            bereinigung_abbrechen ; exit 0
+        fi
+        case $ch_cleanup_check in
+            1)
+                sender_bereinigen
+                ;;
+            2)
+                channelrestechecken
+                ;;
+            3)
+                zombie_check
+                ;;
+            *)
+                sender_bereinigen
+                channelrestechecken
+                zombie_check
+                ;;
+        esac
+    else
+        sender_bereinigen # im cleanupauto Modus nur Skipliste aufräumen
     fi
 }
 
@@ -1280,7 +1302,6 @@ banner() {
         ausfuehrung="auto"      # im Cron aufgerufen
     fi
 
-
     if [ $ausfuehrung == "manual" ]; then
         if [[ $cmd == "--test" ||  $cmd == "-t" ]]; then
             funktionstest
@@ -1293,7 +1314,6 @@ banner() {
                 read -n 1 -s fkt_check
             done
             echo "$cleanufkt_checkp_check"
-
 
             if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
                 funktionstest
@@ -1316,7 +1336,7 @@ banner() {
     
     # Login erfolgreich?
     if $eingeloggt; then
-        if [[ $cmd == "--cleanup" ||  $cmd == "-c" ]]; then # Bereinigen mit Sicherheitsabfrage
+        if [[ $cmd == "--cleanup" || $cmd == "-c" ]]; then # Bereinigen mit Sicherheitsabfrage
             cleanup_modus=manuell
             inhalte_bereinigen
         else
@@ -1385,7 +1405,6 @@ banner() {
         exit 1 
     fi
     echo
-    # echo "[i] Bearbeitungszeit $SECONDS Sekunden"
     log "Ende: $(date)"
     exit 0
 
