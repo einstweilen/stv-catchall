@@ -427,14 +427,30 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
     Bearbeitungszeit 474 Sekunden
 
 ## Bereinigungsfunktionen 
-Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfunktionen aufgerufen. Die Bereinigungsfunktionen bestehen aus drei Modulen:
+                _______ _______ _    _ _______   _______ _    _
+                |______ |_____|  \  /  |______      |     \  /
+                ______| |     |   \/   |______ .    |      \/ 
+                ===============================================
+                _____C_a_t_c_h_a_l_l__e_i_n_r_i_c_h_t_e_n_____
+
+                Bereinigung von nicht mehr benötigten Inhalten
+
+        1  Skipliste   : Channels, Aufnahmen und Programmierungen
+        2  Channelliste: vom Skript angelegte Channels löschen
+        3  Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen
+
+     [?] Bereinigungsmodul wählen (1 / 2 / 3 / A_lle 1-3 / Q_uit)? :
+
+Durch den Aufruf des Skripts mit `--cleanup` oder `-c` werden die Bereinigungsfunktionen aufgerufen.
+
+Die Bereinigungsfunktionen bestehen aus den Modulen:
 
 * für Sender der **Skipliste** die Channels, Aufnahmen und Programmierungen löschen [mehr …](#modul-reste-aufr%C3%A4umen)
 * alle vom Skript angelegten **Channels** löschen [mehr …](#modul-channels-aufr%C3%A4umen)
 * im **Videoarchiv** Aufnahmen mit vordatiertem Timestamp löschen [mehr …](#modul-zombieaufnahmen-l%C3%B6schen)
 
-Diese werden nacheinander durchlaufen und der jeweilge Bereich wird auf löschbare Inhalte hin überprüft.
-Die Löschung gefundener Inhalte kann je Bereich mit "N" übersprungen oder das Skript mit "Q" komplett beendet werden.
+Die Module können gezielt einzeln "1" bis "3" aufgerufen oder nacheinander "A" durchlaufen werden.
+Je Modul kann die Löschung gefundener Inhalte mit "N" übersprungen oder das Skript mit "Q" komplett beendet werden.
  
 ### Modul Reste aufräumen
 #### Reste aufräumen Hintergrund
@@ -469,17 +485,6 @@ Die Sicherheitsabfrage der *Reste aufräumen* Funktion `Alles bereinigen (J/N/Q)
 Dadurch ist es möglich nicht nur die Catchall Programmierung sondern auch das Reste aufräumen im Cron durchzuführen. Siehe auch [Tägliche Ausführung einrichten](#t%C3%A4gliche-ausf%C3%BChrung-einrichten)
 
 #### Beispielausgabe des Moduls Reste aufräumen
-                _______ _______ _    _ _______   _______ _    _
-                |______ |_____|  \  /  |______      |     \  /
-                ______| |     |   \/   |______ .    |      \/ 
-                ===============================================
-                _____C_a_t_c_h_a_l_l__e_i_n_r_i_c_h_t_e_n_____
-
-                Bereinigung von nicht mehr benötigten Inhalten
-
-    1. Skipliste   : Channels, Aufnahmen und Programmierungen
-    2. Channelliste: vom Skript angelegte Channels löschen
-    3. Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen
 
     1/3 Programmierungen und Aufnahmen der Sender der Skipliste löschen
 
