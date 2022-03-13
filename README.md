@@ -10,20 +10,6 @@ Für die regelmäßige Ausführung kann das Skript auf einem Raspberry Pi (ein Z
 
 Fehler und Anregungen bitte unter [Issues](https://github.com/einstweilen/stv-catchall/issues) posten.
 
-**2022-02-02 Olympiaupdate** Aktuelle Sondersendungen aus dem Sportbereich erhalten häufig falsche, d.h. in der Zukunft liegende, interne Zeitcodes wodurch ältere Sendungen vor neuere sortiert werden. Details siehe unter [Modul Zombieaufnahmen löschen](README-ext.md#modul-zombieaufnahmen-l%C3%B6schen).
-
-Im Rahmen der Olympiaberichterstattung ist durch die Sondersendungen mit vermehrten 'Sortierungsfehlern' zu rechnen. Das Einrichten der automatischen Löschung ([wie macht man das?](README-ext.md#zombieaufnahmen-l%C3%B6schen-funktionsweise-und-aktivierung)) solcher Aufnahmen hat für Sportinterssierte den Nachteil, dass die Aufnahmen bei der täglichen Skriptausführung u.U. bereits vor dem Anschauen gelöscht werden.
-
-Die Löschmodule in den [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen) lassen sich nun zusätzlich auch gezielt einzeln aufrufen.
-
-                Bereinigung von nicht mehr benötigten Inhalten
-
-        1  Skipliste   : Channels, Aufnahmen und Programmierungen
-        2  Channelliste: vom Skript angelegte Channels löschen
-        3  Videoarchiv : Aufnahmen mit vordatiertem Timestamp löschen
-
-     [?] Bereinigungsmodul wählen (1 / 2 / 3 / A_lle 1-3 / Q_uit)? :
-
 ## Schnelleinstieg
 Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren Sender auf. Es fragt Username und Passwort ab, bietet deren Speicherung an, erkennt das gebuchte Save.TV Paket und wählt die dafür passenden Einstellungen. Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstellungen und den Zugriff auf den Save.TV Account überprüft.
 1. [stvcatchall.sh](https://raw.githubusercontent.com/einstweilen/stv-catchall/master/stvcatchall.sh) runterladen oder Git verwenden ([wie macht man das?](README-ext.md#einmaliger-download))
@@ -34,13 +20,14 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2022-03-13
+  * FIXED unter Linux wurden manuelle Eingaben zum Teil ignoriert
 #### 2022-02-02
   * Direktanwahl einzelner Module der [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen)
 #### 2021-10-25
   * Bedienung der [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen) vereinfacht, Abbruchfunktion ergänzt
   * Dokumentation der Bereinigungsfunktionen überarbeitet
-#### 2021-07-22
-  * FIXED Ermittlung der Anzahl der Usermeldungen bei AlleStörungen.de
+
   
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
