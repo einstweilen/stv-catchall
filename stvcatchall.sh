@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20220202'  # Scriptversion
+version_ist='20220313'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -147,6 +147,7 @@ stv_login_manual() {
         echo
         echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
         echo -n "[?] Zugangsdaten speichern? (J/N)? : "
+        login_opt="?"
         while ! [[ "JjNn" =~ "$login_opt" ]]; do
             read -n 1 -s login_opt
         done
@@ -321,6 +322,7 @@ channelanz_info() {
             echo
             echo "[!] HINWEIS: Sie können mit Ihrem Basispaket nur 50 Stunden aufnehmen!"
             echo -n '    Skript trotzdem ausführen (J/N)? : '
+            basis_check="?"
             while ! [[ "JjNn" =~ "$basis_check" ]]; do
                 read -n 1 -s basis_check
             done
@@ -664,6 +666,7 @@ inhalte_bereinigen() {
     echo
     echo -n '[?] Bereinigungsmodul wählen (1 / 2 / 3 / A_lle 1-3 / Q_uit)? : '
     if [[ $cleanup_modus == "manuell" ]]; then
+        ch_cleanup_check="?"
         while ! [[ "123AaQq" =~ "$ch_cleanup_check" ]]; do
             read -n 1 -s ch_cleanup_check
         done
@@ -729,6 +732,7 @@ sender_bereinigen() {
             echo "[i] Sollen für diese ${#skip_name[@]} Sender die vorhandenen Channels, Programmierungen"
             echo "    und die bereits aufgenommenen Sendungen *endgültig* gelöscht werden?"
             echo -n '[?] Alles bereinigen (J_a / N_ein / Q_uit)? : '
+            cleanup_check="?"
             while ! [[ "JjNnQq" =~ "$cleanup_check" ]]; do
                 read -n 1 -s cleanup_check
             done
@@ -822,6 +826,7 @@ channelrestechecken() {
         echo
         echo "    Die Option 'L' zeigt eine Liste der gefundenen STV Channels an."
         echo -n "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/L/Q)? : "
+        ch_cleanup_check="?"
         while ! [[ "JjNnLlQq" =~ "$ch_cleanup_check" ]]; do
             read -n 1 -s ch_cleanup_check
         done
@@ -838,6 +843,7 @@ channelrestechecken() {
                 grep -o "[0-9]*|${ca_ch_prexxl}[^|]*" <<< "$ch_test"   # XXLTEMP
             done
             echo -n "[?] Diese $ca_ch_anz Channels und zugehörigen Programmierungen löschen (J/N/Q)? : "
+            ch_cleanup_check="?"
             while ! [[ "JjNnQq" =~ "$ch_cleanup_check" ]]; do
                 read -n 1 -s ch_cleanup_check
             done
@@ -852,6 +858,7 @@ channelrestechecken() {
                 echo "[!] Achtung, von den $ca_ch_anz Channels sind nur $ch_max in ihrem STV Paket enthalten,"
                 echo "    die übrigen $((ca_ch_anz - ch_max)) Channels können *nicht* neu angelegt werden."
                 echo -n "[?] Trotzdem die Channels und zugehörigen Programmierungen löschen (J/N/Q)? : "
+                ch_cleanup_check="?"
                 while ! [[ "JjNnQq" =~ "$ch_cleanup_check" ]]; do
                     read -n 1 -s ch_cleanup_check
                 done
@@ -914,6 +921,7 @@ zombie_check() {
             log "$zom_anz Zombies gefunden"
             if [ $ausfuehrung == "manual" ]; then
                 echo -n "[?] Diese $zom_anz Aufnahmen löschen (J/N/Q)? : "
+                zom_check="?"
                 while ! [[ "JjNnQq" =~ "$zom_check" ]]; do
                     read -n 1 -s zom_check
                 done
@@ -1310,6 +1318,7 @@ banner() {
         if [[ log_anz -eq 0 ]]; then
             clear; banner
             echo -n '[?] Soll zuerst ein Funktionstest durchgeführt werden (J/N)? : '
+            fkt_check="?"
             while ! [[ "JjNn" =~ "$fkt_check" ]]; do
                 read -n 1 -s fkt_check
             done
