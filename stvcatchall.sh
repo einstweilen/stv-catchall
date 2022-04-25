@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20220313'  # Scriptversion
+version_ist='20220425'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -977,10 +977,6 @@ abbrechen() {
     log  ": Es sind $err_ges Fehler aufgetreten, das Skript wird vorzeitig beendet."
     echo "    Liste der aufgetretenen Fehler:"
     sed '/^: /,$!d ; s/^: /    /' stv_ca.log
-    fkt_stoerung_info
-    echo "[i] In der letzten Stunde wurden $stoer_as_std Störungen auf AlleStörungen.de gemeldet"
-    echo "    Stand $stoer_as_akt <https://AlleStörungen.de/stoerung/save-tv/>"
-    log  ": AlleStörungen.de meldet in der letzten Stunde $stoer_as_std Meldungen"
     channelinfo_set "ABGREBROCHEN FEHLER $err_ges"
     stv_logout
     exit 1
@@ -1021,35 +1017,8 @@ fkt_ch_delete() {
     done
 }
 
-### Störungen _as_ AlleStörungen.de 
-fkt_stoerung_as() {
-    stoer_as=$(curl -sm9 "https://xn--allestrungen-9ib.de/stoerung/save-tv/")
-    if [ -n "$stoer_as" ]; then
-        stoer_as=$(grep -o "20[123][0-9]-[^}]*}," <<<"$stoer_as" | head -96)
-        stoer_as_tag=$(echo "$stoer_as" | awk '{stoer += $3} END{print stoer}')
-        stoer_as_std=$(echo "$stoer_as" | tail -4 | awk '{stoer += $3} END{print stoer}')
-        stoer_as_let=$(echo "$stoer_as" | grep -v "y: 0" | tail -1 | grep -o "20[^.]*" | tr 'T' ' ' | sed 's/\+.*$//' | head -1)
-        stoer_as_akt=$(echo "$stoer_as" | tail -1 | grep -o "20[^']*" | tr 'T' ' ' | sed 's/\+.*$//' | head -1)
-        if [[ -z "$stoer_as_std" || $stoer_as_std -eq 0 ]]; then stoer_as_std="keine" ; fi
-        if [[ -z "$stoer_as_tag" || $stoer_as_tag -eq 0 ]]; then stoer_as_tag="keine" ; fi
-        if [[ -z "$stoer_as_akt" ]]; then stoer_as_akt="siehe" ; fi
-    fi
-}
-
-fkt_stoerung_info() {
-    fkt_stoerung_as     # AlleStörungen
-    echo "    Auf AlleStörungen.de wurden in den letzten 24 Std. $stoer_as_tag Störungen gemeldet"
-    if [[ $stoer_as_tag != "keine" ]]; then
-        echo "    Letzte Meldung um $stoer_as_let. Letzte Stunde gab es $stoer_as_std Meldungen."
-    fi
-    echo "    Stand $stoer_as_akt <https://AlleStörungen.de/stoerung/save-tv/>" 
-    echo
-}
-
-### Störungsinfo und Logausgabe im Fehlerfall
+### Logausgabe im Fehlerfall
 fkt_error_exit() {
-    echo '[i] Prüfe auf von anderen Usern gemeldete Störungen (Zeit in UTC)'
-    fkt_stoerung_info
     stv_logout
     echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     log "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
@@ -1105,7 +1074,7 @@ funktionstest() {
         cat "$stv_cred" 2>/dev/null
         echo
         echo '    Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen'
-        fkt_stoerung_info 
+
         exit 1
     fi
         
@@ -1124,7 +1093,6 @@ funktionstest() {
     if [[ $paket_art != *"Save"* ]]; then
         echo "[!] Gebuchtes Save.TV Paket konnte NICHT ermittelt werden."
         echo '    Es kann auch eine allgemeine Störung vorliegen'
-        fkt_stoerung_info
         log "Fehler bei Paketname: '$paket_return'"
         exit 1
     fi
@@ -1245,9 +1213,6 @@ funktionstest() {
     stv_logout
     echo "[✓] Logout durchgeführt"
     echo
-    echo "[i] Prüfe auf von anderen Usern gemeldete Störungen (Zeit in UTC)"
-    fkt_stoerung_info
-
     # Status ausgeben
     echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     log "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
