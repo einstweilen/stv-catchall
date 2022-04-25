@@ -20,6 +20,8 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2022-04-25
+  * Abfrage von AlleStörungen aus Aufwand/Nutzen-Gründen entfernt
 #### 2022-03-13
   * FIXED unter Linux wurden manuelle Eingaben zum Teil ignoriert
 #### 2022-02-02
