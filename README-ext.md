@@ -235,8 +235,6 @@ Wird eine neuere Version gefunden, wird "Neue Version" an die Ausführungsinform
 ### Funktionstest
 Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account. Die für die Sendungsprogrammierung relevanten Daten werden angezeigt, um besonders beim ersten Start, keine "falschen" Programmierungen anzulegen.
 
-Werden beim Test langsame Antwortzeiten oder Timeouts festgestellt, wird die Anzahl der Störungungsmeldungen auf AlleStörungen.de der letzten 24 Stunden und der letzten Stunde ausgegeben.
-
 #### Funktionstest aufrufen
 Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest durchgeführt werden (J/N)? :` automatisch angeboten. 
 
@@ -273,12 +271,7 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
     [✓] Testchannel erfolgreich gelöscht
     
     [✓] Logout durchgeführt
-  
-    [i] Prüfe auf von Usern gemeldete Störungen
-        Auf AlleStörungen.de wurden in den letzten 24 Std. 74 Störungen gemeldet,
-        letzte Meldung um 2020-01-07 15:46:38. Letzte Stunde gab es keine Störungen.
-        Stand: 2020-01-07 18:46:38 <https://AlleStörungen.de/stoerung/save-tv/>
-	
+  	
     [i] Funktionstest wurde in 9 Sekunden abgeschlossen
 
 #### Beispielausgabe des Funktionstests mit Loginfehler
@@ -292,8 +285,6 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
         612612 FalschesPasswort
 
         Sind die Userdaten korrekt, kann auch eine allgemeine Störung vorliegen.
-        In der letzten Stunde wurden 60 Störungen auf AlleStörungen.de
-        gemeldet. <https://AlleStörungen.de/stoerung/save-tv/>
 
 #### Beispielausgabe bei noch vorhandenen XXL Channels im XL Paket
     [!] Es sind mehr Channels angelegt, als im gebuchten Paket verfügbar sind!
@@ -303,9 +294,6 @@ Hinweis: der erste Aufruf des Skripts wird anhand des Fehlens der Logdatei `stv_
 
 #### Beispielausgabe bei langer Laufzeit des Funktionstests
     [-] Der Funktionstest hat länger als die erwarteten 10 Sekunden benötigt!
-        Auf AlleStörungen.de wurden in den letzten 24 Std. 74 Störungen gemeldet,
-        letzte Meldung um 2020-01-07 15:46:38. Letzte Stunde gab es keine Störungen.
-        Stand: 2020-01-07 18:46:38 <https://AlleStörungen.de/stoerung/save-tv/>
 
 ### Ausführungsstatus kontrollieren
 Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm (siehe unten "Beispielausgabe") ausgegeben, zusätzlich wird zur späteren genaueren Kontrolle im Skriptverzeichnis eine Logdatei geschrieben die sämtliche vom Skript angelegte Channels und eventuelle Fehlermeldungen enthält.
@@ -334,7 +322,6 @@ Sollten bei der Channelanlage Fehler auftreten, so wird im Fortschrittsbalken st
 Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err_max=9`, bricht das Skript vorzeitig ab. Auf AlleStörungen.de wird geprüft, ob auch andere User aktuell Probleme melden:
 
     Es sind 6 Fehler aufgetreten, das Skript wird beendet.
-    AlleStörungen.de meldet in der letzten Stunde 14 Störungen 
 
 Meistens treten Fehler auf, wenn die SaveTV Server im Moment der Channelanlage überlastet sind. Bei einem späteren Anlegeversuch werden diese Channels ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft. Zusätzlich werden am Ende der Skriptsusführung einstellbar häufige Versuche der erneuten Channelanlage durchgeführt ([mehr ](#wiederholung-der-channelanlage)).
 
@@ -349,7 +336,6 @@ Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang 
     : Grund: Channel mit gleichem Zeitraum ist bereits vorhanden!
     : Tip  : Channelliste mit -c prüfen und bereinigen
     : Es sind 6 Fehler aufgetreten, das Skript wird vorzeitig beendet.
-    : AlleStörungen.de meldet in der letzten Stunde keine Störungen
     
 Sollten durch die Servernichterreichbarkeit oder den Skriptabbruch nicht gelöschte temporäre Channel zurückbleiben, können diese mit der [Funktion Channels aufräumen](#zusatzfunktion-channels-aufr%C3%A4umen) gelöscht werden.
 #### im Batchmodus
