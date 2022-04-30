@@ -615,7 +615,7 @@ Um das Skript z.B. täglich um 5 Uhr ausführen zu lassen, zuerst die Cron Tabel
 	
 eintragen.
 Dabei steht `0 5` für 5:00 Uhr, `* * *` für jeden Tag, jeden Monat, an jedem Wochentag und `/home/dietpi/stv-catchall/stvcatchall.sh` für den kompletten Pfad zum Skript.
-Für weitere Details siehe [Externe Seite: Crontab editing made simple](http://corntab.com/?c=0_5_*_*_*).
+Für weitere Details siehe [Externe Seite: Crontab Guru The quick and simple editor for cron schedule expressions](https://crontab.guru/).
 
 Wird kein DietPi verwendet, den Pfad zum `stvcatchall.sh` Skript entsprechend anpassen. Wenn man sich nicht sicher ist, in das Skriptverzeichnis wechseln und dort `pwd` eingeben, dann bekommt man den Pfad `/home/dietpi/stv-catchall` angezeigt und muß nur noch den Skriptnamen `stvcatchall.sh` ergänzen.
 
