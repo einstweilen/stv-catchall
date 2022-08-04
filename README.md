@@ -19,7 +19,14 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
+### 2022-08-04 Login nicht möglich & Quickfix
+Sollte das Einloggen per Skript nicht möglich sein bitte folgendes Issue und den enthaltenen Quickfix beachten oder neueste Skriptversion installieren:
+
+[Issue #6: Login unter Linux / Raspbian ist nicht mehr möglich](https://github.com/einstweilen/stv-catchall/issues/6)
+
 **Neueste Änderungen**
+#### 2022-08-24
+  * QUICKFIX für cURL Login Problem
 #### 2022-04-25
   * Abfrage von AlleStörungen aus Aufwand/Nutzen-Gründen entfernt
 #### 2022-03-13
