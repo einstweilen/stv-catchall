@@ -19,12 +19,12 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
-### 2022-08-04 Login nicht möglich & Quickfix
-Sollte das Einloggen per Skript nicht möglich sein bitte folgendes Issue und den enthaltenen Quickfix beachten oder neueste Skriptversion installieren:
-
-[Issue #6: Login unter Linux / Raspbian ist nicht mehr möglich](https://github.com/einstweilen/stv-catchall/issues/6)
+### 2023-04-11 cURL wieder per secure ohne Ignorierung von Zertifikatsfehlern
+Da die SaveTV Zertifikate wieder von aktuellen macOS und Linux Versionen akzeptiert werden, '-k' aus den cURL Aufrufen entfernt
 
 **Neueste Änderungen**
+#### 2023-04-11
+  * FIXED cURL wieder per secure ohne Ignorierung von Zertifikatsfehlern
 #### 2022-08-24
   * QUICKFIX für cURL Login Problem
 #### 2022-04-25
