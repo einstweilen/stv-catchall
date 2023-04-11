@@ -31,12 +31,6 @@ Da die SaveTV Zertifikate wieder von aktuellen macOS und Linux Versionen akzepti
   * Abfrage von AlleStörungen aus Aufwand/Nutzen-Gründen entfernt
 #### 2022-03-13
   * FIXED unter Linux wurden manuelle Eingaben zum Teil ignoriert
-#### 2022-02-02
-  * Direktanwahl einzelner Module der [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen)
-#### 2021-10-25
-  * Bedienung der [Bereinigungsfunktionen](README-ext.md#bereinigungsfunktionen) vereinfacht, Abbruchfunktion ergänzt
-  * Dokumentation der Bereinigungsfunktionen überarbeitet
-
   
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
