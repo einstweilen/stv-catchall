@@ -19,8 +19,8 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
-### 2023-04-11 cURL wieder per secure ohne Ignorierung von Zertifikatsfehlern
-Da die SaveTV Zertifikate wieder von aktuellen macOS und Linux Versionen akzeptiert werden, '-k' aus den cURL Aufrufen entfernt
+### 2023-09-25 Servicehinweis - das Projekt lebt
+Wenn es keine Updates gibt, heißt das nicht, dass das Projekt nicht mehr betreut wird. Ich habe mein Abo im August um zwei Jahre verlängert, d.h. falls technische Anpassungen notwendig werden, werden die auch -wenn möglich- gemacht.
 
 **Neueste Änderungen**
 #### 2023-04-11
