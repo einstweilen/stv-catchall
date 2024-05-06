@@ -19,6 +19,14 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
+
+### 2024-05-06 Umfrage zur nächsten Skriptversion
+Es hat seit einem Jahr keine Skriptupdates mehr gegeben, da das Skript in seiner jetzigen Form fehlerfrei ([Fehler melden …](https://github.com/einstweilen/stv-catchall/issues)) läuft.
+
+Irgendwann wird sicher bei Save.TV ein Relaunch der Webseite erfolgen und das Skript angepaßt werden müssen. Um darauf etwas vorbereitet zu sein, eine 1-Frage-Umfrage, ob die nächste Skriptversion in BASH bleiben oder in Python erstellt werden soll.
+
+[Weiter zur Umfrage …](https://github.com/einstweilen/stv-catchall/discussions/7)
+
 ### 2023-09-25 Servicehinweis - das Projekt lebt
 Wenn es keine Updates gibt, heißt das nicht, dass das Projekt nicht mehr betreut wird. Ich habe mein Abo im August um zwei Jahre verlängert, d.h. falls technische Anpassungen notwendig werden, werden die auch -wenn möglich- gemacht.
 
