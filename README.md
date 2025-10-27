@@ -20,7 +20,7 @@ Das Skript läuft defaultmäßig im Automatikmodus und nimmt alle verfügbaren S
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 ### Servicehinweis - das Projekt lebt
-Wenn es keine Updates gibt, heißt das nicht, dass das Projekt nicht mehr betreut wird. Mein Save.TV Abo läuft aktuell bis August 2025, d.h. falls technische Anpassungen notwendig werden, werden die -wenn möglich- gemacht.
+Wenn es keine Updates gibt, heißt das nicht, dass das Projekt nicht mehr betreut wird. Mein Save.TV Abo läuft aktuell bis August 2027, d.h. falls technische Anpassungen notwendig werden, werden die -wenn möglich- gemacht. Da mir nicht alles selber auffallen kann, bei Bedarf ein Issue eröffnen.
 
 **Neueste Änderungen**
 #### 2023-04-11
