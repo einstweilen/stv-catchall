@@ -2,7 +2,7 @@
     |______ |_____|  \  /  |______      |     \  /
     ______| |     |   \/   |______ .    |      \/  
     ===============================================
-    ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_e_n ____
+    ____ C_a_t_c_h_A_l_l___e_i_n_r_i_c_h_t_en ____
 
 ## Table of contents
   * [Hintergrund](#hintergrund)
@@ -13,6 +13,7 @@
         + [Automatisches Login](#automatisches-login)
         + [Wechsel zwischen den Loginoptionen](#wechsel-zwischen-den-loginoptionen)
     + [Sender von der automatischen Aufnahme ausschließen](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)
+    + [Senderliste Editor](#senderliste-editor)
     + [Angelegte Channels behalten `auto`, `immer`, `nie`](#angelegte-channels-behalten-auto-immer-nie)
     + [Aufbau der Channeltitel](#aufbau-der-channeltitel)
     + [Hinweis zum Ende des kostenlosen XXL Upgrades zum 26.05.2020](#hinweis-zum-ende-des-kostenlosen-xxl-upgrades-zum-26052020)
@@ -54,15 +55,15 @@
   * [Hilfefunktion](#hilfefunktion)
  
 ## Hintergrund
-[SaveTV](https://www.save.tv/) bietet keine CatchAll Funktion bei der automatisch alle Sendungen aller verfügbaren Sender aufgenommen werden.
+[Save.TV](https://www.save.tv/) bietet keine CatchAll Funktion bei der automatisch alle Sendungen aller verfügbaren Sender aufgenommen werden.
 
 Zur Aufnahmeprogrammierung können [je nach gebuchtem Paket](https://www.save.tv/stv/s/misc/paketauswahl.cfm) eine unterschiedliche Anzahl an Channels (5 Basis, 20 XL, 200 XXL) verwendet werden.
 
 Über die [Erweiterten Einstellungen](https://www.save.tv/STV/M/obj/channels/ChannelAnlegen.cfm) kann ein Channel für einen Sender und einen Zeitslot (0-6 Uhr, 6-12 Uhr, 12-18 Uhr, 18-24 Uhr) programmiert werden.
 
-Während sich mit den 200 Channels des XXL-Pakets die Catchall Funktion durch Programmierung von vier Zeitslots für die 46 SaveTV Sender (4 x 46 = 184 Channels) mit etwas Anlegefleiß nachbilden läßt, bieten das Basis-Paket mit 5 Channels und des XL Paket mit 20 Channels nicht genug Channels um alle Slots für alle Sender zu programmieren.
+Während sich mit den 200 Channels des XXL-Pakets die Catchall Funktion durch Programmierung von vier Zeitslots für die 46 Save.TV Sender (4 x 46 = 184 Channels) mit etwas Anlegefleiß nachbilden läßt, bieten das Basis-Paket mit 5 Channels und des XL Paket mit 20 Channels nicht genug Channels um alle Slots für alle Sender zu programmieren.
 
-Die Grundidee von SaveTV Catchall basiert auf den unterschiedlichen Optionen, die beim Channellöschen angeboten werden 
+Die Grundidee von Save.TV Catchall basiert auf den unterschiedlichen Optionen, die beim Channellöschen angeboten werden 
 
 ![STV Aufnahme Optionen Screenshot](img-fuer-readme/stv-channel-delete.png)
 
@@ -81,11 +82,11 @@ Je Sender erfolgen 9 save.tv Zugriffe, wodurch das Skript relativ langsam läuft
 * 4 x Senderzeitslotchannel löschen
 
 Der Nachteil dieses Verfahren besteht allerdings darin, daß die Programmierung der Aufnahmen nur ca. sieben Tage in die Zukunft reicht, so daß das Skript regelmäßig ausgeführt werden muß, um die neu hinzugekommenen Sendungen und eventuelle Programmänderungen zu programmieren.
-SaveTV aktualisiert sein Angebot einmal täglich gegen 4:30 Uhr, so daß das Skript kurz danach laufen sollte, um alle Änderungen zeitnah zu berücksichtigen.
+Save.TV aktualisiert sein Angebot einmal täglich gegen 4:30 Uhr, so daß das Skript kurz danach laufen sollte, um alle Änderungen zeitnah zu berücksichtigen.
 
 Siehe auch [Installation auf einem Raspberry Pi mit täglicher Ausführung](#installation-auf-einem-raspberry-pi-mit-t%C3%A4glicher-ausf%C3%BChrung)
 
-Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslastung des SaveTV Servers etwa 18 Sekunden für die vier Channels eines Senders, bei mir um die 10 bis 11 Minuten für 36 aufzunehmende Sender. 
+Auf einem Raspberry Pi Zero W benötigt das Skript je nach der aktuellen Auslastung des Save.TV Servers etwa 18 Sekunden für die vier Channels eines Senders, bei mir um die 10 bis 11 Minuten für 36 aufzunehmende Sender. 
 	
 ## Einrichten und Starten
 ### Username und Passwort
@@ -108,6 +109,10 @@ Nur wenn die Daten korrekt sind, wird ein Abspeichern für das automatische Logi
         Die Zugangsdaten können zum automatischen Login gespeichert werden
 	    Zugangsdaten speichern? (J/N)? :
 	
+#### Option 'U' Speicherung in Umgebungsvariablen 
+    [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
+Die Zugangsdaten können als Umgebungsvariabelen in ~/.bashrc oder ~/.bash_profile gespeichert werden, dadurch sind sind sie nicht mehr in der Datei stv_autologin einsehbar. Das ist rein optional, das Skript prüft sowohl auf die Variablen als auch auf die alte stv_autologin Datei. 
+
 #### Option 'J' Speicherung in Datei 
     [i] Zugangsdaten wurden in 'stv_autologin' gespeichert
 	
@@ -135,38 +140,30 @@ Bei einem Überlast 500er Serverfehler beim Login, wird das Skript direkt beende
 
 ### Sender von der automatischen Aufnahme ausschließen
 Standardmäßig wird die Aufnahme **aller** Sendungen **aller** Sender programmiert. 
-Das Skript holt beim Start eine aktuelle Senderliste vom SaveTV Server und speichert diese als `stv_sender.txt` ab. Eventuell neu hinzugekommene Sender werden automatisch zur Aufnahme programmiert.
+Das Skript holt bei jedem Start eine aktuelle Senderliste vom Save.TV Server. Eventuell neu hinzugekommene Sender werden automatisch zur Aufnahme programmiert.
 
-Durch die Datei `stv_skip.txt` können einzelne Sender von der Aufnahme ausgeschlossen werden. Wird diese Datei gelöscht, legt das Skript beim Start automatisch eine neue leere Datei an.
+Einzelne Sender lassen sich mit dem **Senderliste Editor** von der Aufnahme ausschließen.
 
-`stv_sender.txt` und `stv_skip.txt` verwenden das gleiche Format ("SenderID|Sendername" "10|KiKA").
+### Senderliste Editor
+Der Senderliste Editor wird automatisch bei der Ersteinrichtung und beim Funktionstest aufgerufen.
 
-Damit man seine persönliche Skipliste einfach erstellen kann, wird die aktuelle Senderliste als Muster unter `stv_skip_vorlage.txt` angelegt. Dort kann man mit einem Texteditor diejenigen Sender/Zeilen entfernen, die weiterhin aufgenommen werden sollen, sodaß **nur die nicht aufzunehmenden Sender** übrigleiben.
+![STV Senderliste Editor Screenshot](img-fuer-readme/sendereditor.jpg)
 
-Wenn man fertig ist, speichert man diese geänderte Datei unter dem Namen `stv_skip.txt` ab.
+Der Editor listet alle bei Save.TV vorhandenen Sender auf und durch **Pfeiltastennavigation** sowie drücken der **Leertaste** lassen sich einzelne Sender von der Programmierung aus- und wieder einschließen.
+Danach mit 'S' die Änderungen speichern oder mit ESCape ohne zu Speichern abbrechen.
 
-	> cat stv_skip.txt
-	92|Disney Channel
-	60|DMAX
-	7|Eurosport
-	96|Fix und Foxi
-	59|Folx TV
-	40|Health TV
-	10|KiKA
-	11|MTV
-	93|RiC
-	6|SPORT 1
-	95|TLC
-
-Zusätzlich kann man durch manuellen Aufruf des Funktionstests `./stvcatchall.sh -t` ([mehr …](#funktionstest)) die Korrektheit der Skipliste kontrollieren.
+Die Anzeige der aktuell von der Aufnahme ausgeschlossenen Sender ist Teil des Funktionstests, der mit `./stvcatchall.sh -t` bzw. `./stvcatchall.sh --test` ([mehr …](#funktionstest)) durchgeführt wird. Dort kann mit "J" der Senderlisten Editor aufgerufen werden.
 
     [i] Aktuell sind 46 Sender bei Save.TV verfügbar.    
     [i] Die Liste der ausgeschlossenen Sender 'stv_skip.txt' beinhaltet:
         KiKA                  MTV                   Health TV          
         Folx TV               SPORT 1               DMAX               
         Eurosport             Disney Channel        RiC                
-        TLC                   Fix und Foxi  
+        TLC                   Fix und Foxi
+        
+    [?] Möchten Sie die Senderaufnahmeliste bearbeiten (J/N)?
 
+Die Senderliste kann auch mit `./stvcatchall.sh -s` bzw. `./stvcatchall.sh --sender` direkt aufgerufen und bearbeitet werden. 
 
 ### Angelegte Channels behalten `auto`, `immer`, `nie`
 Durch den Parameter `anlege_modus` wird gesteuert, wie mit den durch das Skript angelegten Channels verfahren wird. Normalerweise wird man die voreingestellte Option `auto` verwenden, kann sie aber auch überschreiben.
@@ -233,7 +230,7 @@ Bei der Versionsüberprüfung werden keine Daten an den Server gesendet, es wird
 Wird eine neuere Version gefunden, wird "Neue Version" an die Ausführungsinformation des Skripts angehängt - siehe '[Ausführungsstatus kontrollieren](#ausf%C3%BChrungsstatus-kontrollieren)'.
 
 ### Funktionstest
-Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den SaveTV Account. Die für die Sendungsprogrammierung relevanten Daten werden angezeigt, um besonders beim ersten Start, keine "falschen" Programmierungen anzulegen.
+Der Funktionstest überprüft neben den Skripteinstellungen den korrekten Zugriff auf den Save.TV Account. Die für die Sendungsprogrammierung relevanten Daten werden angezeigt, um besonders beim ersten Start, keine "falschen" Programmierungen anzulegen.
 
 #### Funktionstest aufrufen
 Bei der ersten Skriptausführung wird der Funktionstest `Soll ein Funktionstest durchgeführt werden (J/N)? :` automatisch angeboten. 
@@ -300,7 +297,7 @@ Der aktuelle Skriptfortschritt wird während der Ausführung auf dem Bildschirm 
 
 Die Logdatei hat das Format stv_ca_TAG_UHRZEIT.log z.B. `stv_ca_1229_0517.log`. Die aktuellste Logdatei ist immer unter dem Link `stv_ca.log` abrufbar. Es werden die Logs der letzten sieben (sechs alte Logs plus dem aktuellen) Skriptausführungen aufgehoben, längere oder kürzere Fristen lassen sich im Skript per `log_max` einstellen. 
 
-Der Status des letzten Skriptlaufs läßt sich von jedem Gerät aus prüfen ohne im Log nachsehen, z.B. direkt auf der SaveTV Webseite oder der SaveTV App, dazu wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status und das Datum der Ausführung enthält, angelegt.
+Der Status des letzten Skriptlaufs läßt sich von jedem Gerät aus prüfen ohne im Log nachsehen, z.B. direkt auf der Save.TV Webseite oder der Save.TV App, dazu wird am Ende der Skriptausführung eine Kurzzusammenfassung als "Pseudostichwortchannel", dessen Titel den Status und das Datum der Ausführung enthält, angelegt.
 
 Optional: Ist die [Versionsüberprüfung](#Versions%C3%BCberpr%C3%BCfung) aktiviert und sollte eine neue Skriptversion verfügbar sein, wird zusätzlich "Neue Version" angezeigt.
 
@@ -323,7 +320,7 @@ Wird die Anzahl der maximal erlaubten Fehler überschritten, defaultmäßig `err
 
     Es sind 6 Fehler aufgetreten, das Skript wird beendet.
 
-Meistens treten Fehler auf, wenn die SaveTV Server im Moment der Channelanlage überlastet sind. Bei einem späteren Anlegeversuch werden diese Channels ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft. Zusätzlich werden am Ende der Skriptsusführung einstellbar häufige Versuche der erneuten Channelanlage durchgeführt ([mehr ](#wiederholung-der-channelanlage)).
+Meistens treten Fehler auf, wenn die Save.TV Server im Moment der Channelanlage überlastet sind. Bei einem späteren Anlegeversuch werden diese Channels ohne Fehler eingerichtet. Daher können Fehler i.d.R. ignoriert werden, solange das Skript zeitnah, maximal jedoch innerhalb von 7 Tagen erneut gestartet wird und fehlerfrei durchläuft. Zusätzlich werden am Ende der Skriptsusführung einstellbar häufige Versuche der erneuten Channelanlage durchgeführt ([mehr ](#wiederholung-der-channelanlage)).
 
 Die konkrete Serverfehlermeldung ist in der Logdatei `stv_ca_TAG_UHRZEIT.log` enthalten.
 Schwerwiegende Fehler sind zum leichteren Filtern mit einem `:` am Zeilenanfang markiert.
@@ -389,7 +386,7 @@ In der Termux Standardinstallation ist `curl` noch nicht enthalten, es kann mit 
                 |______ |_____|  \  /  |______      |     \  /
                 ______| |     |   \/   |______ .    |      \/ 
                 ===============================================
-                ____ C_a_t_c_h_a_l_l___e_i_n_r_i_c_h_t_e_n ____
+                ____ C_a_t_c_h_a_l_l___e_i_n_r_i_c_h_t_en ____
 		
 	Aufnahme aller Sendungen der nächsten 7 Tage für folgende 36 Sender einrichten:
 	3sat                ANIXE HD            ARD alpha HD        arte               
@@ -440,7 +437,7 @@ Je Modul kann die Löschung gefundener Inhalte mit "N" übersprungen oder das Sk
  
 ### Modul Reste aufräumen
 #### Reste aufräumen Hintergrund
-Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im SaveTV System bis die Vorhaltezeit des SaveTV Pakets (30/60/100 Tage) abgelaufen ist.
+Wenn man einen Sender nicht mehr aufnehmen möchte oder man die Anleitung bezüglich der Senderskipliste nicht sorgfältig genug gelesen hat ([mehr …](#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen)), befinden sich die vorgenommenen Programmierungen und alten Aufnahmen weiterhin im Save.TV System bis die Vorhaltezeit des Save.TV Pakets (30/60/100 Tage) abgelaufen ist.
 
 Zu sehen mit dem manuellen Aufruf der Seite 'Mein Videoarchiv' > Popup links oben 'Alle Sendungen' > PopUp rechts oben 'Sendernamen' >  rechts oben 'Nach Titeln gruppieren' auf AUS. Bei einem Vollprogrammsender können so 4000 und mehr Einträge zu löschen sein.
 
@@ -624,4 +621,4 @@ Es ist auch möglich, dem Skriptaufruf Parameter mitzugeben, so daß täglich ei
 	0 5 * * * /home/dietpi/stv-catchall/stvcatchall.sh --cleanupauto
 
 ## Hilfefunktion
-Wenn das SaveTV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --help` aufgerufen wird, wird ein kurzer Hilfetext angezeigt.
+Wenn das Save.TV Catchall Skript mit `stvcatchall.sh -?` oder `stvcatchall.sh --help` aufgerufen wird, wird ein kurzer Hilfetext angezeigt.
