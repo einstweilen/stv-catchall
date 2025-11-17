@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20230411'  # Scriptversion
+version_ist='20251117'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -47,7 +47,7 @@ log() {
     echo "$*" | tr -d '"' >> "$stv_log"
 }
 
-### Logdatei anlegen, Link stv_ca.log zur aktuellesten 
+### Logdatei anlegen, Link stv_ca.log zur aktuellesten Logdatei
 log_init () {
     touch "$stv_log"
     rm -f "$DIR/stv_ca.log"
@@ -70,29 +70,16 @@ log_delete() {
 }
 
 
-### https://stackoverflow.com/a/10797966
-urlencode() {
-    local data
-    data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$1" "")"
-    if [[ $? != 3 ]]; then
-        echo "[i] Fehler bei URLEncodierung von '$1'"
-        log ": Fehler bei URLEncodierung von '$1'"
-        exit 1
-    fi
-    echo "${data##/?}"
-    return 0
-}
-
-
 ### STV Webserver Login"
 stv_login() {
+    stv_login_cred
 
-    stv_login_cred          # Accountdaten gespeichert?
-
+    # Wenn nicht erfolgreich, starte den manuellen Prozess
     while ! $eingeloggt && [ $ausfuehrung == "manual" ] ; do
-        stv_login_manual    # Accountdaten manuell eingeben
+        stv_login_manual
     done
 
+    # Prüft, ob ein Login für den Cron-Betrieb möglich war
     if ! $eingeloggt; then
         log ": keine gültige Loginoption für Cron Betrieb vorhanden"
         log ": das Skript im Terminal starten und Option auswählen"
@@ -102,82 +89,138 @@ stv_login() {
 
 ### Login mit gespeicherten Zugangsdaten
 stv_login_cred() {
-    if [ -f "$stv_cred" ]; then
-        IFS=' ' read -r stv_user stv_pass  < "$stv_cred" ; unset IFS
+    # Umgebungsvariablen (STV_USER und STV_PASS)
+    if [[ -n "$STV_USER" && -n "$STV_PASS" ]]; then
         if [[ $cmd == "-t" ]]; then
-            echo "[✓] gespeicherte Logindaten in '$(basename "$stv_cred")' vorhanden"
+            echo "[✓] Logindaten aus Umgebungsvariablen (STV_USER, STV_PASS) vorhanden."
         fi
-        log "Logindaten aus $(basename "$stv_cred") für User $stv_user werden verwendet"
+        log "Logindaten aus Umgebungsvariablen für User $STV_USER werden verwendet."
 
-        userpass="sUsername=$stv_user&sPassword=$stv_pass"
-        login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie")
+        stv_user=$STV_USER
+        stv_pass=$STV_PASS
+        
+        login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' \
+            --data-urlencode "sUsername=$stv_user" \
+            --data-urlencode "sPassword=$stv_pass" \
+            --data "bAutoLoginActivate=1" \
+            --cookie-jar "$stv_cookie")
+        grep -q Login_Succeed <<< "$login_return" && eingeloggt=true || eingeloggt=false
+
+        if $eingeloggt; then
+            log "Zugangsdaten aus Umgebungsvariablen sind gültig."
+        else
+            echo "[!] Gespeicherte Umgebungsvariablen sind vorhanden, aber ungültig."
+            log ': Zugangsdaten aus Umgebungsvariablen (STV_USER/STV_PASS) sind ungültig.'
+            eingeloggt=false
+        fi
+        return
+    fi
+    
+    # Anmeldedatei (stv_autologin)
+    if [ -f "$stv_cred" ]; then
+        local cred_content
+        cred_content=$(head -n1 "$stv_cred")
+
+        # Datei enthält "ENV" -> Hinweis, dass Variablen nicht gesetzt sind.
+        if [[ "$cred_content" == "ENV" ]]; then
+            log "Datei '$(basename "$stv_cred")' signalisiert Nutzung von Umgebungsvariablen, diese sind aber nicht gesetzt."
+            eingeloggt=false
+            return
+        fi
+
+        # Datei enthält Zugangsdaten.
+        IFS=' ' read -r stv_user stv_pass <<< "$cred_content"; unset IFS
+        
+        if [[ $cmd == "-t" ]]; then
+            echo "[✓] Gespeicherte Logindaten in '$(basename "$stv_cred")' vorhanden."
+        fi
+        log "Logindaten aus $(basename "$stv_cred") für User $stv_user werden verwendet."
+
+        login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' \
+            --data-urlencode "sUsername=$stv_user" \
+            --data-urlencode "sPassword=$stv_pass" \
+            --data "bAutoLoginActivate=1" \
+            --cookie-jar "$stv_cookie")
         grep -q Login_Succeed <<< "$login_return" && eingeloggt=true || eingeloggt=false
     
         if $eingeloggt; then
-            log "gespeicherte Zugangsdaten sind gültig"
+            log "Gespeicherte Zugangsdaten aus Datei sind gültig."
         else
-            echo "[!] Gespeicherte Userdaten sind vorhanden, aber ungültig"
-            echo "[i] Manuelles Login ist notwendig"
-            log ': Userdaten in '$(basename "$stv_cred")' sind ungültig'
-            log "$(basename "$stv_cred"): $(cat "$stv_cred")"
-            log "Serverantwort"
-            log "$login_return"
+            echo "[!] Gespeicherte Userdaten aus Datei sind vorhanden, aber ungültig."
+            log ': Userdaten in '$(basename "$stv_cred")' sind ungültig.'
         fi
-    else
-        eingeloggt=false
-        log "Keine Zugangsdatendatei '$(basename "$stv_cred")' vorhanden"
+        return
     fi
+
+    # Keine Methode konfiguriert
+    eingeloggt=false
+    log "Keine Umgebungsvariablen oder Zugangsdatendatei '$(basename "$stv_cred")' vorhanden."
 }
+
 
 ### Manuelles Login mit Eingabe der Zugangsdaten
 stv_login_manual() {
     rm -f "$stv_cookie"
-    rm -f "$stv_cred"
-    echo    "[i] Keine gespeicherten Logindaten vorhanden, bitte manuell eingeben"
+    echo    "[i] Keine gültigen Logindaten gefunden, bitte manuell eingeben."
     read -p "    Save.TV Username: " stv_user
-    read -p "    Save.TV Passwort: " stv_pass
-    stv_pass=$(urlencode "$stv_pass")
+    read -sp "    Save.TV Passwort: " stv_pass
+    echo
 
-    userpass="sUsername=$stv_user&sPassword=$stv_pass&bAutoLoginActivate=1"
-    login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' --data "$userpass" --cookie-jar "$stv_cookie")
+    login_return=$(curl -s 'https://www.save.tv/STV/M/Index.cfm' \
+        --data-urlencode "sUsername=$stv_user" \
+        --data-urlencode "sPassword=$stv_pass" \
+        --data "bAutoLoginActivate=1" \
+        --cookie-jar "$stv_cookie")
+
     grep -q Login_Succeed <<< "$login_return" && eingeloggt=true || eingeloggt=false
     
     if $eingeloggt; then
         echo    "[✓] Login bei SaveTV als User $stv_user war erfolgreich!"
         echo
-        echo    "    Die Zugangsdaten können zum automatischen Login gespeichert werden"
-        echo -n "[?] Zugangsdaten speichern? (J/N)? : "
+        echo    "    Zugangsdaten können für den automatischen Login gespeichert werden."
+        echo -n "[?] Speichern in D_atei / U_mgebungsvariablen / N_icht speichern? : "
         login_opt="?"
-        while ! [[ "JjNn" =~ "$login_opt" ]]; do
+        while ! [[ "DdUuNn" =~ "$login_opt" ]]; do
             read -n 1 -s login_opt
         done
         echo "$login_opt"
 
         case $login_opt in
-            [jJ]  )
+            [dD])
                 echo "$stv_user $stv_pass" >"$stv_cred"
-                echo "[i] Zugangsdaten wurden in '$(basename "$stv_cred")' gespeichert"
+                echo "[i] Zugangsdaten wurden in '$(basename "$stv_cred")' gespeichert."
+                ;;
+            [uU])
+                echo "ENV" >"$stv_cred"
+                echo
+                echo "[i] Fügen Sie die folgenden Zeilen zu Ihrer Shell-Konfigurationsdatei hinzu:"
+                echo "    export STV_USER='$stv_user' STV_PASS='$stv_pass'"
+                echo
+                echo "[i] Konfiguration neu laden ('source ~/.bashrc') oder neues Terminal öffnen."
+                echo "    Einloggen erfolgt automatisch mit den gespeicherten Daten."
+                echo
+                stv_logout
+                echo "[✓] Logout durchgeführt"
+                echo
+                exit 0
                 ;;
             *)
-                echo "[i] Zugangsdaten werden bei jedem Login erneut abgefragt"
+                rm -f "$stv_cred"
+                echo "[i] Zugangsdaten werden nicht gespeichert."
                 ;;
         esac
     else
         if grep -q "Server Error" <<< "$login_return"; then
             echo "[!] Manuelles Login wegen Serverfehler nicht möglich"
-            echo
             echo "[i] Skript wird abgebrochen"
             log ': Manuelles Login wegen Serverfehler nicht möglich, Skriptabbruch'
-            log "Serverantwort"
-            log "$login_return"
-            
             exit 1
         fi
         echo "[!] Login mit diesen Userdaten nicht möglich"
         echo "    Username und Passwort prüfen und Eingabe wiederholen"
-        echo
     fi    
 }
+
 
 ### STV Webserver Logout
 stv_logout() {
@@ -192,6 +235,126 @@ stv_logout() {
             rm -f "$stv_cookie"
             log "Session Cookie gelöscht"
             eingeloggt=false
+}
+
+
+### Mini 'GUI' für Senderlisten / Skipliste Bearbeitung
+senderliste_edit() {
+    senderliste_holen
+    send_list="stv_sender.txt"
+    send_skip="stv_skip.txt"
+    columns=3
+    col_width=26
+
+    # Skipliste laden
+    skip_list=()
+    [ -f "$send_skip" ] && while IFS="|" read -r id name; do
+        skip_list+=("$id|$name")
+    done < "$send_skip"
+
+    is_skipped() {
+        local key="$1"
+        for item in "${skip_list[@]}"; do
+            [[ "$item" == "$key" ]] && return 0
+        done
+        return 1
+    }
+
+    # Sender laden
+    sender_ids=()
+    sender_names=()
+    while IFS="|" read -r id name; do
+        sender_ids+=("$id")
+        sender_names+=("$name")
+    done < "$send_list"
+
+    selected=()
+    for i in "${!sender_names[@]}"; do
+        key="${sender_ids[$i]}|${sender_names[$i]}"
+        if is_skipped "$key"; then
+            selected+=(0)
+        else
+            selected+=(1)
+        fi
+    done
+
+    total=${#sender_names[@]}
+    rows=$(( (total + columns - 1) / columns ))
+    cursor=0
+
+    draw_menu() {
+        printf "\e[H"
+        local header="[i] SaveTV Senderaufnahmeliste bearbeiten\n"
+        header+="    [[32m✓[0m] markierte Sender werden aufgenommen, [[31m✗[0m] markierte übersprungen\n"
+        header+="    Navigation: ↑/↓/←/→  Umschalten: Leertaste  Speichern: S   Abbrechen: ESC\n"
+        printf "%b $header"
+
+        local lines=()
+        for ((r=0; r<rows; r++)); do lines+=(""); done
+
+        for ((c=0; c<columns; c++)); do
+            for ((r=0; r<rows; r++)); do
+                idx=$(( c*rows + r ))
+                if (( idx < total )); then
+                    if [[ ${selected[$idx]} -eq 1 ]]; then
+                        sym_color='[32m✓[0m'
+                        box_plain='[✓]'
+                    else
+                        sym_color='[31m✗[0m'
+                        box_plain='[✗]'
+                    fi
+                    box="[${sym_color}]"
+                    name="${sender_names[$idx]}"
+                    padding=$(( col_width - (${#box_plain} + 1 + ${#name}) ))
+                    if [[ $idx == $cursor ]]; then
+                        entry_str="$box [7m$name[0m$(printf '%*s' "$padding" '')"
+                    else
+                        entry_str="$box $name$(printf '%*s' "$padding" '')"
+                    fi
+                    lines[$r]+="$(printf '%b' "$entry_str")"
+                fi
+            done
+        done
+        for line in "${lines[@]}"; do
+            printf "%b\n $line"
+        done
+        printf "\e[J"
+    }
+
+    save_changes() {
+        > "$send_skip"
+        for ((i=0; i<${#sender_names[@]}; i++)); do
+            if [[ ${selected[$i]} -eq 0 ]]; then
+                echo "${sender_ids[$i]}|${sender_names[$i]}" >> "$send_skip"
+            fi
+        done
+        printf "%b\n[[32m✓[0m] geänderte Aufnahmeliste wurde gespeichert"
+    }
+    printf "\e[2J"
+    while true; do
+        draw_menu
+        read -r -s -n 1 key
+        if [[ "$key" == $'\e' ]]; then
+            if ! read -r -s -n 2 -t 1 rest; then
+                 echo
+                 printf "%b\n[[31m![0m] Abgebrochen, Aufnahmeliste bleibt unverändert\n"
+                 return
+            fi
+            key+="$rest"
+        fi
+        case "$key" in
+            $'\e[A') ((cursor > 0)) && ((cursor--));;
+            $'\e[B') ((cursor + 1 < total)) && ((cursor++));;
+            $'\e[C') ((cursor + rows < total)) && ((cursor += rows));;
+            $'\e[D') ((cursor - rows >= 0)) && ((cursor -= rows));;
+            "") if [[ ${selected[$cursor]} -eq 0 ]]; then selected[$cursor]=1; else selected[$cursor]=0; fi;;
+            "S" | "s")
+                echo
+                save_changes
+                return
+            ;;
+        esac
+    done
 }
 
 
@@ -233,7 +396,7 @@ senderliste_holen() {
     done < "$send_list"
     
     # Anzahl der anzulegenden Sender 
-    sender_anz=${#sender_id[@]}           
+    sender_anz=${#sender_id[@]}
 }
 
 
@@ -308,7 +471,6 @@ channelanz_info() {
             channelinfo_set "zuwenige freie Channels"
         fi
         stv_logout
-        echo "[i] Bearbeitungszeit $SECONDS Sekunden"
         log "Ende: $(date)"
         exit 1
     fi
@@ -460,9 +622,17 @@ channel_senderid_timeframe_anlegen() {
     timeframe="$2"
     sendername="$3"
 
-    ch_title=$(urlencode "$ca_ch_pre$sendername - ${tageszeit[$timeframe]}")
+    ch_title="$ca_ch_pre$sendername - ${tageszeit[$timeframe]}"
 
-    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' --cookie "$stv_cookie" --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")  
+    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' \
+        --cookie "$stv_cookie" \
+        --data "channelTypeId=1" \
+        --data "TvCategoryId=0" \
+        --data "ChannelTimeFrameId=$timeframe" \
+        --data "TvSubCategoryId=0" \
+        --data "TvStationid=$senderid" \
+        --data-urlencode "sName=$ch_title")
+
     if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
         log "+ '${tageszeit[$timeframe]}' "
         ch_ok=true
@@ -483,7 +653,7 @@ channel_senderid_timeframe_anlegen() {
 }
 
 
-### Fehlerhafte Channel erneut versuchen
+### Fehlerhafte Channels erneut versuchen
 iterum() {          #AnzahlVersuche #Pause 
     iter_max="$1"
     iter_sleep="$2"
@@ -500,8 +670,15 @@ iterum() {          #AnzahlVersuche #Pause
                 senderid=${err_senderid[err_akt]}
                 sendername=${err_sendername[err_akt]}
                 timeframe=${err_timeframe[err_akt]}
-                ch_title=$(urlencode "$ca_ch_pre$sendername - ${tageszeit[$timeframe]}")
-                channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' --cookie "$stv_cookie" --data "channelTypeId=1&sName=$ch_title&TvCategoryId=0&ChannelTimeFrameId=$timeframe&TvSubCategoryId=0&TvStationid=$senderid")            
+                channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' \
+                    --cookie "$stv_cookie" \
+                    --data "channelTypeId=1" \
+                    --data "TvCategoryId=0" \
+                    --data "ChannelTimeFrameId=$timeframe" \
+                    --data "TvSubCategoryId=0" \
+                    --data "TvStationid=$senderid" \
+                    --data-urlencode "sName=$ca_ch_pre$sendername - ${tageszeit[$timeframe]}"
+                    )
                 if grep -q "BISSUCCESSMSG..true" <<< "$channel_return"; then
                     ((err_ges--)); ((err_fix++))
                     err_senderid[err_akt]=0         # Flag 'nicht mehr versuchen'
@@ -570,20 +747,19 @@ channels_loeschen() {
 
 ### legt einen Stichwortchannel mit Status und Uhrzeit des Laufs an
 channelinfo_set() {
-    infotext=$(urlencode "$1")
+     version_info=""
     if [[ $check_version == "true" ]]; then
         versioncheck
-        if [[ $version_aktuell == "true" ]]; then
-            version_info=""
-        else
-            version_info=urlencode " Neue Version"
+        if [[ $version_aktuell != "true" ]]; then
+            version_info=" Neue Version"
         fi
-    else
-        version_info=""
     fi
-    
-    ch_text="sTelecastTitle=$ca_in_preurl$infotext+${wochentag[$(date '+%w')]}+$(date '+%m%d+%H%M')$version_info&channelTypeId=3"
-    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' --cookie "$stv_cookie" --data "$ch_text")  
+
+    # curl-Aufruf, hier sTelecastTitle mit --data-urlencode kodiert, plus andere Parameter normal
+    channel_return=$(curl -s 'https://www.save.tv/STV/M/obj/channels/createChannel.cfm' \
+        --cookie "$stv_cookie" \
+        --data-urlencode "sTelecastTitle=$ca_in_preurl$1+${wochentag[$(date '+%w')]}+$(date '+%m%d+%H%M')$version_info" \
+        --data "channelTypeId=3")
 }
 
 
@@ -1020,7 +1196,6 @@ fkt_ch_delete() {
 ### Logausgabe im Fehlerfall
 fkt_error_exit() {
     stv_logout
-    echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     log "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     exit 1
 }
@@ -1158,15 +1333,26 @@ funktionstest() {
 
     
     if [[ skipindex -eq 0 ]]; then
-        echo "[!] Keine ausgeschlossenen Sender in '$(basename "$send_skip")' vorhanden,"
-        echo "    alle $sender_anz aktuell bei Save.TV verfügbaren Sender werden aufgenommen."
+        echo "[!] Alle $sender_anz aktuell bei Save.TV verfügbaren Sender werden aufgenommen."
     else
         echo "[i] Aktuell sind $sender_alle Sender bei Save.TV verfügbar."
-        echo "[i] Die Liste der ausgeschlossenen Sender '$(basename "$send_skip")' beinhaltet:"
+        echo "[i] Folgende Sender werden laut Senderaufnahmeliste nicht aufgenommen:"
         for (( i=0; i<=${#skip_name[@]}; i=i+3)); do
             printf "%-3s %-21s %-21s %-21s\n" "   " "${skip_name[i]}" "${skip_name[i+1]}" "${skip_name[i+2]}"
         done
     fi
+    echo
+    echo -n '[?] Möchten Sie die Senderaufnahmeliste bearbeiten (J/N)? : '
+    skip_edit="?"
+    while ! [[ "JjNn" =~ "$skip_edit" ]]; do
+        read -n 1 -s skip_edit
+    done
+    echo "$skip_edit"
+
+    if [[ $skip_edit == "J" || $skip_edit == "j" ]]; then
+        senderliste_edit 
+    fi
+
     echo 
 
     # 04 channel anlegen
@@ -1213,7 +1399,6 @@ funktionstest() {
     echo "[✓] Logout durchgeführt"
     echo
     # Status ausgeben
-    echo "[i] Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     log "$(date) Funktionstest wurde in $SECONDS Sekunden abgeschlossen"
     exit 0
 }
@@ -1233,20 +1418,20 @@ versioncheck() {
 
 ### Hilfetext anzeigen
 hilfetext() {
-    echo "CatchAll-Funktion für alle SaveTV Sender programmieren"
+    echo "Bildet eine CatchAll-Funktion für alle SaveTV Sender nach"
     echo
     echo "-t, --test     Skripteinstellungen und SaveTV Account überprüfen"
+    echo
+    echo "-s, --sender   Liste der aufzunehmenden Sender anzeigen/bearbeiten"
     echo
     echo "-c, --cleanup  Skipliste, Channelliste, Videoarchiv interaktiv säubern"
     echo
     echo "--cleanupauto  Skipliste automatisch ohne Sicherheitsabfrage säubern,"
     echo "               anschließend wird die Catchall Channel Einrichtung durchgeführt"
-    echo "               ** Gelöschte Aufnahmen können nicht wiederhergestellt werden **"
+    echo "               ** Gelöschte Aufnahmen können NICHT wiederhergestellt werden **"
     echo
     echo "-?, --help     Hilfetext anzeigen"
     echo 
-    echo "Optional: '$(basename "$send_skip")' anpassen, um Sender von der Programmierung auszunehmen"
-    echo
     echo "Vollständige Anleitung unter https://github.com/einstweilen/stv-catchall"
 }
 
@@ -1281,13 +1466,12 @@ banner() {
 
         if [[ log_anz -eq 0 ]]; then
             clear; banner
-            echo -n '[?] Soll zuerst ein Funktionstest durchgeführt werden (J/N)? : '
+            echo '[i] Funktionstest mit Einrichtung/Überprüfung der Aufnahmesender wird empfohlen'
+            echo -n '[?] Den Funktionstest jetzt durchführen (J/N)? : '
             fkt_check="?"
             while ! [[ "JjNn" =~ "$fkt_check" ]]; do
                 read -n 1 -s fkt_check
             done
-            echo "$cleanufkt_checkp_check"
-
             if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
                 funktionstest
             fi
@@ -1299,6 +1483,12 @@ banner() {
     if [[ $cmd == "-?" || $cmd == "--help" ]]; then
         log "Hilfetext mit $cmd aufgerufen"
         hilfetext
+        exit 0
+    fi
+
+    if [[ $cmd == "-s" || $cmd == "--sender" ]]; then
+        log "Senderverwaltung manuell gestartet"
+        senderliste_edit
         exit 0
     fi
 
@@ -1380,13 +1570,3 @@ banner() {
     echo
     log "Ende: $(date)"
     exit 0
-
-    if ! $eingeloggt; then
-        if [[ $err_flag = true ]]; then
-            stv_logout
-            exit 2
-        else 
-            stv_logout
-            exit 0
-        fi
-    fi
