@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20251117'  # Scriptversion
+version_ist='20251119'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -196,7 +196,7 @@ stv_login_manual() {
                 echo "[i] Fügen Sie die folgenden Zeilen zu Ihrer Shell-Konfigurationsdatei hinzu:"
                 echo "    export STV_USER='$stv_user' STV_PASS='$stv_pass'"
                 echo
-                echo "[i] Konfiguration neu laden ('source ~/.bashrc') oder neues Terminal öffnen."
+                echo "    Konfiguration neu laden ('source ~/.bashrc') oder neues Terminal öffnen."
                 echo "    Einloggen erfolgt automatisch mit den gespeicherten Daten."
                 echo
                 stv_logout
@@ -284,9 +284,9 @@ senderliste_edit() {
 
     draw_menu() {
         printf "\e[H"
-        local header="[i] SaveTV Senderaufnahmeliste bearbeiten\n"
-        header+="    [[32m✓[0m] markierte Sender werden aufgenommen, [[31m✗[0m] markierte übersprungen\n"
-        header+="    Navigation: ↑/↓/←/→  Umschalten: Leertaste  Speichern: S   Abbrechen: ESC\n"
+        local header="[i] Save.TV Senderaufnahmeliste bearbeiten\n"
+        header+="     [[32m✓[0m] Sender wird aufgenommen  [[31m✗[0m] Sender wird übersprungen\n"
+        header+="     Navigation: ↑ ↓ ← →   Umschalten: Leertaste   Speichern: S   Abbrechen: ESC\n"
         printf "%b $header"
 
         local lines=()
@@ -373,7 +373,6 @@ senderliste_holen() {
         log 'Aktualisierte Senderliste vom Server geholt'
     fi
     sender_alle=$(wc -l < "$send_list" | xargs)
-    cp "$send_list" "$DIR/stv_skip_vorlage.txt"
 
     if [ ! -f "$send_skip" ]; then
         touch "$send_skip" # leere Datei anlegen
@@ -1418,9 +1417,9 @@ versioncheck() {
 
 ### Hilfetext anzeigen
 hilfetext() {
-    echo "Bildet eine CatchAll-Funktion für alle SaveTV Sender nach"
+    echo "Bildet eine CatchAll-Funktion für alle Save.TV Sender nach"
     echo
-    echo "-t, --test     Skripteinstellungen und SaveTV Account überprüfen"
+    echo "-t, --test     Skripteinstellungen und Save.TV Account überprüfen"
     echo
     echo "-s, --sender   Liste der aufzunehmenden Sender anzeigen/bearbeiten"
     echo
@@ -1440,7 +1439,7 @@ hilfetext() {
 banner() {
     echo '                _______ _______ _    _ _______  _______ _    _'
     echo '                |______ |_____|  \  /  |______     |     \  /'
-    echo '                ______| |     |   \/   |______     |      \/ ' 
+    echo '                ______| |     |   \/   |______  .  |      \/ ' 
     echo '                =============================================='
     echo '                _____C_a_t_c_h_a_l_l__e_i_n_r_i_c_h_t_e_n_____'
     echo
@@ -1466,14 +1465,27 @@ banner() {
 
         if [[ log_anz -eq 0 ]]; then
             clear; banner
-            echo '[i] Funktionstest mit Einrichtung/Überprüfung der Aufnahmesender wird empfohlen'
-            echo -n '[?] Den Funktionstest jetzt durchführen (J/N)? : '
+            echo "[i] Ersteinrichtung des STV CatchAll Skripts"
+            echo
+            echo "    * Abfrage vom Save.TV Usernamen und Passwort"
+            echo "    * Ermittlung des gebuchten Save.TV Pakets"
+            echo "    * zum Paket passende Einstellungen automatisch vornehmen"
+            echo "    * Programmierung aller verfügbaren Sender zur Aufnahme"
+            echo "    * optional: einzelne Sender von der Aufnahme ausnehmen"
+            echo 
+            echo -n '[?] Einrichtungsassistent jetzt starten (J/N)? : '
             fkt_check="?"
             while ! [[ "JjNn" =~ "$fkt_check" ]]; do
                 read -n 1 -s fkt_check
             done
             if [[ $fkt_check == "J" || $fkt_check == "j" ]]; then
                 funktionstest
+            else
+                echo
+                printf "\r\033[1A[!] Die Ersteinrichtung wurde abgebrochen!               \n"
+                echo "    Das Skript kann erst nach erfolgreicher Ersteinrichtung verwendet werden."
+                rm -f $(find * -prune -name 'stv_ca*.log') 2>/dev/null
+                exit 0
             fi
         fi
     fi
