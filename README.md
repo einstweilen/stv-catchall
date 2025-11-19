@@ -15,11 +15,8 @@ Fehler und Anregungen bitte unter [Issues](https://github.com/einstweilen/stv-ca
     Bildet eine CatchAll-Funktion für alle SaveTV Sender nach
 
     -t, --test     Skripteinstellungen und SaveTV Account überprüfen
-
     -s, --sender   Liste der aufzunehmenden Sender anzeigen/bearbeiten
-
     -c, --cleanup  Skipliste, Channelliste, Videoarchiv interaktiv säubern
-
     --cleanupauto  Skipliste automatisch ohne Sicherheitsabfrage säubern,
                    anschließend wird die Catchall Channel Einrichtung durchgeführt
                    ** Gelöschte Aufnahmen können NICHT wiederhergestellt werden **
@@ -38,18 +35,34 @@ Beim ersten Start wird ein Funktionstest angeboten, der die wichtigsten Einstell
 3. *Optional* Bei Save.TV die Einstellung der Aufnahmeoptionen prüfen ([wie macht man das?](README-ext.md#servicehinweis-savetv-aufnahme-optionen-pr%C3%BCfen))
 4. *Optional* Einzelne Sender von der Programmierung ausnehmen ([wie macht man das?](README-ext.md#sender-von-der-automatischen-aufnahme-ausschlie%C3%9Fen))
 
+Nach dem Download das Skript mit `# ./stvcatchall.sh` starten. Das Skript führt schrittweise durch die Einrichtung:
+
+                _______ _______ _    _ _______  _______ _    _
+                |______ |_____|  \  /  |______     |     \  /
+                ______| |     |   \/   |______  .  |      \/ 
+                ==============================================
+                _____C_a_t_c_h_a_l_l__e_i_n_r_i_c_h_t_e_n_____
+    
+        [i] Ersteinrichtung des STV CatchAll Skripts
+    
+            * Abfrage vom Save.TV Usernamen und Passwort
+            * Ermittlung des gebuchten Save.TV Pakets
+            * zum Paket passende Einstellungen automatisch vornehmen
+            * Programmierung aller verfügbaren Sender zur Aufnahme
+            * optional: einzelne Sender von der Aufnahme ausnehmen
+
+        [?] Einrichtungsassistent jetzt starten (J/N)? : 
+
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
 **Neueste Änderungen**
+#### 2025-11-19
+  * Ersteinrichtung vereinfacht
 #### 2025-11-17
   * FIXED URLencoding bei Channelnamen korrigiert und für aktuelle cURL Version angepaßt
   * Logindaten optional aus Environmentvariable auslesen
   * Senderliste wird per 'Mini'-GUI bearbeitet, fehlerträchtiges manuelles Editieren entfällt
   * entsprechende Anpassungen am Hilfetext
-#### 2023-04-11
-  * FIXED cURL wieder per secure ohne Ignorierung von Zertifikatsfehlern
-#### 2022-08-24
-  * QUICKFIX für cURL Login Problem
   
 ### Beispielausgabe CatchAll Programmierung
                 _______ _______ _    _ _______   _______ _    _
