@@ -2,7 +2,7 @@
 # https://github.com/einstweilen/stv-catchall/
 
 SECONDS=0 
-version_ist='20251119'  # Scriptversion
+version_ist='20260304'  # Scriptversion
 
 ### Dateipfade & Konfiguration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # Pfad zum Skript
@@ -51,7 +51,8 @@ log() {
 log_init () {
     touch "$stv_log"
     rm -f "$DIR/stv_ca.log"
-    ln -s $(ls stv_ca_*.log | tail -1) "$DIR/stv_ca.log"
+    local logs=(stv_ca_*.log)
+    ln -s "${logs[-1]}" "$DIR/stv_ca.log"
 }
 
 
@@ -61,12 +62,16 @@ log_delete() {
     log_keep=${log_keep:=$log_max}
 
     cd "$DIR"
-    log_anz=$(ls stv_ca*.log 2>/dev/null | wc -l)
+    local logs=(stv_ca*.log)
+    [[ -e "${logs[0]}" ]] || logs=()
+    log_anz=${#logs[@]}
     log_del=$((log_anz - log_keep))
     if [[ $log_del -gt 0 ]]; then
-        rm -f $(find * -prune -name 'stv_ca*.log' | head -$((log_del)))
+        rm -f "${logs[@]:0:$log_del}"
     fi
-    ls stv_ca*.log 2>/dev/null | wc -l | xargs 
+    local logs_after=(stv_ca*.log)
+    [[ -e "${logs_after[0]}" ]] || logs_after=()
+    echo "${#logs_after[@]}"
 }
 
 
@@ -75,7 +80,7 @@ stv_login() {
     stv_login_cred
 
     # Wenn nicht erfolgreich, starte den manuellen Prozess
-    while ! $eingeloggt && [ $ausfuehrung == "manual" ] ; do
+    while ! $eingeloggt && [[ "$ausfuehrung" == "manual" ]] ; do
         stv_login_manual
     done
 
@@ -117,7 +122,7 @@ stv_login_cred() {
     fi
     
     # Anmeldedatei (stv_autologin)
-    if [ -f "$stv_cred" ]; then
+    if [[ -f "$stv_cred" ]]; then
         local cred_content
         cred_content=$(head -n1 "$stv_cred")
 
@@ -224,8 +229,8 @@ stv_login_manual() {
 
 ### STV Webserver Logout
 stv_logout() {
-            if [ $ausfuehrung == "auto" ]; then
-                if [ $check_zombies == true ]; then
+            if [[ "$ausfuehrung" == "auto" ]]; then
+                if [[ "$check_zombies" == true ]]; then
                     log "automatischer Zombiecheck ist aktiv"
                     zombie_check
                 fi
@@ -248,7 +253,7 @@ senderliste_edit() {
 
     # Skipliste laden
     skip_list=()
-    [ -f "$send_skip" ] && while IFS="|" read -r id name; do
+    [[ -f "$send_skip" ]] && while IFS="|" read -r id name; do
         skip_list+=("$id|$name")
     done < "$send_skip"
 
@@ -361,7 +366,7 @@ senderliste_edit() {
 ### Aktuelle Senderliste einlesen oder vom Server holen
 senderliste_holen() {
     err_senderliste=false
-    if [ ! -f "$send_list" ]; then
+    if [[ ! -f "$send_list" ]]; then
         sender_return=$(curl -s 'https://www.save.tv/STV/M/obj/JSON/TvStationGroupsApi.cfm?iFunction=2&loadTvStationsWithAllStationOption=true&bIsMemberarea=true' --cookie "$stv_cookie" )
         if grep -q "Server Error" <<< "$sender_return"; then
             err_senderliste=true
@@ -374,23 +379,22 @@ senderliste_holen() {
     fi
     sender_alle=$(wc -l < "$send_list" | xargs)
 
-    if [ ! -f "$send_skip" ]; then
+    if [[ ! -f "$send_skip" ]]; then
         touch "$send_skip" # leere Datei anlegen
         log 'Liste der nicht aufzunehmenden Sender ist nicht vorhanden, leere Datei angelegt'
     fi
     
-    skipindex=0
+    senderskip=()
     while read line; do
-        senderskip[skipindex]="$line"
-        ((skipindex++))
+        senderskip+=("$line")
     done < "$send_skip"
-
-    sendindex=0
+    
+    sender_name=()
+    sender_id=()
     while read line; do
         if [[ "${senderskip[@]}" != *"$line"* ]]; then 
-            sender_name[sendindex]=${line#*|}
-            sender_id[sendindex]=${line%|*}
-            ((sendindex++))
+            sender_name+=("${line#*|}")
+            sender_id+=("${line%|*}")
         fi
     done < "$send_list"
     
@@ -875,17 +879,17 @@ inhalte_bereinigen() {
 ### Skipliste Aufnahmen- und Programmierungsreste löschen
 sender_bereinigen() {
     echo "    1/3 Programmierungen und Aufnahmen der Sender der Skipliste löschen"
-    if [ ! -f "$send_skip" ]; then
+    if [[ ! -f "$send_skip" ]]; then
         touch "$send_skip" # leere Datei anlegen
         log 'Liste der nicht aufzunehmenden Sender war nicht vorhanden, leere Datei wurde angelegt'
     fi
 
-    skipindex=0
+    skip_name=()
+    skip_id=()
     while read line; do
-        if [[ -n $line ]]; then
-            skip_name[skipindex]=${line#*|}
-            skip_id[skipindex]=${line%|*}      
-            ((skipindex++))
+        if [[ -n "$line" ]]; then
+            skip_name+=("${line#*|}")
+            skip_id+=("${line%|*}")
         fi  
     done < "$send_skip"
     echo
@@ -944,7 +948,7 @@ sender_bereinigen() {
                         for ((page=1; page<=totalpages; page++)); do
                             list_return=$(curl -s "https://www.save.tv/STV/M/obj/archive/JSON/VideoArchiveApi.cfm" --cookie "$stv_cookie" --data "iEntriesPerPage=35&iCurrentPage=1&iFilterType=1&sSearchString=&iTextSearchType=2&iChannelIds=0&iTvCategoryId=0&iTvSubCategoryId=0&bShowNoFollower=false&iRecordingState=0&sSortOrder=StartDateDESC&iTvStationGroupId=0&iRecordAge=0&iDaytime=0&manualRecords=false&dStartdate=2019-01-01&dEnddate=2038-01-01&iTvCategoryWithSubCategoriesId=Category%3A0&iTvStationId=$senderid&bHighlightActivation=false&bVideoArchiveGroupOption=false&bShowRepeatitionActivation=false")
                             delete_ids=$(grep -o "TelecastId=[0-9]*" <<< "$list_return" | sed 's/TelecastId=\([0-9]*\)/\1%2C/g' | tr -d '\n')                        
-                            if [ -n "$delete_ids" ]; then               
+                            if [[ -n "$delete_ids" ]]; then               
                                 log "Lösche $senderid|$sendername : $delete_ids"
                                 delete_return=$(curl -s "https://www.save.tv/STV/M/obj/cRecordOrder/croDelete.cfm" -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' --cookie "$stv_cookie" --data "lTelecastID=$delete_ids")
                                 if [[ "$delete_return" == *"ok"* ]]; then 
@@ -1055,7 +1059,7 @@ channelrestechecken() {
 
 ### chronologisch falsch einsortierte Aufnahmen löschen DSTARTDATE in der Zukunft
 zombie_check() {
-    if [ $ausfuehrung == "manual" ]; then
+    if [[ "$ausfuehrung" == "manual" ]]; then
         echo
         echo
         echo '    3/3 Prüfe das Videoarchiv auf chronologisch falsch einsortierte Aufnahmen'
@@ -1094,7 +1098,7 @@ zombie_check() {
 
         if [[ $zom_anz -gt 0 ]]; then
             log "$zom_anz Zombies gefunden"
-            if [ $ausfuehrung == "manual" ]; then
+            if [[ "$ausfuehrung" == "manual" ]]; then
                 echo -n "[?] Diese $zom_anz Aufnahmen löschen (J/N/Q)? : "
                 zom_check="?"
                 while ! [[ "JjNnQq" =~ "$zom_check" ]]; do
@@ -1222,7 +1226,7 @@ funktionstest() {
         echo "[i] Neue Skriptversion vom '$version_onl' ist verfügbar, Update wird empfohlen"
     fi
 
-    if [ ! -f "$stv_log" ]; then
+    if [[ ! -f "$stv_log" ]]; then
         echo "[!] Keine Schreibrechte im Skriptverzeichnis vorhanden"
         echo "    Verzeichnis $DIR prüfen"
         exit 1
@@ -1310,7 +1314,7 @@ funktionstest() {
     # alte Senderliste sichern, neue holen
     mv "$send_list" "$send_list.old" 2> /dev/null
     senderliste_holen
-    if [ $err_senderliste = true ]; then
+    if [[ "$err_senderliste" == true ]]; then
         mv "$send_list.old" "$send_list" 2> /dev/null
         echo "[!] Aktuelle Senderliste konnte NICHT geholt werden"
         echo
@@ -1449,16 +1453,23 @@ banner() {
 ### Hauptroutine
 
     cmd=$1
+
+    if [[ $cmd == "-?" || $cmd == "--help" ]]; then
+        log "Hilfetext mit $cmd aufgerufen"
+        hilfetext
+        exit 0
+    fi
+
     log_anz=$(log_delete "$log_max")
     log_init
 
-    if [ -t 1 ]; then
+    if [[ -t 1 ]]; then
         ausfuehrung="manual"    # Skript wurde direkt im Terminal aufgerufen
     else
         ausfuehrung="auto"      # im Cron aufgerufen
     fi
 
-    if [ $ausfuehrung == "manual" ]; then
+    if [[ "$ausfuehrung" == "manual" ]]; then
         if [[ $cmd == "--test" ||  $cmd == "-t" ]]; then
             funktionstest
         fi
@@ -1482,8 +1493,9 @@ banner() {
                 funktionstest
             else
                 echo
-                printf "\r\033[1A[!] Die Ersteinrichtung wurde abgebrochen!               \n"
+                printf "\r\033[1A[!] Die Ersteinrichtung wurde abgebrochen!                    \n\n"
                 echo "    Das Skript kann erst nach erfolgreicher Ersteinrichtung verwendet werden."
+                echo "    Vollständige Anleitung unter https://github.com/einstweilen/stv-catchall"
                 rm -f $(find * -prune -name 'stv_ca*.log') 2>/dev/null
                 exit 0
             fi
@@ -1491,12 +1503,6 @@ banner() {
     fi
 
     log "Beginn: $(date)"
-
-    if [[ $cmd == "-?" || $cmd == "--help" ]]; then
-        log "Hilfetext mit $cmd aufgerufen"
-        hilfetext
-        exit 0
-    fi
 
     if [[ $cmd == "-s" || $cmd == "--sender" ]]; then
         log "Senderverwaltung manuell gestartet"
