@@ -55,6 +55,8 @@ Nach dem Download das Skript mit `# ./stvcatchall.sh` starten. Das Skript führt
 
 [Weiter zur vollständigen Anleitung ...](README-ext.md#table-of-contents)
 
+> **AI-Transparenzhinweis**<br>90% des Code wurden per Hand erstellt, ca. 10% (insbesondere die GUI für die Senderlistenverwaltung) stammen von Claude
+
 **Neueste Änderungen**
 #### 2025-11-19
   * Ersteinrichtung vereinfacht
