@@ -57,7 +57,14 @@ Nach dem Download das Skript mit `# ./stvcatchall.sh` starten. Das Skript führt
 
 > **AI-Transparenzhinweis**<br>90% des Code wurden per Hand erstellt, ca. 10% (insbesondere die GUI für die Senderlistenverwaltung) stammen von Claude
 
+## BONUS Save.TV Webseiten Redesign per Userscript
+Unter [Greasyfork Userscript](https://greasyfork.org/de/scripts/596375-save-tv-redesign) liegt ein Userscript (Tampermonkey, FireMonkey o.ä wird benötigt), das das Layout von Save.TV etwas entstaubt und mit einer Genre Mehrfachauswahl die Funktionalität verbessert.
+
+![Redesign](img-fuer-readme/20260918_listview.png)
+
 **Neueste Änderungen**
+#### 2026-09-18
+  * Hinweis auf Redesign Userscript ergänzt 
 #### 2025-11-19
   * Ersteinrichtung vereinfacht
 #### 2025-11-17
