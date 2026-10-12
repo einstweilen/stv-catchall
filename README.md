@@ -58,7 +58,22 @@ Nach dem Download das Skript mit `# ./stvcatchall.sh` starten. Das Skript führt
 > **AI-Transparenzhinweis**<br>90% des Code wurden per Hand erstellt, ca. 10% (insbesondere die GUI für die Senderlistenverwaltung) stammen von Claude
 
 ## BONUS Save.TV Webseiten Redesign per Userscript
-Unter [Greasyfork Userscript](https://greasyfork.org/de/scripts/596375-save-tv-redesign) liegt ein Userscript (Tampermonkey, FireMonkey o.ä wird benötigt), das das Layout von Save.TV etwas entstaubt und mit einer Genre Mehrfachauswahl die Funktionalität verbessert.
+Auf [Greasyfork liegt ein Userscript ](https://greasyfork.org/de/scripts/599867-save-tv-redesign)(Tampermonkey, FireMonkey o.ä wird benötigt), das das Layout von Save.TV etwas entstaubt und die Usability verbessert.
+
+<details>
+<summary>Hier klicken für mehr Details</summary>
+
+Neues Farbschema, kompaktere Navigation und praktische Zusatzfunktionen für die Save.TV Seiten.
+
+- **Neues Design:** Helle Farben statt dunklem Schema, schlankere Navigation.
+- **Genre-Mehrfachauswahl:** Mehrere Subgenres kombinieren, die Auswahl bleibt gespeichert.
+- **Gesehene ausblenden:** Per Toggle-Button bereits Gesehenes verbergen.
+- **Vorschau Reel:** Alle Treffer mit Vorschauvideo laufen nacheinander ab. Interessantes landet per Klick in „Später ansehen".
+- **Kino-Overlay:** Vorschauvideos starten in bester verfügbarer Qualität, mit Sendungsbeschreibung daneben.
+- **Komfortable Ergebnisliste:** Endlos-Scrolling, aufklappbare Beschreibungen und die tatsächliche Sendezeit.
+- **Einheitliche Player:** Vorschau, Reel und Zapp Hopper teilen ein Design.
+
+</details>
 
 ![Redesign](img-fuer-readme/20260918_listview.png)
 
